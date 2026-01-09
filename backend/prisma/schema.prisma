@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User accounts
+model User {
+  id            String    @id @default(cuid())
+  phone         String?   @unique
+  email         String?   @unique
+  displayName   String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Profile fields (optional)
+  photoUrl      String?
+  bio           String?
+  location      String?
+
+  // Relations
+  sessions          Session[]
+  verificationCodes VerificationCode[]
+  organizedEvents   Event[]           @relation("EventOrganizer")
+  rsvps             RSVP[]
+  eventRoles        EventRole[]
+  notifications     Notification[]
+
+  @@index([phone])
+  @@index([email])
+}
+
+// Session management
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  deviceInfo   String?
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+// Verification codes for passwordless auth
+model VerificationCode {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // For new user registration
+  phone     String?
+  email     String?
+
+  // For invite registration - stores invite token context
+  inviteToken String?
+
+  code      String
+  type      VerificationType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([phone, code])
+  @@index([email, code])
+  @@index([userId])
+}
+
+enum VerificationType {
+  REGISTRATION
+  LOGIN
+  INVITE_REGISTRATION
+}
+
+// Events
+model Event {
+  id              String      @id @default(cuid())
+  title           String
+  description     String
+  dateTime        DateTime
+  endDateTime     DateTime?
+  timezone        String      @default("UTC")
+  location        String
+
+  // Optional fields
+  imageUrl        String?
+  capacity        Int?
+  rsvpDeadline    DateTime?
+  category        String?
+  dressCode       String?
+  notes           String?
+
+  // State management
+  state           EventState  @default(DRAFT)
+
+  // Privacy settings
+  attendeeListVisibility AttendeeListVisibility @default(ATTENDEES_ONLY)
+  allowInviteSharing     Boolean                @default(true)
+
+  // Creator/owner
+  creatorId       String
+  creator         User        @relation("EventOrganizer", fields: [creatorId], references: [id])
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  rsvps            RSVP[]
+  inviteLinks      InviteLink[]
+  eventRoles       EventRole[]
+  notifications    Notification[]
+  emailInvitations EmailInvitation[]
+
+  @@index([creatorId])
+  @@index([state])
+  @@index([dateTime])
+}
+
+enum EventState {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendeeListVisibility {
+  ATTENDEES_ONLY
+  ORGANIZERS_ONLY
+}
+
+// RSVP responses
+model RSVP {
+  id        String       @id @default(cuid())
+  eventId   String
+  event     Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  response  RSVPResponse
+  needsReconfirmation Boolean @default(false)
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+enum RSVPResponse {
+  YES
+  NO
+  MAYBE
+}
+
+// Event roles (organizers)
+model EventRole {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role      Role     @default(ORGANIZER)
+
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+enum Role {
+  ORGANIZER
+}
+
+// Invitation links
+model InviteLink {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  token     String   @unique
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  // Email invitations linked to this invite link
+  emailInvitation EmailInvitation?
+
+  @@index([token])
+  @@index([eventId])
+}
+
+// Email invitations sent for events
+model EmailInvitation {
+  id            String                @id @default(cuid())
+  eventId       String
+  event         Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  inviteLinkId  String                @unique
+  inviteLink    InviteLink            @relation(fields: [inviteLinkId], references: [id], onDelete: Cascade)
+
+  // Recipient info
+  email         String
+  recipientName String?
+
+  // Tracking
+  status        EmailInvitationStatus @default(PENDING)
+  sentAt        DateTime?
+  openedAt      DateTime?
+  rsvpAt        DateTime?
+
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([eventId])
+  @@index([email])
+  @@index([status])
+}
+
+enum EmailInvitationStatus {
+  PENDING
+  SENT
+  OPENED
+  RSVPD
+  FAILED
+}
+
+// Notifications for users
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String?
+  event     Event?           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  type      NotificationType
+  message   String
+  read      Boolean          @default(false)
+
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([userId, read])
+}
+
+enum NotificationType {
+  EVENT_UPDATED
+  EVENT_CANCELLED
+  RSVP_RECONFIRM
+}

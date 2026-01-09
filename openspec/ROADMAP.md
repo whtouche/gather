@@ -6,19 +6,19 @@ This roadmap organizes features into parallel work groups. Each group contains f
 
 ---
 
-## Group A: The Foundation
+## Group A: The Foundation [DONE]
 **Theme: "Let's get this party started"**
 
 Everything starts here. These are the building blocks that make everything else possible.
 
-### A1: Database & Core Infrastructure
+### A1: Database & Core Infrastructure [DONE]
 Set up the data layer and core architecture.
 - Database schema for users, events, RSVPs
 - API framework setup
 - Environment configuration
 - Basic error handling
 
-### A2: User Authentication
+### A2: User Authentication [DONE]
 *Because you can't crash a party if nobody knows who you are.*
 - Phone number registration with verification codes
 - Email registration with verification links
@@ -26,7 +26,7 @@ Set up the data layer and core architecture.
 - Session management
 - Basic logout functionality
 
-### A3: Event Creation (Basics)
+### A3: Event Creation (Basics) [DONE]
 *The "what, when, where" of any good gathering.*
 - Create event with required fields (title, description, date/time, location)
 - Event validation
@@ -38,33 +38,33 @@ Set up the data layer and core architecture.
 
 ---
 
-## Group B: The Guest List
+## Group B: The Guest List [DONE]
 **Theme: "You're invited!"**
 
 Now that events exist, let's get people to them.
 
-### B1: Shareable Invitation Links
+### B1: Shareable Invitation Links [DONE]
 *The digital equivalent of a paper invite, but way easier to share.*
 - Generate unique, secure invitation tokens
 - Copy-to-clipboard functionality
 - Link validation and access
 - Event preview for link visitors
 
-### B2: Basic RSVP System
+### B2: Basic RSVP System [DONE]
 *Yes, No, Maybe - the eternal question.*
 - RSVP response options (Yes / No / Maybe)
 - Record responses with timestamps
 - Change RSVP (before deadline)
 - Organizer notification on RSVP changes
 
-### B3: Quick Registration for Invitees
+### B3: Quick Registration for Invitees [DONE]
 *Frictionless onboarding for the "just here for the party" crowd.*
 - Registration via invitation link flow
 - Minimal fields (phone OR email + name)
 - Direct to RSVP after verification
 - Merge with existing account if found
 
-### B4: User Dashboard (Basic)
+### B4: User Dashboard (Basic) [DONE]
 *Your party command center.*
 - List of upcoming events (organizing)
 - List of upcoming events (attending)
@@ -75,39 +75,39 @@ Now that events exist, let's get people to them.
 
 ---
 
-## Group C: The Party Gets Real
+## Group C: The Party Gets Real [DONE]
 **Theme: "Now we're cooking"**
 
 The core experience takes shape. Multiple agents can tackle these in parallel.
 
-### C1: Event Lifecycle Management
+### C1: Event Lifecycle Management [DONE]
 *Events have seasons too.*
 - All event states (Draft, Published, Closed, Ongoing, Completed, Cancelled)
 - Automatic state transitions based on dates
 - Event cancellation with notification
 - RSVP deadline enforcement
 
-### C2: Organizer Powers
+### C2: Organizer Powers [DONE]
 *With great power comes great party responsibility.*
 - Edit event details
 - Promote attendees to organizer
 - View complete attendee list
 - Demote organizers (except original creator)
 
-### C3: Attendee List & Privacy
+### C3: Attendee List & Privacy [DONE]
 *Who's coming? (Only if you're coming too.)*
 - Attendee list visible only to confirmed attendees
 - Display names only (no contact info exposed)
 - Organizer badges on attendee list
 - Aggregate count for non-attendees ("15 attending")
 
-### C4: Event Change Notifications
+### C4: Event Change Notifications [DONE]
 *Plans change. People should know.*
 - Notify attendees of significant changes (date, time, location)
 - Prompt to reconfirm RSVP after major changes
 - Cancellation notifications
 
-### C5: Past Events View
+### C5: Past Events View [DONE]
 *Remember that one party?*
 - Past attended events list
 - Past organized events list
@@ -123,7 +123,7 @@ The core experience takes shape. Multiple agents can tackle these in parallel.
 
 Time to reach out and touch someone (digitally, of course).
 
-### D1: Email Invitations
+### D1: Email Invitations [DONE]
 *The fancy way to say "you're invited."*
 - Send invitations via email
 - Unique invitation link per recipient

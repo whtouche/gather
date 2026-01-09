@@ -1,0 +1,34 @@
+import express from "express";
+import cors from "cors";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import authRoutes from "./routes/auth.js";
+import eventRoutes from "./routes/events.js";
+import invitationRoutes from "./routes/invitations.js";
+import rsvpRoutes from "./routes/rsvps.js";
+import dashboardRoutes from "./routes/dashboard.js";
+import notificationRoutes from "./routes/notifications.js";
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Health check
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// API routes
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/events", rsvpRoutes);
+app.use("/api", invitationRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/notifications", notificationRoutes);
+
+// Error handling
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+export default app;
