@@ -324,6 +324,7 @@ enum NotificationType {
   EVENT_UPDATED
   EVENT_CANCELLED
   RSVP_RECONFIRM
+  POST_DELETED_BY_MODERATOR
 }
 
 // Wall posts on events
@@ -344,6 +345,10 @@ model WallPost {
   // Depth level: 0 = top-level post, 1 = reply, 2 = reply-to-reply (max depth)
   depth     Int      @default(0)
 
+  // Pinning support - only top-level posts can be pinned
+  isPinned  Boolean  @default(false)
+  pinnedAt  DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -354,6 +359,7 @@ model WallPost {
   @@index([authorId])
   @@index([eventId, createdAt])
   @@index([parentId])
+  @@index([eventId, isPinned, pinnedAt])
 }
 
 // Reactions on wall posts
@@ -376,4 +382,29 @@ model WallReaction {
 
 enum ReactionType {
   HEART
+}
+
+// Moderation log for wall posts
+model ModerationLog {
+  id           String            @id @default(cuid())
+  eventId      String
+  moderatorId  String
+  action       ModerationAction
+
+  // Target post info (stored for reference even after deletion)
+  targetPostId String?  // null if post was deleted
+  postContent  String?  // Original content for deleted posts
+  postAuthorId String?  // Author of the post being moderated
+
+  createdAt    DateTime          @default(now())
+
+  @@index([eventId])
+  @@index([moderatorId])
+  @@index([eventId, createdAt])
+}
+
+enum ModerationAction {
+  DELETE
+  PIN
+  UNPIN
 }

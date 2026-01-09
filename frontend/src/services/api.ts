@@ -1181,6 +1181,8 @@ export interface WallPost {
   content: string;
   createdAt: string;
   updatedAt: string;
+  isPinned: boolean;
+  pinnedAt: string | null;
   author: WallPostAuthor;
   reactionCount: number;
   userHasReacted: boolean;
@@ -1227,9 +1229,12 @@ export async function createWallPost(
 }
 
 /**
- * Delete a wall post (author only)
+ * Delete a wall post (author or organizer)
  */
-export async function deleteWallPost(eventId: string, postId: string): Promise<{ message: string }> {
+export async function deleteWallPost(
+  eventId: string,
+  postId: string
+): Promise<{ message: string; moderatorDeleted: boolean }> {
   return request(`/events/${eventId}/wall/${postId}`, {
     method: "DELETE",
   });
@@ -1273,6 +1278,66 @@ export async function removeReaction(eventId: string, postId: string): Promise<R
   return request(`/events/${eventId}/wall/${postId}/reactions`, {
     method: "DELETE",
   });
+}
+
+/**
+ * Response from pinning a post
+ */
+export interface PinPostResponse {
+  message: string;
+  isPinned: boolean;
+  pinnedAt: string | null;
+}
+
+/**
+ * Pin a wall post (organizers only)
+ */
+export async function pinWallPost(eventId: string, postId: string): Promise<PinPostResponse> {
+  return request(`/events/${eventId}/wall/${postId}/pin`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Unpin a wall post (organizers only)
+ */
+export async function unpinWallPost(eventId: string, postId: string): Promise<PinPostResponse> {
+  return request(`/events/${eventId}/wall/${postId}/pin`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Moderation log entry
+ */
+export interface ModerationLogEntry {
+  id: string;
+  action: "DELETE" | "PIN" | "UNPIN";
+  moderator: {
+    id: string;
+    displayName: string;
+  };
+  targetPostId: string | null;
+  postContent: string | null;
+  postAuthor: {
+    id: string;
+    displayName: string;
+  } | null;
+  createdAt: string;
+}
+
+/**
+ * Response from getting moderation log
+ */
+export interface GetModerationLogResponse {
+  logs: ModerationLogEntry[];
+}
+
+/**
+ * Get moderation log for an event (organizers only)
+ */
+export async function getModerationLog(eventId: string): Promise<GetModerationLogResponse> {
+  return request(`/events/${eventId}/wall/moderation-log`);
 }
 
 export default {
@@ -1319,4 +1384,7 @@ export default {
   deleteWallPost,
   addReaction,
   removeReaction,
+  pinWallPost,
+  unpinWallPost,
+  getModerationLog,
 };

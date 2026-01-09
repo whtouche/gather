@@ -22,12 +22,23 @@ vi.mock("../utils/db.js", () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
       delete: vi.fn(),
+      update: vi.fn(),
     },
     wallReaction: {
       findUnique: vi.fn(),
       create: vi.fn(),
       delete: vi.fn(),
       count: vi.fn(),
+    },
+    moderationLog: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
+    notification: {
+      create: vi.fn(),
+    },
+    user: {
+      findMany: vi.fn(),
     },
   },
 }));
@@ -76,6 +87,8 @@ const mockWallPost = {
   content: "Hello, world!",
   depth: 0,
   parentId: null,
+  isPinned: false,
+  pinnedAt: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   author: {
@@ -342,10 +355,16 @@ describe("Wall Routes", () => {
       expect(response.body.error.code).toBe("POST_NOT_FOUND");
     });
 
-    it("should return 403 when deleting another user's post", async () => {
+    it("should return 403 when non-organizer deletes another user's post", async () => {
       vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
       vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
-      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      // User is not the event creator
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        creatorId: "other-user",
+      } as never);
+      // User is not an organizer role
+      vi.mocked(prisma.eventRole.findUnique).mockResolvedValue(null);
       vi.mocked(prisma.wallPost.findUnique).mockResolvedValue({
         ...mockWallPost,
         authorId: "other-user",
@@ -356,6 +375,34 @@ describe("Wall Routes", () => {
         .set("Authorization", "Bearer valid-token");
       expect(response.status).toBe(403);
       expect(response.body.error.code).toBe("FORBIDDEN");
+    });
+
+    it("should allow organizer to delete another user's post", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      // User is the event creator (organizer)
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        title: "Test Event",
+      } as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue({
+        ...mockWallPost,
+        authorId: "other-user",
+        content: "A post by another user",
+      } as never);
+      vi.mocked(prisma.wallPost.delete).mockResolvedValue(mockWallPost as never);
+      vi.mocked(prisma.moderationLog.create).mockResolvedValue({} as never);
+      vi.mocked(prisma.notification.create).mockResolvedValue({} as never);
+
+      const response = await request(app)
+        .delete("/api/events/event-1/wall/post-1")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("Post deleted successfully");
+      expect(response.body.moderatorDeleted).toBe(true);
+      expect(prisma.moderationLog.create).toHaveBeenCalled();
+      expect(prisma.notification.create).toHaveBeenCalled();
     });
 
     it("should delete the user's own post", async () => {
@@ -562,6 +609,263 @@ describe("Wall Routes", () => {
       expect(response.body.message).toBe("Reaction removed");
       expect(response.body.reactionCount).toBe(0);
       expect(response.body.userHasReacted).toBe(false);
+    });
+  });
+
+  describe("POST /api/events/:id/wall/:postId/pin", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).post("/api/events/event-1/wall/post-1/pin");
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 404 for non-existent event", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/events/nonexistent/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("EVENT_NOT_FOUND");
+    });
+
+    it("should return 403 for non-organizers", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        creatorId: "other-user",
+      } as never);
+      vi.mocked(prisma.eventRole.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.code).toBe("FORBIDDEN");
+    });
+
+    it("should return 404 for non-existent post", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/nonexistent/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("POST_NOT_FOUND");
+    });
+
+    it("should return 400 when trying to pin a reply", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue({
+        ...mockWallPost,
+        depth: 1, // This is a reply
+      } as never);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("CANNOT_PIN_REPLY");
+    });
+
+    it("should return 400 when post is already pinned", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue({
+        ...mockWallPost,
+        isPinned: true,
+      } as never);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("ALREADY_PINNED");
+    });
+
+    it("should pin a post successfully", async () => {
+      const pinnedAt = new Date();
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(mockWallPost as never);
+      vi.mocked(prisma.wallPost.update).mockResolvedValue({
+        ...mockWallPost,
+        isPinned: true,
+        pinnedAt,
+      } as never);
+      vi.mocked(prisma.moderationLog.create).mockResolvedValue({} as never);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("Post pinned successfully");
+      expect(response.body.isPinned).toBe(true);
+      expect(response.body.pinnedAt).toBeDefined();
+      expect(prisma.moderationLog.create).toHaveBeenCalled();
+    });
+  });
+
+  describe("DELETE /api/events/:id/wall/:postId/pin", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).delete("/api/events/event-1/wall/post-1/pin");
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 403 for non-organizers", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        creatorId: "other-user",
+      } as never);
+      vi.mocked(prisma.eventRole.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .delete("/api/events/event-1/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.code).toBe("FORBIDDEN");
+    });
+
+    it("should return 400 when post is not pinned", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue({
+        ...mockWallPost,
+        isPinned: false,
+      } as never);
+
+      const response = await request(app)
+        .delete("/api/events/event-1/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("NOT_PINNED");
+    });
+
+    it("should unpin a post successfully", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue({
+        ...mockWallPost,
+        isPinned: true,
+        pinnedAt: new Date(),
+      } as never);
+      vi.mocked(prisma.wallPost.update).mockResolvedValue({
+        ...mockWallPost,
+        isPinned: false,
+        pinnedAt: null,
+      } as never);
+      vi.mocked(prisma.moderationLog.create).mockResolvedValue({} as never);
+
+      const response = await request(app)
+        .delete("/api/events/event-1/wall/post-1/pin")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("Post unpinned successfully");
+      expect(response.body.isPinned).toBe(false);
+      expect(response.body.pinnedAt).toBeNull();
+      expect(prisma.moderationLog.create).toHaveBeenCalled();
+    });
+  });
+
+  describe("GET /api/events/:id/wall/moderation-log", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).get("/api/events/event-1/wall/moderation-log");
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 404 for non-existent event", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .get("/api/events/nonexistent/wall/moderation-log")
+        .set("Authorization", "Bearer valid-token");
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("EVENT_NOT_FOUND");
+    });
+
+    it("should return 403 for non-organizers", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        creatorId: "other-user",
+      } as never);
+      vi.mocked(prisma.eventRole.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .get("/api/events/event-1/wall/moderation-log")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.code).toBe("FORBIDDEN");
+    });
+
+    it("should return moderation logs for organizers", async () => {
+      const mockLogs = [
+        {
+          id: "log-1",
+          eventId: "event-1",
+          moderatorId: "user-1",
+          action: "DELETE",
+          targetPostId: "post-1",
+          postContent: "Deleted content",
+          postAuthorId: "user-2",
+          createdAt: new Date(),
+        },
+        {
+          id: "log-2",
+          eventId: "event-1",
+          moderatorId: "user-1",
+          action: "PIN",
+          targetPostId: "post-2",
+          postContent: null,
+          postAuthorId: null,
+          createdAt: new Date(),
+        },
+      ];
+
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.moderationLog.findMany).mockResolvedValue(mockLogs as never);
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        { id: "user-1", displayName: "Test User" },
+        { id: "user-2", displayName: "Other User" },
+      ] as never);
+
+      const response = await request(app)
+        .get("/api/events/event-1/wall/moderation-log")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.logs).toHaveLength(2);
+      expect(response.body.logs[0].action).toBe("DELETE");
+      expect(response.body.logs[0].moderator.displayName).toBe("Test User");
+      expect(response.body.logs[0].postAuthor.displayName).toBe("Other User");
+      expect(response.body.logs[1].action).toBe("PIN");
     });
   });
 });

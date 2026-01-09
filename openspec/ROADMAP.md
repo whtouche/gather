@@ -173,7 +173,7 @@ The social heart of every event.
 - Remove own reactions
 - Post and reply count display
 
-### E3: Wall Moderation
+### E3: Wall Moderation [DONE]
 *Keep the vibes good.*
 - Organizer delete posts capability
 - Pin important posts to top

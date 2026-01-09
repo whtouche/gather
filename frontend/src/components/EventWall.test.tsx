@@ -10,6 +10,9 @@ vi.mock("../services/api", () => ({
   deleteWallPost: vi.fn(),
   addReaction: vi.fn(),
   removeReaction: vi.fn(),
+  pinWallPost: vi.fn(),
+  unpinWallPost: vi.fn(),
+  getModerationLog: vi.fn(),
   isApiError: vi.fn((error): error is api.ApiError => {
     return (
       typeof error === "object" &&
@@ -28,6 +31,8 @@ describe("EventWall", () => {
       content: "Hello everyone!",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      isPinned: false,
+      pinnedAt: null,
       author: {
         id: "user-1",
         displayName: "John Doe",
@@ -59,6 +64,8 @@ describe("EventWall", () => {
       content: "Looking forward to this event!",
       createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
       updatedAt: new Date(Date.now() - 3600000).toISOString(),
+      isPinned: false,
+      pinnedAt: null,
       author: {
         id: "user-2",
         displayName: "Jane Smith",
@@ -272,6 +279,8 @@ describe("EventWall", () => {
         content: "New post content",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isPinned: false,
+        pinnedAt: null,
         author: {
           id: "user-1",
           displayName: "Test User",
@@ -313,6 +322,8 @@ describe("EventWall", () => {
         content: "Test content",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isPinned: false,
+        pinnedAt: null,
         author: {
           id: "user-1",
           displayName: "Test User",
@@ -459,6 +470,8 @@ describe("EventWall", () => {
         content: "Recent post",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isPinned: false,
+        pinnedAt: null,
         author: {
           id: "user-1",
           displayName: "Test User",
@@ -490,6 +503,8 @@ describe("EventWall", () => {
         content: "Older post",
         createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
         updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+        isPinned: false,
+        pinnedAt: null,
         author: {
           id: "user-1",
           displayName: "Test User",
@@ -669,6 +684,210 @@ describe("EventWall", () => {
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText("Write a reply...")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Moderation features", () => {
+    beforeEach(() => {
+      vi.mocked(api.isAuthenticated).mockReturnValue(true);
+    });
+
+    it("should show pinned posts with pinned indicator", async () => {
+      const pinnedPost: api.WallPost = {
+        ...mockPosts[0],
+        isPinned: true,
+        pinnedAt: new Date().toISOString(),
+      };
+
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: [pinnedPost],
+      });
+
+      render(<EventWall eventId="event-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Pinned")).toBeInTheDocument();
+      });
+    });
+
+    it("should show pin button for organizers", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: mockPosts,
+      });
+
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={true} />);
+
+      await waitFor(() => {
+        // Should have pin buttons (one for each post)
+        const pinButtons = screen.getAllByTitle("Pin to top");
+        expect(pinButtons.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("should not show pin button for non-organizers", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: mockPosts,
+      });
+
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Hello everyone!")).toBeInTheDocument();
+      });
+
+      expect(screen.queryByTitle("Pin to top")).not.toBeInTheDocument();
+    });
+
+    it("should show moderation log button for organizers", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: [],
+      });
+
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Moderation Log")).toBeInTheDocument();
+      });
+    });
+
+    it("should not show moderation log button for non-organizers", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: [],
+      });
+
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Event Wall")).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText("Moderation Log")).not.toBeInTheDocument();
+    });
+
+    it("should allow organizer to delete another user's post", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: [mockPosts[1]], // Jane's post (user-2)
+      });
+      vi.mocked(api.deleteWallPost).mockResolvedValue({
+        message: "Post deleted",
+        moderatorDeleted: true,
+      });
+
+      // User-1 is organizer, viewing user-2's post
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Looking forward to this event!")).toBeInTheDocument();
+      });
+
+      // Organizer should see delete button for another user's post
+      const deleteButton = screen.getByTitle("Delete (moderator)");
+      fireEvent.click(deleteButton);
+
+      await waitFor(() => {
+        expect(api.deleteWallPost).toHaveBeenCalledWith("event-1", "post-2");
+      });
+    });
+
+    it("should pin a post when pin button is clicked", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: mockPosts,
+      });
+      vi.mocked(api.pinWallPost).mockResolvedValue({
+        message: "Post pinned successfully",
+        isPinned: true,
+        pinnedAt: new Date().toISOString(),
+      });
+
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Hello everyone!")).toBeInTheDocument();
+      });
+
+      const pinButtons = screen.getAllByTitle("Pin to top");
+      fireEvent.click(pinButtons[0]);
+
+      await waitFor(() => {
+        expect(api.pinWallPost).toHaveBeenCalledWith("event-1", "post-1");
+      });
+    });
+
+    it("should unpin a post when unpin button is clicked", async () => {
+      const pinnedPosts: api.WallPost[] = [
+        {
+          ...mockPosts[0],
+          isPinned: true,
+          pinnedAt: new Date().toISOString(),
+        },
+      ];
+
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: pinnedPosts,
+      });
+      vi.mocked(api.unpinWallPost).mockResolvedValue({
+        message: "Post unpinned successfully",
+        isPinned: false,
+        pinnedAt: null,
+      });
+
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Pinned")).toBeInTheDocument();
+      });
+
+      const unpinButton = screen.getByTitle("Unpin");
+      fireEvent.click(unpinButton);
+
+      await waitFor(() => {
+        expect(api.unpinWallPost).toHaveBeenCalledWith("event-1", "post-1");
+      });
+    });
+
+    it("should open moderation log modal when button is clicked", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: [],
+      });
+      vi.mocked(api.getModerationLog).mockResolvedValue({
+        logs: [
+          {
+            id: "log-1",
+            action: "DELETE" as const,
+            moderator: { id: "user-1", displayName: "John Doe" },
+            targetPostId: "post-1",
+            postContent: "Deleted content",
+            postAuthor: { id: "user-2", displayName: "Jane Smith" },
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      });
+
+      render(<EventWall eventId="event-1" currentUserId="user-1" isOrganizer={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Moderation Log")).toBeInTheDocument();
+      });
+
+      const modLogButton = screen.getByText("Moderation Log");
+      fireEvent.click(modLogButton);
+
+      await waitFor(() => {
+        expect(api.getModerationLog).toHaveBeenCalledWith("event-1");
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("deleted a post")).toBeInTheDocument();
       });
     });
   });

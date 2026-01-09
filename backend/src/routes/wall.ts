@@ -61,6 +61,8 @@ interface WallPostData {
   content: string;
   depth: number;
   parentId: string | null;
+  isPinned: boolean;
+  pinnedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   author: {
@@ -101,6 +103,8 @@ interface FormattedPost {
   content: string;
   createdAt: string;
   updatedAt: string;
+  isPinned: boolean;
+  pinnedAt: string | null;
   author: {
     id: string;
     displayName: string;
@@ -123,6 +127,7 @@ function formatWallPost(
 ): FormattedPost | FormattedReply {
   const userHasReacted = post.reactions.some((r) => r.userId === currentUserId);
 
+  // Base formatted post/reply
   const formatted: FormattedPost | FormattedReply = {
     id: post.id,
     content: post.content,
@@ -139,6 +144,12 @@ function formatWallPost(
     replyCount: post._count?.replies ?? 0,
     replies: [],
   };
+
+  // Add pinning info for top-level posts
+  if (post.depth === 0) {
+    (formatted as FormattedPost).isPinned = post.isPinned;
+    (formatted as FormattedPost).pinnedAt = post.pinnedAt?.toISOString() ?? null;
+  }
 
   // Format nested replies if they exist
   if (post.replies && post.replies.length > 0) {
@@ -204,7 +215,8 @@ router.get(
         ...event.eventRoles.map((role) => role.userId),
       ]);
 
-      // Fetch top-level wall posts (newest first) with reactions and nested replies
+      // Fetch top-level wall posts with reactions and nested replies
+      // Order: pinned posts first (by pin time desc), then by creation time desc
       const posts = await prisma.wallPost.findMany({
         where: {
           eventId,
@@ -276,7 +288,11 @@ router.get(
             },
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [
+          { isPinned: "desc" }, // Pinned posts first
+          { pinnedAt: "desc" }, // Among pinned, most recently pinned first
+          { createdAt: "desc" }, // Among non-pinned, newest first
+        ],
       });
 
       res.json({
@@ -435,7 +451,8 @@ router.post(
 
 /**
  * DELETE /api/events/:id/wall/:postId
- * Delete a wall post (author only)
+ * Delete a wall post (author or organizer)
+ * Organizer deletions create a moderation log entry and notify the author
  */
 router.delete(
   "/:id/wall/:postId",
@@ -446,23 +463,24 @@ router.delete(
       const postId = req.params.postId;
       const userId = req.user!.id;
 
-      // Check if event exists
+      // Check if event exists and get event title
       const event = await prisma.event.findUnique({
         where: { id: eventId },
-        select: { id: true },
+        select: { id: true, title: true },
       });
 
       if (!event) {
         throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
       }
 
-      // Get the post
+      // Get the post with content for moderation log
       const post = await prisma.wallPost.findUnique({
         where: { id: postId },
         select: {
           id: true,
           eventId: true,
           authorId: true,
+          content: true,
         },
       });
 
@@ -475,8 +493,11 @@ router.delete(
         throw createApiError("Post not found", 404, "POST_NOT_FOUND");
       }
 
-      // Only the author can delete their own post
-      if (post.authorId !== userId) {
+      const isAuthor = post.authorId === userId;
+      const isOrganizer = await isEventOrganizer(eventId, userId);
+
+      // Must be either the author or an organizer
+      if (!isAuthor && !isOrganizer) {
         throw createApiError(
           "You can only delete your own posts",
           403,
@@ -489,8 +510,34 @@ router.delete(
         where: { id: postId },
       });
 
+      // If an organizer deleted someone else's post, create moderation log and notify author
+      if (isOrganizer && !isAuthor) {
+        // Create moderation log entry
+        await prisma.moderationLog.create({
+          data: {
+            eventId,
+            moderatorId: userId,
+            action: "DELETE",
+            targetPostId: postId,
+            postContent: post.content,
+            postAuthorId: post.authorId,
+          },
+        });
+
+        // Notify the post author
+        await prisma.notification.create({
+          data: {
+            userId: post.authorId,
+            eventId,
+            type: "POST_DELETED_BY_MODERATOR",
+            message: `Your post on "${event.title}" was removed by an organizer`,
+          },
+        });
+      }
+
       res.json({
         message: "Post deleted successfully",
+        moderatorDeleted: isOrganizer && !isAuthor,
       });
     } catch (error) {
       next(error);
@@ -660,6 +707,254 @@ router.delete(
         message: "Reaction removed",
         reactionCount,
         userHasReacted: false,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/events/:id/wall/:postId/pin
+ * Pin a wall post to the top (organizers only)
+ */
+router.post(
+  "/:id/wall/:postId/pin",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+      const postId = req.params.postId;
+      const userId = req.user!.id;
+
+      // Check if event exists
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { id: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Check if user is an organizer
+      const isOrganizer = await isEventOrganizer(eventId, userId);
+      if (!isOrganizer) {
+        throw createApiError("Only organizers can pin posts", 403, "FORBIDDEN");
+      }
+
+      // Get the post
+      const post = await prisma.wallPost.findUnique({
+        where: { id: postId },
+        select: {
+          id: true,
+          eventId: true,
+          depth: true,
+          isPinned: true,
+        },
+      });
+
+      if (!post) {
+        throw createApiError("Post not found", 404, "POST_NOT_FOUND");
+      }
+
+      // Verify the post belongs to this event
+      if (post.eventId !== eventId) {
+        throw createApiError("Post not found", 404, "POST_NOT_FOUND");
+      }
+
+      // Only top-level posts can be pinned
+      if (post.depth !== 0) {
+        throw createApiError("Only top-level posts can be pinned", 400, "CANNOT_PIN_REPLY");
+      }
+
+      // Check if already pinned
+      if (post.isPinned) {
+        throw createApiError("Post is already pinned", 400, "ALREADY_PINNED");
+      }
+
+      // Pin the post
+      const updatedPost = await prisma.wallPost.update({
+        where: { id: postId },
+        data: {
+          isPinned: true,
+          pinnedAt: new Date(),
+        },
+      });
+
+      // Create moderation log entry
+      await prisma.moderationLog.create({
+        data: {
+          eventId,
+          moderatorId: userId,
+          action: "PIN",
+          targetPostId: postId,
+        },
+      });
+
+      res.json({
+        message: "Post pinned successfully",
+        isPinned: updatedPost.isPinned,
+        pinnedAt: updatedPost.pinnedAt?.toISOString(),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * DELETE /api/events/:id/wall/:postId/pin
+ * Unpin a wall post (organizers only)
+ */
+router.delete(
+  "/:id/wall/:postId/pin",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+      const postId = req.params.postId;
+      const userId = req.user!.id;
+
+      // Check if event exists
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { id: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Check if user is an organizer
+      const isOrganizer = await isEventOrganizer(eventId, userId);
+      if (!isOrganizer) {
+        throw createApiError("Only organizers can unpin posts", 403, "FORBIDDEN");
+      }
+
+      // Get the post
+      const post = await prisma.wallPost.findUnique({
+        where: { id: postId },
+        select: {
+          id: true,
+          eventId: true,
+          isPinned: true,
+        },
+      });
+
+      if (!post) {
+        throw createApiError("Post not found", 404, "POST_NOT_FOUND");
+      }
+
+      // Verify the post belongs to this event
+      if (post.eventId !== eventId) {
+        throw createApiError("Post not found", 404, "POST_NOT_FOUND");
+      }
+
+      // Check if it's pinned
+      if (!post.isPinned) {
+        throw createApiError("Post is not pinned", 400, "NOT_PINNED");
+      }
+
+      // Unpin the post
+      await prisma.wallPost.update({
+        where: { id: postId },
+        data: {
+          isPinned: false,
+          pinnedAt: null,
+        },
+      });
+
+      // Create moderation log entry
+      await prisma.moderationLog.create({
+        data: {
+          eventId,
+          moderatorId: userId,
+          action: "UNPIN",
+          targetPostId: postId,
+        },
+      });
+
+      res.json({
+        message: "Post unpinned successfully",
+        isPinned: false,
+        pinnedAt: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/events/:id/wall/moderation-log
+ * Get moderation log for an event (organizers only)
+ */
+router.get(
+  "/:id/wall/moderation-log",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+      const userId = req.user!.id;
+
+      // Check if event exists
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { id: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Check if user is an organizer
+      const isOrganizer = await isEventOrganizer(eventId, userId);
+      if (!isOrganizer) {
+        throw createApiError("Only organizers can view the moderation log", 403, "FORBIDDEN");
+      }
+
+      // Get moderation log entries
+      const logs = await prisma.moderationLog.findMany({
+        where: { eventId },
+        orderBy: { createdAt: "desc" },
+        take: 100, // Limit to 100 most recent entries
+      });
+
+      // Get moderator and post author info
+      const userIds = new Set<string>();
+      logs.forEach((log) => {
+        userIds.add(log.moderatorId);
+        if (log.postAuthorId) {
+          userIds.add(log.postAuthorId);
+        }
+      });
+
+      const users = await prisma.user.findMany({
+        where: { id: { in: Array.from(userIds) } },
+        select: { id: true, displayName: true },
+      });
+
+      const userMap = new Map(users.map((u) => [u.id, u.displayName]));
+
+      res.json({
+        logs: logs.map((log) => ({
+          id: log.id,
+          action: log.action,
+          moderator: {
+            id: log.moderatorId,
+            displayName: userMap.get(log.moderatorId) || "Unknown",
+          },
+          targetPostId: log.targetPostId,
+          postContent: log.postContent,
+          postAuthor: log.postAuthorId
+            ? {
+                id: log.postAuthorId,
+                displayName: userMap.get(log.postAuthorId) || "Unknown",
+              }
+            : null,
+          createdAt: log.createdAt.toISOString(),
+        })),
       });
     } catch (error) {
       next(error);

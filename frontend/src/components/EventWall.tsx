@@ -5,15 +5,20 @@ import {
   deleteWallPost,
   addReaction,
   removeReaction,
+  pinWallPost,
+  unpinWallPost,
+  getModerationLog,
   isApiError,
   isAuthenticated,
   type WallPost,
   type WallReply,
+  type ModerationLogEntry,
 } from "../services/api";
 
 interface EventWallProps {
   eventId: string;
   currentUserId?: string;
+  isOrganizer?: boolean;
 }
 
 /**
@@ -87,6 +92,39 @@ function TrashIcon() {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+      />
+    </svg>
+  );
+}
+
+function PinIcon({ filled }: { filled?: boolean }) {
+  if (filled) {
+    return (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3z" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+      />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
       />
     </svg>
   );
@@ -180,10 +218,13 @@ interface PostItemProps {
   post: WallPost | WallReply;
   eventId: string;
   currentUserId?: string;
+  isOrganizer?: boolean;
   onDelete: (postId: string) => void;
   onReactionChange: (postId: string, reactionCount: number, userHasReacted: boolean) => void;
+  onPinChange?: (postId: string, isPinned: boolean, pinnedAt: string | null) => void;
   onReplyCreated?: (parentId: string, reply: WallReply) => void;
   deletingPostId: string | null;
+  pinningPostId: string | null;
   isReply?: boolean;
   depth?: number;
 }
@@ -192,15 +233,24 @@ function PostItem({
   post,
   eventId,
   currentUserId,
+  isOrganizer = false,
   onDelete,
   onReactionChange,
+  onPinChange,
   onReplyCreated,
   deletingPostId,
+  pinningPostId,
   isReply = false,
   depth = 0,
 }: PostItemProps) {
   const [isReacting, setIsReacting] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
+
+  const isTopLevelPost = !isReply && depth === 0;
+  const wallPost = isTopLevelPost ? (post as WallPost) : null;
+  const isPinned = wallPost?.isPinned ?? false;
+  const canPin = isOrganizer && isTopLevelPost && onPinChange;
+  const canDelete = currentUserId === post.author.id || isOrganizer;
 
   const handleReactionClick = async () => {
     if (isReacting) return;
@@ -233,9 +283,34 @@ function PostItem({
   // Can reply if depth < 2
   const canReply = depth < 2 && onReplyCreated;
 
+  const handlePinClick = async () => {
+    if (!canPin || pinningPostId === post.id) return;
+
+    try {
+      if (isPinned) {
+        const response = await unpinWallPost(eventId, post.id);
+        onPinChange(post.id, response.isPinned, response.pinnedAt);
+      } else {
+        const response = await pinWallPost(eventId, post.id);
+        onPinChange(post.id, response.isPinned, response.pinnedAt);
+      }
+    } catch (err) {
+      if (isApiError(err)) {
+        alert(err.message);
+      }
+    }
+  };
+
   return (
     <div className={`${isReply ? "ml-10 mt-3" : ""}`}>
-      <div className={`${isReply ? "border-l-2 border-gray-100 pl-4" : "border border-gray-100 rounded-lg p-4"}`}>
+      <div className={`${isReply ? "border-l-2 border-gray-100 pl-4" : isPinned ? "border-2 border-yellow-300 bg-yellow-50 rounded-lg p-4" : "border border-gray-100 rounded-lg p-4"}`}>
+        {/* Pinned indicator */}
+        {isPinned && !isReply && (
+          <div className="flex items-center gap-1.5 text-yellow-700 text-xs font-medium mb-2">
+            <PinIcon filled />
+            <span>Pinned</span>
+          </div>
+        )}
         {/* Post header */}
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-3">
@@ -271,17 +346,35 @@ function PostItem({
             </div>
           </div>
 
-          {/* Delete button (only for author) */}
-          {currentUserId === post.author.id && (
-            <button
-              onClick={() => onDelete(post.id)}
-              disabled={deletingPostId === post.id}
-              className="text-gray-400 hover:text-red-500 transition-colors p-1"
-              title="Delete"
-            >
-              {deletingPostId === post.id ? <SpinnerIcon /> : <TrashIcon />}
-            </button>
-          )}
+          {/* Moderation buttons */}
+          <div className="flex items-center gap-1">
+            {/* Pin/Unpin button (organizers only, top-level posts only) */}
+            {canPin && (
+              <button
+                onClick={handlePinClick}
+                disabled={pinningPostId === post.id}
+                className={`p-1 transition-colors ${
+                  isPinned
+                    ? "text-yellow-500 hover:text-yellow-600"
+                    : "text-gray-400 hover:text-yellow-500"
+                }`}
+                title={isPinned ? "Unpin" : "Pin to top"}
+              >
+                {pinningPostId === post.id ? <SpinnerIcon /> : <PinIcon filled={isPinned} />}
+              </button>
+            )}
+            {/* Delete button (author or organizer) */}
+            {canDelete && (
+              <button
+                onClick={() => onDelete(post.id)}
+                disabled={deletingPostId === post.id}
+                className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                title={isOrganizer && currentUserId !== post.author.id ? "Delete (moderator)" : "Delete"}
+              >
+                {deletingPostId === post.id ? <SpinnerIcon /> : <TrashIcon />}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Post content */}
@@ -339,10 +432,12 @@ function PostItem({
               post={reply}
               eventId={eventId}
               currentUserId={currentUserId}
+              isOrganizer={isOrganizer}
               onDelete={onDelete}
               onReactionChange={onReactionChange}
               onReplyCreated={onReplyCreated}
               deletingPostId={deletingPostId}
+              pinningPostId={pinningPostId}
               isReply={true}
               depth={depth + 1}
             />
@@ -356,7 +451,7 @@ function PostItem({
 /**
  * EventWall component - displays the event wall with posts, reactions, and replies
  */
-export function EventWall({ eventId, currentUserId }: EventWallProps) {
+export function EventWall({ eventId, currentUserId, isOrganizer = false }: EventWallProps) {
   const [posts, setPosts] = useState<WallPost[]>([]);
   const [canAccess, setCanAccess] = useState<boolean | null>(null);
   const [accessMessage, setAccessMessage] = useState<string>("");
@@ -366,6 +461,10 @@ export function EventWall({ eventId, currentUserId }: EventWallProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [pinningPostId, setPinningPostId] = useState<string | null>(null);
+  const [showModerationLog, setShowModerationLog] = useState(false);
+  const [moderationLogs, setModerationLogs] = useState<ModerationLogEntry[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   const loggedIn = isAuthenticated();
 
@@ -415,8 +514,12 @@ export function EventWall({ eventId, currentUserId }: EventWallProps) {
 
     try {
       const response = await createWallPost(eventId, newPostContent);
-      // Add new post to the top of the list
-      setPosts((prev) => [response.post, ...prev]);
+      // Add new post after pinned posts (which are at the top)
+      setPosts((prev) => {
+        const pinnedPosts = prev.filter((p) => p.isPinned);
+        const unpinnedPosts = prev.filter((p) => !p.isPinned);
+        return [...pinnedPosts, response.post, ...unpinnedPosts];
+      });
       setNewPostContent("");
     } catch (err) {
       if (isApiError(err)) {
@@ -520,6 +623,40 @@ export function EventWall({ eventId, currentUserId }: EventWallProps) {
     setPosts((prev) => addReplyToPosts(prev, parentId, reply));
   };
 
+  const handlePinChange = (postId: string, isPinned: boolean, pinnedAt: string | null) => {
+    setPinningPostId(postId);
+    setPosts((prev) => {
+      const updatedPosts = prev.map((post) =>
+        post.id === postId ? { ...post, isPinned, pinnedAt } : post
+      );
+      // Re-sort: pinned posts first (by pinnedAt desc), then by createdAt desc
+      return updatedPosts.sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        if (a.isPinned && b.isPinned) {
+          return new Date(b.pinnedAt || 0).getTime() - new Date(a.pinnedAt || 0).getTime();
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    });
+    setPinningPostId(null);
+  };
+
+  const handleOpenModerationLog = async () => {
+    setShowModerationLog(true);
+    setLoadingLogs(true);
+    try {
+      const response = await getModerationLog(eventId);
+      setModerationLogs(response.logs);
+    } catch (err) {
+      if (isApiError(err)) {
+        alert(err.message);
+      }
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
   // Helper to add reply to the correct parent
   const addReplyToPosts = (posts: WallPost[], parentId: string, reply: WallReply): WallPost[] => {
     return posts.map((post) => {
@@ -616,7 +753,20 @@ export function EventWall({ eventId, currentUserId }: EventWallProps) {
   // Full wall view
   return (
     <div className="bg-white rounded-xl shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Event Wall</h2>
+      {/* Header with moderation log button */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">Event Wall</h2>
+        {isOrganizer && (
+          <button
+            onClick={handleOpenModerationLog}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            title="View moderation log"
+          >
+            <ShieldIcon />
+            <span>Moderation Log</span>
+          </button>
+        )}
+      </div>
 
       {/* New post form */}
       <form onSubmit={handleSubmitPost} className="mb-6">
@@ -671,12 +821,73 @@ export function EventWall({ eventId, currentUserId }: EventWallProps) {
               post={post}
               eventId={eventId}
               currentUserId={currentUserId}
+              isOrganizer={isOrganizer}
               onDelete={handleDeletePost}
               onReactionChange={handleReactionChange}
+              onPinChange={handlePinChange}
               onReplyCreated={handleReplyCreated}
               deletingPostId={deletingPostId}
+              pinningPostId={pinningPostId}
             />
           ))}
+        </div>
+      )}
+
+      {/* Moderation Log Modal */}
+      {showModerationLog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Moderation Log</h3>
+              <button
+                onClick={() => setShowModerationLog(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[60vh]">
+              {loadingLogs ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : moderationLogs.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No moderation actions yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {moderationLogs.map((log) => (
+                    <div key={log.id} className="border border-gray-100 rounded-lg p-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="font-medium text-gray-900">{log.moderator.displayName}</span>
+                          <span className="text-gray-500 mx-1">
+                            {log.action === "DELETE" && "deleted a post"}
+                            {log.action === "PIN" && "pinned a post"}
+                            {log.action === "UNPIN" && "unpinned a post"}
+                          </span>
+                          {log.postAuthor && (
+                            <span className="text-gray-500">
+                              by <span className="font-medium text-gray-700">{log.postAuthor.displayName}</span>
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {formatRelativeTime(log.createdAt)}
+                        </span>
+                      </div>
+                      {log.postContent && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600 truncate">
+                          {log.postContent.length > 100 ? `${log.postContent.slice(0, 100)}...` : log.postContent}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

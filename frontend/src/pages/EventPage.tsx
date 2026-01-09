@@ -736,7 +736,7 @@ export function EventPage({ eventId }: EventPageProps) {
         {/* Event Wall Section */}
         {event.state !== "DRAFT" && event.state !== "CANCELLED" && (
           <div className="mt-6" key={wallRefreshKey}>
-            <EventWall eventId={event.id} currentUserId={currentUserId} />
+            <EventWall eventId={event.id} currentUserId={currentUserId} isOrganizer={isOrganizer} />
           </div>
         )}
 
