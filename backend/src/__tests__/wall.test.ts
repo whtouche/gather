@@ -23,6 +23,12 @@ vi.mock("../utils/db.js", () => ({
       create: vi.fn(),
       delete: vi.fn(),
     },
+    wallReaction: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      delete: vi.fn(),
+      count: vi.fn(),
+    },
   },
 }));
 
@@ -68,12 +74,19 @@ const mockWallPost = {
   eventId: "event-1",
   authorId: "user-1",
   content: "Hello, world!",
+  depth: 0,
+  parentId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   author: {
     id: "user-1",
     displayName: "Test User",
     photoUrl: null,
+  },
+  reactions: [],
+  replies: [],
+  _count: {
+    replies: 0,
   },
 };
 
@@ -377,6 +390,178 @@ describe("Wall Routes", () => {
         .set("Authorization", "Bearer valid-token");
       expect(response.status).toBe(404);
       expect(response.body.error.code).toBe("POST_NOT_FOUND");
+    });
+  });
+
+  describe("POST /api/events/:id/wall/:postId/reactions", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).post("/api/events/event-1/wall/post-1/reactions");
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 404 for non-existent event", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/events/nonexistent/wall/post-1/reactions")
+        .set("Authorization", "Bearer valid-token");
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("EVENT_NOT_FOUND");
+    });
+
+    it("should return 403 for non-attendees", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        creatorId: "other-user",
+      } as never);
+      vi.mocked(prisma.eventRole.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.rSVP.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/post-1/reactions")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.code).toBe("NOT_ATTENDEE");
+    });
+
+    it("should return 404 for non-existent post", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/nonexistent/reactions")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("POST_NOT_FOUND");
+    });
+
+    it("should return 400 when user already reacted", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(mockWallPost as never);
+      vi.mocked(prisma.wallReaction.findUnique).mockResolvedValue({
+        id: "reaction-1",
+        postId: "post-1",
+        userId: "user-1",
+        type: "HEART",
+        createdAt: new Date(),
+      } as never);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/post-1/reactions")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("ALREADY_REACTED");
+    });
+
+    it("should create a reaction for confirmed attendees", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(mockWallPost as never);
+      vi.mocked(prisma.wallReaction.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.wallReaction.create).mockResolvedValue({
+        id: "reaction-1",
+        postId: "post-1",
+        userId: "user-1",
+        type: "HEART",
+        createdAt: new Date(),
+      } as never);
+      vi.mocked(prisma.wallReaction.count).mockResolvedValue(1);
+
+      const response = await request(app)
+        .post("/api/events/event-1/wall/post-1/reactions")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(201);
+      expect(response.body.reaction).toBeDefined();
+      expect(response.body.reactionCount).toBe(1);
+      expect(response.body.userHasReacted).toBe(true);
+    });
+  });
+
+  describe("DELETE /api/events/:id/wall/:postId/reactions", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).delete("/api/events/event-1/wall/post-1/reactions");
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 404 for non-existent event", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .delete("/api/events/nonexistent/wall/post-1/reactions")
+        .set("Authorization", "Bearer valid-token");
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("EVENT_NOT_FOUND");
+    });
+
+    it("should return 404 for non-existent post", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .delete("/api/events/event-1/wall/nonexistent/reactions")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("POST_NOT_FOUND");
+    });
+
+    it("should return 404 when user has not reacted", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(mockWallPost as never);
+      vi.mocked(prisma.wallReaction.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .delete("/api/events/event-1/wall/post-1/reactions")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("REACTION_NOT_FOUND");
+    });
+
+    it("should delete user reaction successfully", async () => {
+      const mockReaction = {
+        id: "reaction-1",
+        postId: "post-1",
+        userId: "user-1",
+        type: "HEART",
+        createdAt: new Date(),
+      };
+
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as never);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as never);
+      vi.mocked(prisma.wallPost.findUnique).mockResolvedValue(mockWallPost as never);
+      vi.mocked(prisma.wallReaction.findUnique).mockResolvedValue(mockReaction as never);
+      vi.mocked(prisma.wallReaction.delete).mockResolvedValue(mockReaction as never);
+      vi.mocked(prisma.wallReaction.count).mockResolvedValue(0);
+
+      const response = await request(app)
+        .delete("/api/events/event-1/wall/post-1/reactions")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("Reaction removed");
+      expect(response.body.reactionCount).toBe(0);
+      expect(response.body.userHasReacted).toBe(false);
     });
   });
 });

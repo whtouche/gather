@@ -33,6 +33,7 @@ model User {
   eventRoles        EventRole[]
   notifications     Notification[]
   wallPosts         WallPost[]
+  wallReactions     WallReaction[]
 
   @@index([phone])
   @@index([email])
@@ -333,12 +334,46 @@ model WallPost {
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  content   String   // Max 2000 characters, enforced in application
+  content   String   // Max 2000 characters for posts, 1000 for replies, enforced in application
+
+  // Reply support - parentId null means top-level post
+  parentId  String?
+  parent    WallPost?  @relation("WallPostReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   WallPost[] @relation("WallPostReplies")
+
+  // Depth level: 0 = top-level post, 1 = reply, 2 = reply-to-reply (max depth)
+  depth     Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
+  reactions WallReaction[]
+
   @@index([eventId])
   @@index([authorId])
   @@index([eventId, createdAt])
+  @@index([parentId])
+}
+
+// Reactions on wall posts
+model WallReaction {
+  id        String   @id @default(cuid())
+  postId    String
+  post      WallPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Currently only heart/like reactions
+  type      ReactionType @default(HEART)
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+enum ReactionType {
+  HEART
 }

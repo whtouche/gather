@@ -8,6 +8,8 @@ vi.mock("../services/api", () => ({
   getWallPosts: vi.fn(),
   createWallPost: vi.fn(),
   deleteWallPost: vi.fn(),
+  addReaction: vi.fn(),
+  removeReaction: vi.fn(),
   isApiError: vi.fn((error): error is api.ApiError => {
     return (
       typeof error === "object" &&
@@ -32,6 +34,25 @@ describe("EventWall", () => {
         photoUrl: null,
         isOrganizer: true,
       },
+      reactionCount: 2,
+      userHasReacted: false,
+      replyCount: 1,
+      replies: [
+        {
+          id: "reply-1",
+          content: "Welcome!",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          author: {
+            id: "user-2",
+            displayName: "Jane Smith",
+            photoUrl: null,
+            isOrganizer: false,
+          },
+          reactionCount: 0,
+          userHasReacted: false,
+        },
+      ],
     },
     {
       id: "post-2",
@@ -44,6 +65,10 @@ describe("EventWall", () => {
         photoUrl: "https://example.com/photo.jpg",
         isOrganizer: false,
       },
+      reactionCount: 0,
+      userHasReacted: false,
+      replyCount: 0,
+      replies: [],
     },
   ];
 
@@ -118,7 +143,8 @@ describe("EventWall", () => {
       });
       expect(screen.getByText("Looking forward to this event!")).toBeInTheDocument();
       expect(screen.getByText("John Doe")).toBeInTheDocument();
-      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+      // Jane Smith appears in multiple places (as reply author and post author)
+      expect(screen.getAllByText("Jane Smith").length).toBeGreaterThanOrEqual(1);
     });
 
     it("should show organizer badge for organizers", async () => {
@@ -143,8 +169,8 @@ describe("EventWall", () => {
       render(<EventWall eventId="event-1" />);
 
       await waitFor(() => {
-        // John Doe has no photoUrl, should show 'J'
-        expect(screen.getByText("J")).toBeInTheDocument();
+        // John Doe has no photoUrl, should show 'J'. Jane Smith also has no photo in replies, so multiple 'J's.
+        expect(screen.getAllByText("J").length).toBeGreaterThanOrEqual(1);
       });
     });
 
@@ -252,6 +278,10 @@ describe("EventWall", () => {
           photoUrl: null,
           isOrganizer: false,
         },
+        reactionCount: 0,
+        userHasReacted: false,
+        replyCount: 0,
+        replies: [],
       };
 
       vi.mocked(api.createWallPost).mockResolvedValue({ post: newPost });
@@ -289,6 +319,10 @@ describe("EventWall", () => {
           photoUrl: null,
           isOrganizer: false,
         },
+        reactionCount: 0,
+        userHasReacted: false,
+        replyCount: 0,
+        replies: [],
       };
 
       vi.mocked(api.createWallPost).mockResolvedValue({ post: newPost });
@@ -371,8 +405,8 @@ describe("EventWall", () => {
       render(<EventWall eventId="event-1" currentUserId="user-1" />);
 
       await waitFor(() => {
-        // Should only have 1 delete button (for user-1's post)
-        const deleteButtons = screen.getAllByTitle("Delete post");
+        // Should only have 1 delete button (for user-1's post, not for replies by other users)
+        const deleteButtons = screen.getAllByTitle("Delete");
         expect(deleteButtons).toHaveLength(1);
       });
     });
@@ -389,7 +423,7 @@ describe("EventWall", () => {
         expect(screen.getByText("Hello everyone!")).toBeInTheDocument();
       });
 
-      expect(screen.queryAllByTitle("Delete post")).toHaveLength(0);
+      expect(screen.queryAllByTitle("Delete")).toHaveLength(0);
     });
 
     it("should delete post and remove from list", async () => {
@@ -405,7 +439,7 @@ describe("EventWall", () => {
         expect(screen.getByText("Hello everyone!")).toBeInTheDocument();
       });
 
-      const deleteButton = screen.getByTitle("Delete post");
+      const deleteButton = screen.getByTitle("Delete");
       fireEvent.click(deleteButton);
 
       await waitFor(() => {
@@ -431,6 +465,10 @@ describe("EventWall", () => {
           photoUrl: null,
           isOrganizer: false,
         },
+        reactionCount: 0,
+        userHasReacted: false,
+        replyCount: 0,
+        replies: [],
       };
 
       vi.mocked(api.isAuthenticated).mockReturnValue(true);
@@ -458,6 +496,10 @@ describe("EventWall", () => {
           photoUrl: null,
           isOrganizer: false,
         },
+        reactionCount: 0,
+        userHasReacted: false,
+        replyCount: 0,
+        replies: [],
       };
 
       vi.mocked(api.isAuthenticated).mockReturnValue(true);
@@ -470,6 +512,163 @@ describe("EventWall", () => {
 
       await waitFor(() => {
         expect(screen.getByText("5 minutes ago")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Reactions", () => {
+    beforeEach(() => {
+      vi.mocked(api.isAuthenticated).mockReturnValue(true);
+    });
+
+    it("should display reaction count", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: mockPosts,
+      });
+
+      render(<EventWall eventId="event-1" />);
+
+      await waitFor(() => {
+        // Post-1 has 2 reactions
+        expect(screen.getByText("2")).toBeInTheDocument();
+      });
+    });
+
+    it("should add reaction when heart button is clicked", async () => {
+      const postsWithNoReaction: api.WallPost[] = [
+        {
+          ...mockPosts[0],
+          reactionCount: 0,
+          userHasReacted: false,
+        },
+      ];
+
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: postsWithNoReaction,
+      });
+
+      vi.mocked(api.addReaction).mockResolvedValue({
+        reaction: { id: "reaction-1", type: "HEART", createdAt: new Date().toISOString() },
+        reactionCount: 1,
+        userHasReacted: true,
+      });
+
+      render(<EventWall eventId="event-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Hello everyone!")).toBeInTheDocument();
+      });
+
+      // Find and click the heart button (first one for the post)
+      const heartButtons = screen.getAllByRole("button").filter(
+        (btn) => btn.querySelector("svg")
+      );
+      fireEvent.click(heartButtons[0]);
+
+      await waitFor(() => {
+        expect(api.addReaction).toHaveBeenCalledWith("event-1", "post-1");
+      });
+    });
+
+    it("should remove reaction when heart button is clicked on already-reacted post", async () => {
+      const postsWithReaction: api.WallPost[] = [
+        {
+          ...mockPosts[0],
+          reactionCount: 1,
+          userHasReacted: true,
+          replies: [],
+        },
+      ];
+
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: postsWithReaction,
+      });
+
+      vi.mocked(api.removeReaction).mockResolvedValue({
+        message: "Reaction removed",
+        reactionCount: 0,
+        userHasReacted: false,
+      });
+
+      render(<EventWall eventId="event-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Hello everyone!")).toBeInTheDocument();
+      });
+
+      // Find and click the heart button
+      const heartButtons = screen.getAllByRole("button").filter(
+        (btn) => btn.querySelector("svg")
+      );
+      fireEvent.click(heartButtons[0]);
+
+      await waitFor(() => {
+        expect(api.removeReaction).toHaveBeenCalledWith("event-1", "post-1");
+      });
+    });
+  });
+
+  describe("Replies", () => {
+    beforeEach(() => {
+      vi.mocked(api.isAuthenticated).mockReturnValue(true);
+    });
+
+    it("should display replies under posts", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: mockPosts,
+      });
+
+      render(<EventWall eventId="event-1" />);
+
+      await waitFor(() => {
+        // Reply to first post
+        expect(screen.getByText("Welcome!")).toBeInTheDocument();
+      });
+    });
+
+    it("should display reply count on posts", async () => {
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: mockPosts,
+      });
+
+      render(<EventWall eventId="event-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("1 reply")).toBeInTheDocument();
+      });
+    });
+
+    it("should show reply form when Reply button is clicked", async () => {
+      const postsWithoutReplies: api.WallPost[] = [
+        {
+          ...mockPosts[0],
+          replies: [],
+          replyCount: 0,
+        },
+      ];
+
+      vi.mocked(api.getWallPosts).mockResolvedValue({
+        canAccessWall: true,
+        posts: postsWithoutReplies,
+      });
+
+      render(<EventWall eventId="event-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Hello everyone!")).toBeInTheDocument();
+      });
+
+      // Click Reply button
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText("Write a reply...")).toBeInTheDocument();
       });
     });
   });

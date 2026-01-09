@@ -166,7 +166,7 @@ The social heart of every event.
 - Display posts with author, timestamp, role badge
 - Chronological post feed
 
-### E2: Wall Interactions
+### E2: Wall Interactions [DONE]
 *React, reply, repeat.*
 - Like/heart reactions on posts
 - Reply to posts (nested, 2-level max)

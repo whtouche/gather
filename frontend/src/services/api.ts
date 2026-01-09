@@ -1159,6 +1159,21 @@ export interface WallPostAuthor {
 }
 
 /**
+ * Wall reply (nested under posts)
+ */
+export interface WallReply {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  author: WallPostAuthor;
+  reactionCount: number;
+  userHasReacted: boolean;
+  replies?: WallReply[];
+  replyCount?: number;
+}
+
+/**
  * Wall post
  */
 export interface WallPost {
@@ -1167,6 +1182,10 @@ export interface WallPost {
   createdAt: string;
   updatedAt: string;
   author: WallPostAuthor;
+  reactionCount: number;
+  userHasReacted: boolean;
+  replyCount: number;
+  replies: WallReply[];
 }
 
 /**
@@ -1193,12 +1212,17 @@ export async function getWallPosts(eventId: string): Promise<GetWallPostsRespons
 }
 
 /**
- * Create a new wall post (confirmed attendees only)
+ * Create a new wall post or reply (confirmed attendees only)
+ * @param parentId - Optional parent post ID for replies
  */
-export async function createWallPost(eventId: string, content: string): Promise<CreateWallPostResponse> {
+export async function createWallPost(
+  eventId: string,
+  content: string,
+  parentId?: string
+): Promise<CreateWallPostResponse> {
   return request(`/events/${eventId}/wall`, {
     method: "POST",
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, parentId }),
   });
 }
 
@@ -1207,6 +1231,46 @@ export async function createWallPost(eventId: string, content: string): Promise<
  */
 export async function deleteWallPost(eventId: string, postId: string): Promise<{ message: string }> {
   return request(`/events/${eventId}/wall/${postId}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Response from adding a reaction
+ */
+export interface AddReactionResponse {
+  reaction: {
+    id: string;
+    type: string;
+    createdAt: string;
+  };
+  reactionCount: number;
+  userHasReacted: boolean;
+}
+
+/**
+ * Response from removing a reaction
+ */
+export interface RemoveReactionResponse {
+  message: string;
+  reactionCount: number;
+  userHasReacted: boolean;
+}
+
+/**
+ * Add a reaction to a wall post (confirmed attendees only)
+ */
+export async function addReaction(eventId: string, postId: string): Promise<AddReactionResponse> {
+  return request(`/events/${eventId}/wall/${postId}/reactions`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Remove own reaction from a wall post (confirmed attendees only)
+ */
+export async function removeReaction(eventId: string, postId: string): Promise<RemoveReactionResponse> {
+  return request(`/events/${eventId}/wall/${postId}/reactions`, {
     method: "DELETE",
   });
 }
@@ -1253,4 +1317,6 @@ export default {
   getWallPosts,
   createWallPost,
   deleteWallPost,
+  addReaction,
+  removeReaction,
 };
