@@ -7,6 +7,7 @@ import * as api from "../services/api";
 vi.mock("../services/api", () => ({
   getEvent: vi.fn(),
   publishEvent: vi.fn(),
+  getCurrentUser: vi.fn().mockResolvedValue({ user: { id: "user-123" } }),
   isApiError: vi.fn((error): error is api.ApiError => {
     return (
       typeof error === "object" &&
@@ -56,6 +57,10 @@ vi.mock("../components/SmsInviteModal", () => ({
 
 vi.mock("../components/SmsInvitationsPanel", () => ({
   SmsInvitationsPanel: () => <div data-testid="sms-invitations-panel">SMS Invitations Panel</div>,
+}));
+
+vi.mock("../components/EventWall", () => ({
+  EventWall: () => <div data-testid="event-wall">Event Wall</div>,
 }));
 
 describe("EventPage", () => {

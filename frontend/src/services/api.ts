@@ -1144,6 +1144,73 @@ export async function getCurrentUser(): Promise<{ user: User }> {
   return request("/auth/me");
 }
 
+// =============================================================================
+// Event Wall Types & API
+// =============================================================================
+
+/**
+ * Wall post author info
+ */
+export interface WallPostAuthor {
+  id: string;
+  displayName: string;
+  photoUrl: string | null;
+  isOrganizer: boolean;
+}
+
+/**
+ * Wall post
+ */
+export interface WallPost {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  author: WallPostAuthor;
+}
+
+/**
+ * Response from GET /api/events/:id/wall
+ */
+export interface GetWallPostsResponse {
+  canAccessWall: boolean;
+  message?: string;
+  posts: WallPost[] | null;
+}
+
+/**
+ * Response from POST /api/events/:id/wall
+ */
+export interface CreateWallPostResponse {
+  post: WallPost;
+}
+
+/**
+ * Get wall posts for an event (confirmed attendees only)
+ */
+export async function getWallPosts(eventId: string): Promise<GetWallPostsResponse> {
+  return request(`/events/${eventId}/wall`);
+}
+
+/**
+ * Create a new wall post (confirmed attendees only)
+ */
+export async function createWallPost(eventId: string, content: string): Promise<CreateWallPostResponse> {
+  return request(`/events/${eventId}/wall`, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+}
+
+/**
+ * Delete a wall post (author only)
+ */
+export async function deleteWallPost(eventId: string, postId: string): Promise<{ message: string }> {
+  return request(`/events/${eventId}/wall/${postId}`, {
+    method: "DELETE",
+  });
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -1183,4 +1250,7 @@ export default {
   updateProfile,
   getPublicProfile,
   getCurrentUser,
+  getWallPosts,
+  createWallPost,
+  deleteWallPost,
 };

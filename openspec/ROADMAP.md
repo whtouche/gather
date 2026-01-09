@@ -159,7 +159,7 @@ Time to reach out and touch someone (digitally, of course).
 
 The social heart of every event.
 
-### E1: Event Wall (Basic)
+### E1: Event Wall (Basic) [DONE]
 *Where the pre-party conversation happens.*
 - Wall access control (confirmed attendees only)
 - Create text posts (max 2000 characters)

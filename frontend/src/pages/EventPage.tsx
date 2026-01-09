@@ -5,6 +5,7 @@ import {
   isApiError,
   isAuthenticated,
   getAuthToken,
+  getCurrentUser,
   type EventDetails,
 } from "../services/api";
 import { RSVPButtons } from "../components/RSVPButtons";
@@ -16,6 +17,7 @@ import { EmailInviteModal } from "../components/EmailInviteModal";
 import { EmailInvitationsPanel } from "../components/EmailInvitationsPanel";
 import { SmsInviteModal } from "../components/SmsInviteModal";
 import { SmsInvitationsPanel } from "../components/SmsInvitationsPanel";
+import { EventWall } from "../components/EventWall";
 
 interface EventPageProps {
   eventId: string;
@@ -118,6 +120,8 @@ export function EventPage({ eventId }: EventPageProps) {
   const [emailInviteRefreshKey, setEmailInviteRefreshKey] = useState(0);
   const [showSmsInviteModal, setShowSmsInviteModal] = useState(false);
   const [smsInviteRefreshKey, setSmsInviteRefreshKey] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [wallRefreshKey, setWallRefreshKey] = useState(0);
 
   const loggedIn = isAuthenticated();
   const authToken = getAuthToken();
@@ -147,6 +151,19 @@ export function EventPage({ eventId }: EventPageProps) {
     fetchEvent();
   }, [eventId]);
 
+  // Fetch current user ID for wall post ownership
+  useEffect(() => {
+    if (loggedIn) {
+      getCurrentUser()
+        .then((response) => {
+          setCurrentUserId(response.user.id);
+        })
+        .catch(() => {
+          // Ignore errors - user just won't see delete buttons
+        });
+    }
+  }, [loggedIn]);
+
   const handlePublish = async () => {
     if (!event || isPublishing) return;
 
@@ -174,6 +191,8 @@ export function EventPage({ eventId }: EventPageProps) {
     });
     // Trigger attendee list refresh
     setAttendeeRefreshKey((prev) => prev + 1);
+    // Trigger wall refresh (access may have changed)
+    setWallRefreshKey((prev) => prev + 1);
   };
 
   const handleEventCancelled = () => {
@@ -713,6 +732,13 @@ export function EventPage({ eventId }: EventPageProps) {
             </>
           )}
         </div>
+
+        {/* Event Wall Section */}
+        {event.state !== "DRAFT" && event.state !== "CANCELLED" && (
+          <div className="mt-6" key={wallRefreshKey}>
+            <EventWall eventId={event.id} currentUserId={currentUserId} />
+          </div>
+        )}
 
         {/* Email Invitations Panel (organizers only) */}
         {isOrganizer && (event.state === "PUBLISHED" || event.state === "ONGOING") && (

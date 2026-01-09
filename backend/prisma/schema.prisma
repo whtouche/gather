@@ -32,6 +32,7 @@ model User {
   rsvps             RSVP[]
   eventRoles        EventRole[]
   notifications     Notification[]
+  wallPosts         WallPost[]
 
   @@index([phone])
   @@index([email])
@@ -128,6 +129,7 @@ model Event {
   emailInvitations EmailInvitation[]
   smsInvitations   SmsInvitation[]
   smsQuota         SmsQuota?
+  wallPosts        WallPost[]
 
   @@index([creatorId])
   @@index([state])
@@ -321,4 +323,22 @@ enum NotificationType {
   EVENT_UPDATED
   EVENT_CANCELLED
   RSVP_RECONFIRM
+}
+
+// Wall posts on events
+model WallPost {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  content   String   // Max 2000 characters, enforced in application
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([authorId])
+  @@index([eventId, createdAt])
 }
