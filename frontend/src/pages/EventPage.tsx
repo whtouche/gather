@@ -582,6 +582,20 @@ export function EventPage({ eventId }: EventPageProps) {
           )}
         </div>
 
+        {/* Attendee Share Section - for confirmed attendees when sharing is allowed */}
+        {!isOrganizer &&
+          event.userRsvp === "YES" &&
+          event.allowInviteSharing &&
+          (event.state === "PUBLISHED" || event.state === "ONGOING") && (
+            <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Share This Event</h2>
+              <p className="text-gray-600 mb-4">
+                Invite others to this event by sharing the invitation link.
+              </p>
+              <InviteLinkButton eventId={event.id} />
+            </div>
+          )}
+
         {/* RSVP Section */}
         <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">RSVP</h2>

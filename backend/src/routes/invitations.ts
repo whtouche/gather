@@ -2,10 +2,10 @@ import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
 import { createApiError } from "../types/index.js";
-import type { EventAuthenticatedRequest } from "../middleware/eventAuth.js";
+import type { EventAuthenticatedRequest, InviteSharingRequest } from "../middleware/eventAuth.js";
 import { prisma } from "../utils/db.js";
 import { requireAuth } from "../middleware/auth.js";
-import { requireEventOrganizer } from "../middleware/eventAuth.js";
+import { requireEventOrganizer, requireCanShareInvite } from "../middleware/eventAuth.js";
 import {
   createAndSendEmailInvitation,
   markEmailInvitationOpened,
@@ -32,13 +32,16 @@ function generateInviteToken(): string {
 
 /**
  * POST /api/events/:id/invitations
- * Generate a new invitation link for an event (organizers only)
+ * Generate a new invitation link for an event.
+ * Allowed for:
+ * - Organizers (always)
+ * - Confirmed attendees if allowInviteSharing is enabled
  */
 router.post(
   "/events/:id/invitations",
   requireAuth,
-  requireEventOrganizer,
-  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  requireCanShareInvite,
+  async (req: InviteSharingRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const eventId = req.params.id;
 

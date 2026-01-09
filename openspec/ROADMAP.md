@@ -118,7 +118,7 @@ The core experience takes shape. Multiple agents can tackle these in parallel.
 
 ---
 
-## Group D: Communication Station
+## Group D: Communication Station [DONE]
 **Theme: "Spread the word"**
 
 Time to reach out and touch someone (digitally, of course).
@@ -144,7 +144,7 @@ Time to reach out and touch someone (digitally, of course).
 - Display name management
 - View other users' public profiles
 
-### D4: Event Privacy Settings
+### D4: Event Privacy Settings [DONE]
 *Your party, your rules.*
 - Attendee list visibility control (all attendees vs organizers only)
 - Discoverable vs invitation-only toggle
