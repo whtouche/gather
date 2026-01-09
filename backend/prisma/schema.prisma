@@ -20,6 +20,11 @@ model User {
   bio           String?
   location      String?
 
+  // Profile visibility settings (per-field)
+  photoVisibility    ProfileVisibility @default(CONNECTIONS)
+  bioVisibility      ProfileVisibility @default(CONNECTIONS)
+  locationVisibility ProfileVisibility @default(CONNECTIONS)
+
   // Relations
   sessions          Session[]
   verificationCodes VerificationCode[]
@@ -30,6 +35,12 @@ model User {
 
   @@index([phone])
   @@index([email])
+}
+
+enum ProfileVisibility {
+  CONNECTIONS
+  ORGANIZERS_ONLY
+  PRIVATE
 }
 
 // Session management
@@ -115,6 +126,8 @@ model Event {
   eventRoles       EventRole[]
   notifications    Notification[]
   emailInvitations EmailInvitation[]
+  smsInvitations   SmsInvitation[]
+  smsQuota         SmsQuota?
 
   @@index([creatorId])
   @@index([state])
@@ -195,6 +208,8 @@ model InviteLink {
 
   // Email invitations linked to this invite link
   emailInvitation EmailInvitation?
+  // SMS invitations linked to this invite link
+  smsInvitation   SmsInvitation?
 
   @@index([token])
   @@index([eventId])
@@ -232,6 +247,55 @@ enum EmailInvitationStatus {
   OPENED
   RSVPD
   FAILED
+}
+
+// SMS invitations sent for events
+model SmsInvitation {
+  id            String              @id @default(cuid())
+  eventId       String
+  event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  inviteLinkId  String              @unique
+  inviteLink    InviteLink          @relation(fields: [inviteLinkId], references: [id], onDelete: Cascade)
+
+  // Recipient info
+  phone         String
+  recipientName String?
+
+  // Tracking
+  status        SmsInvitationStatus @default(PENDING)
+  sentAt        DateTime?
+  rsvpAt        DateTime?
+
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([eventId])
+  @@index([phone])
+  @@index([status])
+}
+
+enum SmsInvitationStatus {
+  PENDING
+  SENT
+  RSVPD
+  FAILED
+}
+
+// SMS quota tracking per event
+model SmsQuota {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Daily tracking
+  dailyCount  Int      @default(0)
+  dailyResetAt DateTime @default(now())
+
+  // Total tracking
+  totalCount  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // Notifications for users

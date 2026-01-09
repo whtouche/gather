@@ -12,6 +12,13 @@ import {
   getEmailInvitationStats,
   maskEmail,
 } from "../utils/email.js";
+import {
+  createAndSendSmsInvitation,
+  getSmsInvitationStats,
+  getSmsQuotaInfo,
+  checkSmsQuota,
+  maskPhone,
+} from "../utils/sms.js";
 
 const router = Router();
 
@@ -356,6 +363,216 @@ router.get(
         invitations: maskedInvitations,
         stats,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/events/:id/invitations/sms
+ * Send SMS invitations to one or more recipients (organizers only)
+ */
+router.post(
+  "/events/:id/invitations/sms",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+      const { recipients } = req.body as {
+        recipients: Array<{ phone: string; name?: string }>;
+      };
+
+      // Validate input
+      if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+        throw createApiError("At least one recipient is required", 400, "INVALID_INPUT");
+      }
+
+      if (recipients.length > 50) {
+        throw createApiError("Maximum 50 recipients per request", 400, "TOO_MANY_RECIPIENTS");
+      }
+
+      // Validate each recipient has a valid phone number
+      const phoneRegex = /^\+?[1-9]\d{6,14}$/;
+      for (const recipient of recipients) {
+        // Normalize phone: remove spaces, dashes, parentheses
+        const normalizedPhone = recipient.phone?.replace(/[\s\-()]/g, "");
+        if (!normalizedPhone || !phoneRegex.test(normalizedPhone)) {
+          throw createApiError(
+            `Invalid phone number: ${recipient.phone || "empty"}`,
+            400,
+            "INVALID_PHONE"
+          );
+        }
+      }
+
+      // Check event state
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { state: true, title: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      if (event.state !== "PUBLISHED" && event.state !== "ONGOING") {
+        throw createApiError(
+          "SMS invitations can only be sent for published or ongoing events",
+          400,
+          "INVALID_EVENT_STATE"
+        );
+      }
+
+      // Check SMS quota
+      const quotaCheck = await checkSmsQuota(eventId, recipients.length);
+      if (!quotaCheck.allowed) {
+        throw createApiError(quotaCheck.error || "SMS quota exceeded", 429, "SMS_QUOTA_EXCEEDED");
+      }
+
+      // Check for already-invited phones
+      const normalizedPhones = recipients.map((r) => r.phone.replace(/[\s\-()]/g, ""));
+      const existingInvitations = await prisma.smsInvitation.findMany({
+        where: {
+          eventId,
+          phone: { in: normalizedPhones },
+        },
+        select: { phone: true },
+      });
+
+      const alreadyInvitedPhones = new Set(existingInvitations.map((inv) => inv.phone));
+
+      // Determine the base URL for invite links
+      const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+
+      // Send invitations
+      const results: Array<{
+        phone: string;
+        success: boolean;
+        error?: string;
+        alreadyInvited?: boolean;
+      }> = [];
+
+      for (const recipient of recipients) {
+        const normalizedPhone = recipient.phone.replace(/[\s\-()]/g, "");
+
+        // Skip if already invited
+        if (alreadyInvitedPhones.has(normalizedPhone)) {
+          results.push({
+            phone: maskPhone(normalizedPhone),
+            success: false,
+            alreadyInvited: true,
+            error: "Already invited",
+          });
+          continue;
+        }
+
+        const result = await createAndSendSmsInvitation(
+          eventId,
+          normalizedPhone,
+          recipient.name || null,
+          baseUrl
+        );
+
+        results.push({
+          phone: maskPhone(normalizedPhone),
+          success: result.success,
+          error: result.error,
+        });
+      }
+
+      const successCount = results.filter((r) => r.success).length;
+      const failedCount = results.filter((r) => !r.success && !r.alreadyInvited).length;
+      const alreadyInvitedCount = results.filter((r) => r.alreadyInvited).length;
+
+      // Get updated quota info
+      const quotaInfo = await getSmsQuotaInfo(eventId);
+
+      res.status(201).json({
+        message: `Sent ${successCount} SMS invitation(s)`,
+        sent: successCount,
+        failed: failedCount,
+        alreadyInvited: alreadyInvitedCount,
+        results,
+        quota: quotaInfo,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/events/:id/invitations/sms
+ * Get SMS invitation list and stats for an event (organizers only)
+ */
+router.get(
+  "/events/:id/invitations/sms",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+
+      // Get all SMS invitations for this event
+      const invitations = await prisma.smsInvitation.findMany({
+        where: { eventId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          phone: true,
+          recipientName: true,
+          status: true,
+          sentAt: true,
+          rsvpAt: true,
+          createdAt: true,
+        },
+      });
+
+      // Get aggregate stats
+      const stats = await getSmsInvitationStats(eventId);
+
+      // Get quota info
+      const quota = await getSmsQuotaInfo(eventId);
+
+      // Mask phones for privacy
+      const maskedInvitations = invitations.map((inv) => ({
+        id: inv.id,
+        phone: maskPhone(inv.phone),
+        recipientName: inv.recipientName,
+        status: inv.status,
+        sentAt: inv.sentAt?.toISOString() || null,
+        rsvpAt: inv.rsvpAt?.toISOString() || null,
+        createdAt: inv.createdAt.toISOString(),
+      }));
+
+      res.json({
+        invitations: maskedInvitations,
+        stats,
+        quota,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/events/:id/invitations/sms/quota
+ * Get SMS quota info for an event (organizers only)
+ */
+router.get(
+  "/events/:id/invitations/sms/quota",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+
+      const quotaInfo = await getSmsQuotaInfo(eventId);
+
+      res.json({ quota: quotaInfo });
     } catch (error) {
       next(error);
     }

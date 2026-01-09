@@ -1,110 +1,170 @@
-# Event Planning App - OpenSpec Index
+# Gather - Application Specifications
+
+**Application Name:** Gather
+**Version:** 1.0
+**Last Updated:** January 2026
+
+---
 
 ## Overview
 
-A privacy-focused event planning application that enables users to create events, invite attendees, manage RSVPs, and communicate with participants. The system prioritizes user privacy through minimal data collection, encryption, and user data control.
+Gather is a privacy-focused event planning web application that enables users to create events, invite attendees, manage RSVPs, and communicate with participants. The system prioritizes user privacy through minimal data collection, encryption, and user data control.
 
-## Specification Domains
+## Document Structure
 
-### [Core System](./core/spec.md)
-Defines system architecture, privacy principles, data retention policies, and role definitions.
+### Master Requirements Document
 
-**Key Requirements:**
-- Minimal data collection
-- Data encryption at rest and in transit
-- User data export and deletion rights
-- No third-party tracking
+**[Requirements Specification](./requirements.md)** - The comprehensive requirements document containing:
+- Introduction, scope, and definitions
+- Business goals, user goals, and success metrics
+- User stories with acceptance criteria
+- Non-functional requirements (performance, security, accessibility)
+- Technical requirements and technology stack
+- Design considerations
+- Testing and QA strategy
+- Deployment and release procedures
+- Maintenance and support plan
 
-### [User Management](./users/spec.md)
-Defines user registration, authentication, and profile management.
+### Domain Specifications
 
-**Key Requirements:**
-- Low-barrier registration (phone number + name only required)
-- Passwordless authentication via one-time codes
-- Optional profile completion
-- Quick registration flow for invited users
+| Domain | Document | Requirements | Description |
+|--------|----------|--------------|-------------|
+| Core System | [core/spec.md](./core/spec.md) | REQ-CORE-001 to REQ-CORE-010 | Privacy principles, roles, data retention |
+| User Management | [users/spec.md](./users/spec.md) | REQ-USER-001 to REQ-USER-015 | Registration, authentication, profiles |
+| Events | [events/spec.md](./events/spec.md) | REQ-EVT-001 to REQ-EVT-020 | Event creation, lifecycle, discovery |
+| Invitations & RSVP | [invitations/spec.md](./invitations/spec.md) | REQ-INV-001 to REQ-INV-025 | Invitations, RSVP, questionnaires |
+| Messaging | [messaging/spec.md](./messaging/spec.md) | REQ-MSG-001 to REQ-MSG-018 | Event wall, mass communications |
+| Social Features | [social/spec.md](./social/spec.md) | REQ-SOC-001 to REQ-SOC-012 | Connections, private notes |
 
-### [Events](./events/spec.md)
-Defines event creation, management, and lifecycle.
+**Total Requirements:** 100 functional requirements
 
-**Key Requirements:**
-- Required fields: title, description, date/time, location
-- Event states: Draft, Published, Closed, Ongoing, Completed, Cancelled
-- Organizer role assignment and management
-- User dashboard with upcoming, past attended, and past organized events
+### Implementation Roadmap
 
-### [Invitations & RSVP](./invitations/spec.md)
-Defines the invitation system, RSVP functionality, and custom questionnaires.
+**[ROADMAP.md](../ROADMAP.md)** - Development phases and feature prioritization
 
-**Key Requirements:**
-- Shareable invitation links
-- In-app invitations via email or SMS
-- RSVP options: Yes, No, Maybe
-- Custom questionnaires with configurable required/optional questions
-- Capacity management with optional waitlist
-- Invite from previous event attendees
+---
 
-### [Messaging](./messaging/spec.md)
-Defines event wall functionality and mass communication features.
-
-**Key Requirements:**
-- Event wall accessible only to confirmed attendees (RSVP yes)
-- Post, reply, and react functionality
-- Organizer moderation capabilities
-- Mass email and SMS communication for organizers
-- Communication rate limits to prevent spam
-
-### [Social Features](./social/spec.md)
-Defines connections (shared event history) and private notes.
-
-**Key Requirements:**
-- View list of users attended events with
-- Private notes on user profiles (visible only to note creator)
-- Quick invite from connections when creating new events
-- Profile privacy controls
-
-## Data Model Summary
+## Quick Reference
 
 ### Core Entities
-- **User**: Account holder with phone/email, display name, optional profile
-- **Event**: Gathering with title, description, date/time, location
-- **RSVP**: User response to event invitation (yes/no/maybe)
-- **WallPost**: Message posted to event wall by attendee
-- **Invitation**: Record of invitation sent via link/email/SMS
-- **Questionnaire**: Custom questions for event RSVP
-- **QuestionnaireResponse**: User answers to questionnaire
-- **PrivateNote**: Personal notes on other users (private to creator)
-- **Connection**: Implicit relationship via shared event attendance
+
+| Entity | Description |
+|--------|-------------|
+| **User** | Account holder with phone/email, display name, optional profile |
+| **Event** | Gathering with title, description, date/time, location |
+| **RSVP** | User response to event invitation (Yes/No/Maybe) |
+| **InviteLink** | Shareable token-based invitation URL |
+| **EmailInvitation** | Email-based invitation with tracking |
+| **Notification** | System notification (event updates, RSVP changes) |
+| **WallPost** | Message posted to event wall by attendee |
+| **Questionnaire** | Custom questions for event RSVP |
+| **QuestionnaireResponse** | User answers to questionnaire |
+| **PrivateNote** | Personal notes on connections (private to creator) |
+| **Connection** | Implicit relationship via shared event attendance |
 
 ### Role Model
-- **User**: Base authenticated user
-- **Attendee**: User who RSVP'd "yes" to an event
-- **Organizer**: Event creator or promoted attendee with management permissions
+
+| Role | Description | Key Permissions |
+|------|-------------|-----------------|
+| **User** | Base authenticated user | Create events, RSVP to events |
+| **Attendee** | User who RSVP'd "Yes" | View wall, view attendee list |
+| **Organizer** | Event creator or promoted user | Full event management |
+
+### Event States
+
+```
+DRAFT → PUBLISHED → CLOSED → ONGOING → COMPLETED
+                ↘ CANCELLED
+```
+
+| State | Description | RSVP Allowed |
+|-------|-------------|--------------|
+| DRAFT | Not yet published | No |
+| PUBLISHED | Active, accepting RSVPs | Yes |
+| CLOSED | RSVP deadline passed | No |
+| ONGOING | Event in progress | No |
+| COMPLETED | Event finished | No |
+| CANCELLED | Cancelled by organizer | No |
+
+---
 
 ## Privacy Principles
 
-1. **Minimal Data Collection**: Only collect what's necessary
-2. **Encryption**: All PII encrypted at rest, TLS 1.3+ in transit
-3. **User Control**: Export all data, delete account permanently
-4. **No Tracking**: No third-party analytics or advertising
-5. **Access Control**: Attendee lists and walls only visible to confirmed attendees
-6. **Private Notes**: Completely private, never exposed to noted user
+1. **Minimal Data Collection** (REQ-CORE-001): Only collect what's necessary
+2. **Encryption** (REQ-CORE-002): All PII encrypted at rest (AES-256), TLS 1.3+ in transit
+3. **User Control** (REQ-CORE-003): Export all data, delete account permanently
+4. **No Tracking** (REQ-CORE-004): No third-party analytics or advertising
+5. **Access Control** (REQ-INV-014, REQ-INV-015): Attendee lists only visible to confirmed attendees
+6. **Private Notes** (REQ-SOC-008): Completely private, never exposed to noted user
 
-## Technical Considerations
+---
 
-### Authentication
-- Passwordless via SMS/email one-time codes
-- Configurable session duration
-- Multi-device support with session management
+## Technical Stack
 
-### Communication Services
-- Email delivery service integration required
-- SMS gateway integration required
-- Rate limiting on mass communications
-- Delivery tracking and statistics
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18, Vite, TypeScript, Tailwind CSS |
+| Backend | Node.js 20 LTS, Express 4, TypeScript |
+| Database | PostgreSQL 15, Prisma ORM |
+| Cache | Redis 7 |
+| External Services | Email (SendGrid/SES), SMS (Twilio/SNS) |
 
-### Scalability Considerations
-- Event wall pagination for large events
-- Connection list pagination for active users
-- Background processing for mass communications
-- Image storage and CDN for wall attachments
+See [requirements.md Section 6](./requirements.md#6-technical-requirements) for full technical specifications.
+
+---
+
+## Key Metrics
+
+| Metric | Target | Reference |
+|--------|--------|-----------|
+| Registration Conversion | > 60% | SM-001 |
+| RSVP Response Rate | > 70% | SM-003 |
+| API Response Time (p95) | < 300ms | REQ-PERF-002 |
+| System Uptime | > 99.5% | REQ-REL-001 |
+| WCAG Compliance | Level AA | REQ-ACC-001 |
+
+---
+
+## Document Conventions
+
+### Requirement Format
+
+All requirements follow this format:
+
+```markdown
+### REQ-[DOMAIN]-[NUMBER]: [Title]
+**Priority:** High/Medium/Low | **Traces to:** [Related IDs]
+
+[Description using RFC language (SHALL, SHOULD, MAY)]
+
+#### Scenario: [Name]
+- GIVEN [precondition]
+- WHEN [action]
+- THEN [expected outcome]
+- AND [additional outcomes]
+```
+
+### Priority Levels
+
+| Priority | Definition | Roadmap Groups |
+|----------|------------|----------------|
+| High | Core functionality | Groups A-C |
+| Medium | Important features | Groups D-F |
+| Low | Nice-to-have | Groups G-J |
+
+### RFC Language
+
+| Term | Meaning |
+|------|---------|
+| SHALL / MUST | Absolute requirement |
+| SHOULD | Recommended |
+| MAY | Optional |
+| SHALL NOT | Absolute prohibition |
+
+---
+
+## Related Documents
+
+- [Master Requirements](./requirements.md)
+- [Implementation Roadmap](../ROADMAP.md)
+- [Technical Configuration](../../CLAUDE.md)

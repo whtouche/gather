@@ -7,6 +7,7 @@ import invitationRoutes from "./routes/invitations.js";
 import rsvpRoutes from "./routes/rsvps.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import notificationRoutes from "./routes/notifications.js";
+import profileRoutes from "./routes/profile.js";
 
 const app = express();
 
@@ -26,6 +27,8 @@ app.use("/api/events", rsvpRoutes);
 app.use("/api", invitationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api", profileRoutes);
 
 // Error handling
 app.use(notFoundHandler);

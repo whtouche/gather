@@ -200,6 +200,11 @@ export async function getPastEvents(): Promise<PastDashboardResponse> {
 // =============================================================================
 
 /**
+ * Profile visibility options
+ */
+export type ProfileVisibility = "CONNECTIONS" | "ORGANIZERS_ONLY" | "PRIVATE";
+
+/**
  * User data returned from auth endpoints
  */
 export interface User {
@@ -210,7 +215,11 @@ export interface User {
   photoUrl?: string | null;
   bio?: string | null;
   location?: string | null;
+  photoVisibility?: ProfileVisibility;
+  bioVisibility?: ProfileVisibility;
+  locationVisibility?: ProfileVisibility;
   createdAt: string;
+  updatedAt?: string;
 }
 
 /**
@@ -919,6 +928,222 @@ export async function getEmailInvitations(eventId: string): Promise<GetEmailInvi
   return request(`/events/${eventId}/invitations/email`);
 }
 
+// =============================================================================
+// SMS Invitation Types & API
+// =============================================================================
+
+/**
+ * SMS invitation status enum
+ */
+export type SmsInvitationStatus = "PENDING" | "SENT" | "RSVPD" | "FAILED";
+
+/**
+ * SMS invitation recipient
+ */
+export interface SmsInvitationRecipient {
+  phone: string;
+  name?: string;
+}
+
+/**
+ * SMS invitation send result for a single recipient
+ */
+export interface SmsInvitationSendResult {
+  phone: string;
+  success: boolean;
+  error?: string;
+  alreadyInvited?: boolean;
+}
+
+/**
+ * SMS quota information
+ */
+export interface SmsQuotaInfo {
+  dailyCount: number;
+  dailyLimit: number;
+  dailyRemaining: number;
+  totalCount: number;
+  totalLimit: number;
+  totalRemaining: number;
+  atDailyLimit: boolean;
+  atTotalLimit: boolean;
+}
+
+/**
+ * Response from sending SMS invitations
+ */
+export interface SendSmsInvitationsResponse {
+  message: string;
+  sent: number;
+  failed: number;
+  alreadyInvited: number;
+  results: SmsInvitationSendResult[];
+  quota: SmsQuotaInfo;
+}
+
+/**
+ * SMS invitation record
+ */
+export interface SmsInvitation {
+  id: string;
+  phone: string;
+  recipientName: string | null;
+  status: SmsInvitationStatus;
+  sentAt: string | null;
+  rsvpAt: string | null;
+  createdAt: string;
+}
+
+/**
+ * SMS invitation statistics
+ */
+export interface SmsInvitationStats {
+  total: number;
+  pending: number;
+  sent: number;
+  rsvpd: number;
+  failed: number;
+}
+
+/**
+ * Response from getting SMS invitations
+ */
+export interface GetSmsInvitationsResponse {
+  invitations: SmsInvitation[];
+  stats: SmsInvitationStats;
+  quota: SmsQuotaInfo;
+}
+
+/**
+ * Send SMS invitations to one or more recipients (organizers only)
+ */
+export async function sendSmsInvitations(
+  eventId: string,
+  recipients: SmsInvitationRecipient[]
+): Promise<SendSmsInvitationsResponse> {
+  return request(`/events/${eventId}/invitations/sms`, {
+    method: "POST",
+    body: JSON.stringify({ recipients }),
+  });
+}
+
+/**
+ * Get SMS invitation list and stats for an event (organizers only)
+ */
+export async function getSmsInvitations(eventId: string): Promise<GetSmsInvitationsResponse> {
+  return request(`/events/${eventId}/invitations/sms`);
+}
+
+/**
+ * Get SMS quota info for an event (organizers only)
+ */
+export async function getSmsQuota(eventId: string): Promise<{ quota: SmsQuotaInfo }> {
+  return request(`/events/${eventId}/invitations/sms/quota`);
+}
+
+// =============================================================================
+// Profile Types & API
+// =============================================================================
+
+/**
+ * Full user profile with visibility settings
+ */
+export interface UserProfile {
+  id: string;
+  phone: string | null;
+  email: string | null;
+  displayName: string;
+  photoUrl: string | null;
+  bio: string | null;
+  location: string | null;
+  photoVisibility: ProfileVisibility;
+  bioVisibility: ProfileVisibility;
+  locationVisibility: ProfileVisibility;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Response from GET /api/profile
+ */
+export interface GetProfileResponse {
+  profile: UserProfile;
+}
+
+/**
+ * Update profile input data
+ */
+export interface UpdateProfileInput {
+  displayName?: string;
+  photoUrl?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  photoVisibility?: ProfileVisibility;
+  bioVisibility?: ProfileVisibility;
+  locationVisibility?: ProfileVisibility;
+}
+
+/**
+ * Response from PATCH /api/profile
+ */
+export interface UpdateProfileResponse {
+  profile: UserProfile;
+}
+
+/**
+ * Public user profile (visibility-filtered)
+ */
+export interface PublicUserProfile {
+  id: string;
+  displayName: string;
+  photoUrl?: string | null;
+  bio?: string | null;
+  location?: string | null;
+}
+
+/**
+ * Response from GET /api/users/:id
+ */
+export interface GetPublicProfileResponse {
+  user: PublicUserProfile;
+  relationship: {
+    isSelf: boolean;
+    isConnection: boolean;
+    isOrganizer: boolean;
+  };
+}
+
+/**
+ * Get current user's profile
+ */
+export async function getProfile(): Promise<GetProfileResponse> {
+  return request("/profile");
+}
+
+/**
+ * Update current user's profile
+ */
+export async function updateProfile(data: UpdateProfileInput): Promise<UpdateProfileResponse> {
+  return request("/profile", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Get a user's public profile
+ */
+export async function getPublicProfile(userId: string): Promise<GetPublicProfileResponse> {
+  return request(`/users/${userId}`);
+}
+
+/**
+ * Get current user data (alias for /auth/me)
+ */
+export async function getCurrentUser(): Promise<{ user: User }> {
+  return request("/auth/me");
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -951,4 +1176,11 @@ export default {
   deleteNotification,
   sendEmailInvitations,
   getEmailInvitations,
+  sendSmsInvitations,
+  getSmsInvitations,
+  getSmsQuota,
+  getProfile,
+  updateProfile,
+  getPublicProfile,
+  getCurrentUser,
 };

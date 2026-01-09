@@ -130,14 +130,14 @@ Time to reach out and touch someone (digitally, of course).
 - Event details in email body
 - Track sent/opened/RSVP'd status
 
-### D2: SMS Invitations
+### D2: SMS Invitations [DONE]
 *For when email feels too formal.*
 - Send invitations via SMS
 - Shortened invitation links
 - Basic rate limiting
 - SMS quota tracking
 
-### D3: Profile Management
+### D3: Profile Management [DONE]
 *Express yourself (but only if you want to).*
 - Optional profile fields (photo, bio, location)
 - Profile visibility settings (per-field)

@@ -7,6 +7,8 @@ import { RegisterPage } from "./pages/RegisterPage";
 import { EventPage } from "./pages/EventPage";
 import { CreateEventPage } from "./pages/CreateEventPage";
 import { EditEventPage } from "./pages/EditEventPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { UserProfilePage } from "./pages/UserProfilePage";
 import "./App.css";
 
 /**
@@ -119,6 +121,8 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/past-events" element={<PastEventsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/users/:id" element={<UserProfilePage />} />
         <Route path="/events/new" element={<CreateEventPage />} />
         <Route path="/events/:id" element={<EventPageWrapper />} />
         <Route path="/events/:id/edit" element={<EditEventPage />} />

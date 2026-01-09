@@ -14,6 +14,8 @@ import { CancelEventModal } from "../components/CancelEventModal";
 import { AttendeeListModal } from "../components/AttendeeListModal";
 import { EmailInviteModal } from "../components/EmailInviteModal";
 import { EmailInvitationsPanel } from "../components/EmailInvitationsPanel";
+import { SmsInviteModal } from "../components/SmsInviteModal";
+import { SmsInvitationsPanel } from "../components/SmsInvitationsPanel";
 
 interface EventPageProps {
   eventId: string;
@@ -114,6 +116,8 @@ export function EventPage({ eventId }: EventPageProps) {
   const [showAttendeeModal, setShowAttendeeModal] = useState(false);
   const [showEmailInviteModal, setShowEmailInviteModal] = useState(false);
   const [emailInviteRefreshKey, setEmailInviteRefreshKey] = useState(0);
+  const [showSmsInviteModal, setShowSmsInviteModal] = useState(false);
+  const [smsInviteRefreshKey, setSmsInviteRefreshKey] = useState(0);
 
   const loggedIn = isAuthenticated();
   const authToken = getAuthToken();
@@ -331,6 +335,29 @@ export function EventPage({ eventId }: EventPageProps) {
                     />
                   </svg>
                   Send Email Invites
+                </button>
+              )}
+
+              {/* Send SMS Invites button */}
+              {(event.state === "PUBLISHED" || event.state === "ONGOING") && (
+                <button
+                  onClick={() => setShowSmsInviteModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                  Send SMS Invites
                 </button>
               )}
 
@@ -680,6 +707,13 @@ export function EventPage({ eventId }: EventPageProps) {
           </div>
         )}
 
+        {/* SMS Invitations Panel (organizers only) */}
+        {isOrganizer && (event.state === "PUBLISHED" || event.state === "ONGOING") && (
+          <div className="mt-6">
+            <SmsInvitationsPanel eventId={event.id} refreshKey={smsInviteRefreshKey} />
+          </div>
+        )}
+
         {/* Attendee List Section */}
         <div className="mt-6">
           <AttendeeList eventId={event.id} refreshKey={attendeeRefreshKey} />
@@ -725,6 +759,16 @@ export function EventPage({ eventId }: EventPageProps) {
           isOpen={showEmailInviteModal}
           onClose={() => setShowEmailInviteModal(false)}
           onInvitesSent={() => setEmailInviteRefreshKey((prev) => prev + 1)}
+        />
+      )}
+
+      {/* SMS Invite Modal (for organizers) */}
+      {event && isOrganizer && (
+        <SmsInviteModal
+          eventId={event.id}
+          isOpen={showSmsInviteModal}
+          onClose={() => setShowSmsInviteModal(false)}
+          onInvitesSent={() => setSmsInviteRefreshKey((prev) => prev + 1)}
         />
       )}
     </div>
