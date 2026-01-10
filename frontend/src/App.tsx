@@ -9,6 +9,7 @@ import { CreateEventPage } from "./pages/CreateEventPage";
 import { EditEventPage } from "./pages/EditEventPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { UserProfilePage } from "./pages/UserProfilePage";
+import { ConnectionsPage } from "./pages/ConnectionsPage";
 import "./App.css";
 
 /**
@@ -121,6 +122,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/past-events" element={<PastEventsPage />} />
+        <Route path="/connections" element={<ConnectionsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/users/:id" element={<UserProfilePage />} />
         <Route path="/events/new" element={<CreateEventPage />} />

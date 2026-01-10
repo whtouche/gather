@@ -271,7 +271,7 @@ Gather the info you need.
 
 Build connections beyond single events.
 
-### H1: Event Connections
+### H1: Event Connections [DONE]
 *Your party people.*
 - Track shared event attendance
 - Connections list (people attended events with)

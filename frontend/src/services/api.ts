@@ -1936,6 +1936,39 @@ export async function reorderQuestions(
   return response.questions;
 }
 
+// =============================================================================
+// Connections Types & API
+// =============================================================================
+
+/**
+ * Connection data for a user
+ */
+export interface Connection {
+  userId: string;
+  displayName: string;
+  photoUrl: string | null;
+  sharedEventCount: number;
+  mostRecentEvent: {
+    eventId: string;
+    eventTitle: string;
+    eventDate: string;
+  } | null;
+}
+
+/**
+ * Connections response
+ */
+export interface ConnectionsResponse {
+  connections: Connection[];
+}
+
+/**
+ * Get connections for the authenticated user
+ */
+export async function getConnections(): Promise<ConnectionsResponse> {
+  return request("/connections");
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -2005,4 +2038,5 @@ export default {
   updateQuestion,
   deleteQuestion,
   reorderQuestions,
+  getConnections,
 };

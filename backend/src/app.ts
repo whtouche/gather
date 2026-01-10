@@ -13,6 +13,7 @@ import waitlistRoutes from "./routes/waitlist.js";
 import messagesRoutes from "./routes/messages.js";
 import previousAttendeesRoutes from "./routes/previousAttendees.js";
 import questionnaireRoutes from "./routes/questionnaire.js";
+import connectionsRoutes from "./routes/connections.js";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/events", messagesRoutes);
 app.use("/api/events", questionnaireRoutes);
 app.use("/api", invitationRoutes);
 app.use("/api", previousAttendeesRoutes);
+app.use("/api/connections", connectionsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/profile", profileRoutes);
