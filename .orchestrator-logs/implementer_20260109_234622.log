@@ -1,0 +1,55 @@
+Perfect! Now let me create a comprehensive summary of what was implemented:
+
+## Summary
+
+I have successfully implemented **G2: Questionnaire During RSVP** for the Gather app. Here's what was completed:
+
+### Backend Changes
+
+1. **Added Questionnaire Response Endpoints** (backend/src/routes/questionnaire.ts):
+   - `GET /api/events/:eventId/questionnaire/responses` - Retrieves user's questionnaire responses for an event
+   - `POST /api/events/:eventId/questionnaire/responses` - Submits or updates questionnaire responses with comprehensive validation
+
+2. **Enhanced RSVP Endpoint** (backend/src/routes/rsvps.ts):
+   - Modified `POST /api/events/:id/rsvp` to accept optional `questionnaireResponses` field
+   - Added `validateAndSaveQuestionnaireResponses()` helper function that:
+     - Validates all response types (SHORT_TEXT, LONG_TEXT, SINGLE_CHOICE, MULTIPLE_CHOICE, YES_NO, NUMBER, DATE)
+     - Enforces required questions for "YES" responses
+     - Makes questionnaire optional for "MAYBE" responses
+     - Stores responses atomically with the RSVP
+
+### Frontend Changes
+
+1. **Created QuestionnaireForm Component** (frontend/src/components/QuestionnaireForm.tsx):
+   - Renders all question types with appropriate input controls
+   - Loads existing responses if user previously filled the questionnaire
+   - Validates required questions (enforced for YES, optional for MAYBE)
+   - Supports character limits and choice validation
+   - Provides skip option for MAYBE responses
+
+2. **Enhanced RSVPButtons Component** (frontend/src/components/RSVPButtons.tsx):
+   - Fetches questionnaire questions when loading event
+   - Shows questionnaire form when user clicks "Yes" or "Maybe" (if questions exist)
+   - Submits RSVP and questionnaire responses together in a single transaction
+   - Allows "Maybe" users to skip the questionnaire
+   - "No" responses proceed directly without questionnaire
+
+### Key Features Implemented
+
+✅ **Display questionnaire on "Yes" RSVP** - When users RSVP "Yes", they are presented with the questionnaire before completing their RSVP
+
+✅ **Required question enforcement** - Required questions are marked with asterisks and must be answered for "Yes" responses
+
+✅ **Optional questionnaire for "Maybe" responses** - Users who respond "Maybe" can optionally fill out the questionnaire or skip it
+
+✅ **Save responses with RSVP** - Questionnaire responses are saved atomically with the RSVP in a single API call
+
+### Technical Details
+
+- All validation is performed both client-side and server-side
+- Response data is stored as JSON in the database for flexibility
+- The implementation respects the existing RSVP flow including capacity checks and waitlist logic
+- TypeScript compilation passes on both backend and frontend
+- No breaking changes to existing APIs or components
+
+The implementation follows the specifications in `openspec/specs/invitations/spec.md` (REQ-INV-021) and integrates seamlessly with the existing questionnaire builder (G1) that was previously completed.

@@ -545,4 +545,301 @@ router.post(
   }
 );
 
+/**
+ * GET /api/events/:eventId/questionnaire/responses
+ * Get user's questionnaire responses for an event
+ * Requires: Authentication
+ */
+router.get(
+  "/:eventId/questionnaire/responses",
+  requireAuth,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { eventId } = req.params;
+      const userId = req.user!.id;
+
+      // Check if event exists
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Get user's responses for this event
+      const responses = await prisma.questionnaireResponse.findMany({
+        where: {
+          eventId,
+          userId,
+        },
+        include: {
+          question: true,
+        },
+      });
+
+      // Parse response data
+      const responsesWithParsedData = responses.map((r) => {
+        let parsedResponse;
+        try {
+          parsedResponse = JSON.parse(r.response);
+        } catch (error) {
+          parsedResponse = null;
+        }
+
+        let parsedChoices = null;
+        if (r.question.choices) {
+          try {
+            parsedChoices = JSON.parse(r.question.choices);
+          } catch (error) {
+            parsedChoices = null;
+          }
+        }
+
+        return {
+          id: r.id,
+          questionId: r.questionId,
+          eventId: r.eventId,
+          userId: r.userId,
+          response: parsedResponse,
+          question: {
+            id: r.question.id,
+            questionText: r.question.questionText,
+            questionType: r.question.questionType,
+            isRequired: r.question.isRequired,
+            helpText: r.question.helpText,
+            orderIndex: r.question.orderIndex,
+            choices: parsedChoices,
+          },
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+        };
+      });
+
+      res.json({ responses: responsesWithParsedData });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/events/:eventId/questionnaire/responses
+ * Submit or update questionnaire responses for an event
+ * Requires: Authentication
+ */
+router.post(
+  "/:eventId/questionnaire/responses",
+  requireAuth,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { eventId } = req.params;
+      const userId = req.user!.id;
+      const { responses } = req.body;
+
+      // Check if event exists
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Validate responses input
+      if (!responses || typeof responses !== "object") {
+        throw createApiError("Responses must be an object mapping questionId to response value", 400, "INVALID_RESPONSES");
+      }
+
+      const responseEntries = Object.entries(responses);
+
+      if (responseEntries.length === 0) {
+        throw createApiError("At least one response is required", 400, "NO_RESPONSES");
+      }
+
+      // Get all questions for this event
+      const questions = await prisma.questionnaireQuestion.findMany({
+        where: { eventId },
+      });
+
+      const questionsMap = new Map(questions.map(q => [q.id, q]));
+
+      // Validate all question IDs exist
+      for (const [questionId] of responseEntries) {
+        if (!questionsMap.has(questionId)) {
+          throw createApiError(`Question ${questionId} not found`, 400, "INVALID_QUESTION_ID");
+        }
+      }
+
+      // Check required questions are answered
+      const requiredQuestions = questions.filter(q => q.isRequired);
+      for (const question of requiredQuestions) {
+        if (!responses[question.id]) {
+          throw createApiError(
+            `Required question "${question.questionText}" must be answered`,
+            400,
+            "REQUIRED_QUESTION_MISSING"
+          );
+        }
+      }
+
+      // Validate response values based on question type
+      for (const [questionId, responseValue] of responseEntries) {
+        const question = questionsMap.get(questionId)!;
+
+        // Validate based on question type
+        switch (question.questionType) {
+          case "SHORT_TEXT":
+            if (typeof responseValue !== "string") {
+              throw createApiError(`Response for question ${questionId} must be a string`, 400, "INVALID_RESPONSE_TYPE");
+            }
+            if (responseValue.length > 200) {
+              throw createApiError(`Response for question ${questionId} must be 200 characters or less`, 400, "RESPONSE_TOO_LONG");
+            }
+            break;
+
+          case "LONG_TEXT":
+            if (typeof responseValue !== "string") {
+              throw createApiError(`Response for question ${questionId} must be a string`, 400, "INVALID_RESPONSE_TYPE");
+            }
+            if (responseValue.length > 2000) {
+              throw createApiError(`Response for question ${questionId} must be 2000 characters or less`, 400, "RESPONSE_TOO_LONG");
+            }
+            break;
+
+          case "SINGLE_CHOICE":
+            if (typeof responseValue !== "string") {
+              throw createApiError(`Response for question ${questionId} must be a string`, 400, "INVALID_RESPONSE_TYPE");
+            }
+            // Validate against available choices
+            if (question.choices) {
+              const choices = JSON.parse(question.choices);
+              if (!choices.includes(responseValue)) {
+                throw createApiError(`Response for question ${questionId} must be one of the available choices`, 400, "INVALID_CHOICE");
+              }
+            }
+            break;
+
+          case "MULTIPLE_CHOICE":
+            if (!Array.isArray(responseValue)) {
+              throw createApiError(`Response for question ${questionId} must be an array`, 400, "INVALID_RESPONSE_TYPE");
+            }
+            // Validate all choices are valid
+            if (question.choices) {
+              const choices = JSON.parse(question.choices);
+              for (const choice of responseValue) {
+                if (!choices.includes(choice)) {
+                  throw createApiError(`Response for question ${questionId} contains invalid choice`, 400, "INVALID_CHOICE");
+                }
+              }
+            }
+            break;
+
+          case "YES_NO":
+            if (typeof responseValue !== "boolean") {
+              throw createApiError(`Response for question ${questionId} must be a boolean`, 400, "INVALID_RESPONSE_TYPE");
+            }
+            break;
+
+          case "NUMBER":
+            if (typeof responseValue !== "number") {
+              throw createApiError(`Response for question ${questionId} must be a number`, 400, "INVALID_RESPONSE_TYPE");
+            }
+            break;
+
+          case "DATE":
+            if (typeof responseValue !== "string") {
+              throw createApiError(`Response for question ${questionId} must be a string (ISO date)`, 400, "INVALID_RESPONSE_TYPE");
+            }
+            // Validate it's a valid date
+            const date = new Date(responseValue);
+            if (isNaN(date.getTime())) {
+              throw createApiError(`Response for question ${questionId} must be a valid date`, 400, "INVALID_DATE");
+            }
+            break;
+        }
+      }
+
+      // Save responses (upsert each one)
+      const savedResponses = await Promise.all(
+        responseEntries.map(([questionId, responseValue]) =>
+          prisma.questionnaireResponse.upsert({
+            where: {
+              questionId_userId: {
+                questionId,
+                userId,
+              },
+            },
+            create: {
+              questionId,
+              eventId,
+              userId,
+              response: JSON.stringify(responseValue),
+            },
+            update: {
+              response: JSON.stringify(responseValue),
+            },
+          })
+        )
+      );
+
+      // Fetch updated responses with questions
+      const responsesWithQuestions = await prisma.questionnaireResponse.findMany({
+        where: {
+          eventId,
+          userId,
+        },
+        include: {
+          question: true,
+        },
+      });
+
+      // Parse response data
+      const responsesWithParsedData = responsesWithQuestions.map((r) => {
+        let parsedResponse;
+        try {
+          parsedResponse = JSON.parse(r.response);
+        } catch (error) {
+          parsedResponse = null;
+        }
+
+        let parsedChoices = null;
+        if (r.question.choices) {
+          try {
+            parsedChoices = JSON.parse(r.question.choices);
+          } catch (error) {
+            parsedChoices = null;
+          }
+        }
+
+        return {
+          id: r.id,
+          questionId: r.questionId,
+          eventId: r.eventId,
+          userId: r.userId,
+          response: parsedResponse,
+          question: {
+            id: r.question.id,
+            questionText: r.question.questionText,
+            questionType: r.question.questionType,
+            isRequired: r.question.isRequired,
+            helpText: r.question.helpText,
+            orderIndex: r.question.orderIndex,
+            choices: parsedChoices,
+          },
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+        };
+      });
+
+      res.status(201).json({
+        responses: responsesWithParsedData,
+        message: "Questionnaire responses saved successfully"
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;

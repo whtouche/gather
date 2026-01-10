@@ -241,7 +241,7 @@ Gather the info you need.
 - Mark questions required or optional
 - Add help text to questions
 
-### G2: Questionnaire During RSVP
+### G2: Questionnaire During RSVP [DONE]
 *Capture responses when it counts.*
 - Display questionnaire on "Yes" RSVP
 - Required question enforcement

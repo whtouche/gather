@@ -4,7 +4,7 @@ import { RSVPButtons } from "./RSVPButtons";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe("RSVPButtons", () => {
   const defaultProps = {

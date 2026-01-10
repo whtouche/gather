@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { QuestionnaireForm, type Question } from "./QuestionnaireForm";
 
 // =============================================================================
 // Types
@@ -111,6 +112,9 @@ export function RSVPButtons({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [pendingRsvp, setPendingRsvp] = useState<RSVPResponse | null>(null);
 
   // Calculate if event is at capacity
   const isAtCapacity = capacity !== null && currentYesCount >= capacity && rsvpState.rsvp?.response !== "YES";
@@ -178,14 +182,49 @@ export function RSVPButtons({
     }
   }, [eventId, authToken, apiBaseUrl, waitlistEnabled]);
 
-  // Fetch RSVP and waitlist on mount
+  // Fetch questionnaire questions
+  const fetchQuestions = useCallback(async () => {
+    if (!authToken) return;
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/events/${eventId}/questionnaire`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setQuestions(data.questions || []);
+      }
+    } catch {
+      // Silently fail - questionnaire is optional
+    }
+  }, [eventId, authToken, apiBaseUrl]);
+
+  // Fetch RSVP, waitlist, and questions on mount
   useEffect(() => {
     fetchRsvp();
     fetchWaitlist();
-  }, [fetchRsvp, fetchWaitlist]);
+    fetchQuestions();
+  }, [fetchRsvp, fetchWaitlist, fetchQuestions]);
 
-  // Submit RSVP
-  const submitRsvp = async (response: RSVPResponse) => {
+  // Handle RSVP button click - check for questionnaire
+  const handleRsvpClick = (response: RSVPResponse) => {
+    // For YES and MAYBE with questionnaire, show the form first
+    if ((response === "YES" || response === "MAYBE") && questions.length > 0) {
+      setPendingRsvp(response);
+      setShowQuestionnaire(true);
+    } else {
+      // For NO or no questionnaire, submit directly
+      submitRsvp(response);
+    }
+  };
+
+  // Submit RSVP (called directly or after questionnaire)
+  const submitRsvp = async (response: RSVPResponse, questionnaireResponses?: Record<string, unknown>) => {
     if (!authToken || !rsvpState.canModify) return;
 
     setIsSubmitting(true);
@@ -193,13 +232,18 @@ export function RSVPButtons({
     setSuccessMessage(null);
 
     try {
+      const body: { response: RSVPResponse; questionnaireResponses?: Record<string, unknown> } = { response };
+      if (questionnaireResponses) {
+        body.questionnaireResponses = questionnaireResponses;
+      }
+
       const res = await fetch(`${apiBaseUrl}/events/${eventId}/rsvp`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ response }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -214,6 +258,8 @@ export function RSVPButtons({
       }));
       setSuccessMessage(data.message || "RSVP submitted successfully!");
       onRsvpChange?.(response);
+      setShowQuestionnaire(false);
+      setPendingRsvp(null);
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -222,6 +268,23 @@ export function RSVPButtons({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Handle questionnaire submission
+  const handleQuestionnaireSubmit = async (responses: Record<string, unknown>) => {
+    if (pendingRsvp) {
+      await submitRsvp(pendingRsvp, responses);
+    }
+  };
+
+  // Handle questionnaire cancellation (for MAYBE responses)
+  const handleQuestionnaireCancel = async () => {
+    if (pendingRsvp === "MAYBE") {
+      // Submit MAYBE without questionnaire responses
+      await submitRsvp(pendingRsvp, {});
+    }
+    setShowQuestionnaire(false);
+    setPendingRsvp(null);
   };
 
   // Remove RSVP
@@ -567,7 +630,7 @@ export function RSVPButtons({
           {(!isAtCapacity || currentResponse === "YES") && (
             <button
               type="button"
-              onClick={() => submitRsvp("YES")}
+              onClick={() => handleRsvpClick("YES")}
               disabled={!rsvpState.canModify || isSubmitting}
               className={getButtonClasses("YES")}
               aria-pressed={currentResponse === "YES"}
@@ -585,7 +648,7 @@ export function RSVPButtons({
 
           <button
             type="button"
-            onClick={() => submitRsvp("NO")}
+            onClick={() => handleRsvpClick("NO")}
             disabled={!rsvpState.canModify || isSubmitting}
             className={getButtonClasses("NO")}
             aria-pressed={currentResponse === "NO"}
@@ -602,7 +665,7 @@ export function RSVPButtons({
 
           <button
             type="button"
-            onClick={() => submitRsvp("MAYBE")}
+            onClick={() => handleRsvpClick("MAYBE")}
             disabled={!rsvpState.canModify || isSubmitting}
             className={getButtonClasses("MAYBE")}
             aria-pressed={currentResponse === "MAYBE"}
@@ -642,6 +705,21 @@ export function RSVPButtons({
       {error && (
         <div className="p-3 bg-red-100 text-red-700 rounded-lg border border-red-200">
           {error}
+        </div>
+      )}
+
+      {/* Questionnaire Form */}
+      {showQuestionnaire && pendingRsvp && questions.length > 0 && (
+        <div className="mt-4">
+          <QuestionnaireForm
+            eventId={eventId}
+            authToken={authToken}
+            questions={questions}
+            rsvpResponse={pendingRsvp}
+            onSubmit={handleQuestionnaireSubmit}
+            onCancel={pendingRsvp === "MAYBE" ? handleQuestionnaireCancel : undefined}
+            apiBaseUrl={apiBaseUrl}
+          />
         </div>
       )}
     </div>
