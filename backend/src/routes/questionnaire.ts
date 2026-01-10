@@ -842,4 +842,364 @@ router.post(
   }
 );
 
+/**
+ * GET /api/events/:eventId/questionnaire/responses/summary
+ * Get summary of all questionnaire responses for an event (organizers only)
+ * Includes responses grouped by question and filter by attendee
+ * Requires: Organizer role
+ */
+router.get(
+  "/:eventId/questionnaire/responses/summary",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { eventId } = req.params;
+      const { userId } = req.query; // Optional filter by specific attendee
+
+      // Get all questions for this event
+      const questions = await prisma.questionnaireQuestion.findMany({
+        where: { eventId },
+        orderBy: { orderIndex: "asc" },
+      });
+
+      // Build where clause for responses
+      const responseWhere: {
+        eventId: string;
+        userId?: string;
+      } = { eventId };
+
+      if (userId && typeof userId === "string") {
+        responseWhere.userId = userId;
+      }
+
+      // Get all responses for this event (or filtered by userId)
+      const responses = await prisma.questionnaireResponse.findMany({
+        where: responseWhere,
+        include: {
+          question: true,
+        },
+      });
+
+      // Get all users who have responded (for user details)
+      const userIds = [...new Set(responses.map(r => r.userId))];
+      const users = await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          displayName: true,
+        },
+      });
+
+      const usersMap = new Map(users.map(u => [u.id, u]));
+
+      // Group responses by question
+      const responsesByQuestion = questions.map((question) => {
+        const questionResponses = responses.filter(r => r.questionId === question.id);
+
+        // Parse choices
+        let parsedChoices = null;
+        if (question.choices) {
+          try {
+            parsedChoices = JSON.parse(question.choices);
+          } catch (error) {
+            parsedChoices = null;
+          }
+        }
+
+        // Parse all responses and include user info
+        const parsedResponses = questionResponses.map(r => {
+          let parsedResponse;
+          try {
+            parsedResponse = JSON.parse(r.response);
+          } catch (error) {
+            parsedResponse = null;
+          }
+
+          const user = usersMap.get(r.userId);
+
+          return {
+            userId: r.userId,
+            displayName: user?.displayName || "Unknown User",
+            response: parsedResponse,
+            createdAt: r.createdAt,
+            updatedAt: r.updatedAt,
+          };
+        });
+
+        // Calculate statistics based on question type
+        let statistics = {};
+        if (question.questionType === "SINGLE_CHOICE" || question.questionType === "MULTIPLE_CHOICE") {
+          // Count responses for each choice
+          const choiceCounts: Record<string, number> = {};
+          parsedResponses.forEach(pr => {
+            if (question.questionType === "SINGLE_CHOICE" && typeof pr.response === "string") {
+              choiceCounts[pr.response] = (choiceCounts[pr.response] || 0) + 1;
+            } else if (question.questionType === "MULTIPLE_CHOICE" && Array.isArray(pr.response)) {
+              pr.response.forEach((choice: string) => {
+                choiceCounts[choice] = (choiceCounts[choice] || 0) + 1;
+              });
+            }
+          });
+          statistics = { choiceCounts };
+        } else if (question.questionType === "YES_NO") {
+          const yesCount = parsedResponses.filter(pr => pr.response === true).length;
+          const noCount = parsedResponses.filter(pr => pr.response === false).length;
+          statistics = { yesCount, noCount };
+        } else if (question.questionType === "NUMBER") {
+          const numbers = parsedResponses
+            .map(pr => pr.response)
+            .filter((r): r is number => typeof r === "number");
+          if (numbers.length > 0) {
+            const sum = numbers.reduce((a, b) => a + b, 0);
+            const avg = sum / numbers.length;
+            const min = Math.min(...numbers);
+            const max = Math.max(...numbers);
+            statistics = { average: avg, min, max, count: numbers.length };
+          }
+        }
+
+        return {
+          question: {
+            id: question.id,
+            questionText: question.questionText,
+            questionType: question.questionType,
+            isRequired: question.isRequired,
+            helpText: question.helpText,
+            orderIndex: question.orderIndex,
+            choices: parsedChoices,
+          },
+          responseCount: parsedResponses.length,
+          responses: parsedResponses,
+          statistics,
+        };
+      });
+
+      res.json({
+        questions: responsesByQuestion,
+        totalRespondents: userIds.length,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/events/:eventId/questionnaire/responses/incomplete
+ * Get list of attendees who haven't completed the questionnaire (organizers only)
+ * Requires: Organizer role
+ */
+router.get(
+  "/:eventId/questionnaire/responses/incomplete",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { eventId } = req.params;
+
+      // Get all questions for this event
+      const questions = await prisma.questionnaireQuestion.findMany({
+        where: { eventId },
+      });
+
+      // Get all required questions
+      const requiredQuestionIds = questions
+        .filter(q => q.isRequired)
+        .map(q => q.id);
+
+      // Get all attendees who RSVP'd Yes
+      const yesRSVPs = await prisma.rSVP.findMany({
+        where: {
+          eventId,
+          response: "YES",
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              displayName: true,
+            },
+          },
+        },
+      });
+
+      // For each attendee, check if they've answered all required questions
+      const incompleteAttendees = [];
+
+      for (const rsvp of yesRSVPs) {
+        // Get responses for this user
+        const userResponses = await prisma.questionnaireResponse.findMany({
+          where: {
+            eventId,
+            userId: rsvp.userId,
+            questionId: { in: requiredQuestionIds },
+          },
+          select: {
+            questionId: true,
+          },
+        });
+
+        const answeredQuestionIds = new Set(userResponses.map(r => r.questionId));
+        const missingQuestionIds = requiredQuestionIds.filter(
+          qId => !answeredQuestionIds.has(qId)
+        );
+
+        // If they haven't answered all required questions, they're incomplete
+        if (missingQuestionIds.length > 0) {
+          const missingQuestions = questions
+            .filter(q => missingQuestionIds.includes(q.id))
+            .map(q => ({
+              id: q.id,
+              questionText: q.questionText,
+            }));
+
+          incompleteAttendees.push({
+            userId: rsvp.user.id,
+            displayName: rsvp.user.displayName,
+            missingQuestions,
+            totalRequired: requiredQuestionIds.length,
+            answeredRequired: answeredQuestionIds.size,
+          });
+        }
+      }
+
+      res.json({
+        incompleteAttendees,
+        totalAttendees: yesRSVPs.length,
+        incompleteCount: incompleteAttendees.length,
+        requiredQuestionCount: requiredQuestionIds.length,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/events/:eventId/questionnaire/responses/export
+ * Export all questionnaire responses as CSV (organizers only)
+ * Requires: Organizer role
+ */
+router.get(
+  "/:eventId/questionnaire/responses/export",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { eventId } = req.params;
+
+      // Get event details
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { title: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Get all questions for this event
+      const questions = await prisma.questionnaireQuestion.findMany({
+        where: { eventId },
+        orderBy: { orderIndex: "asc" },
+      });
+
+      if (questions.length === 0) {
+        throw createApiError("No questions found for this event", 404, "NO_QUESTIONS");
+      }
+
+      // Get all users who have RSVP'd yes
+      const yesRSVPs = await prisma.rSVP.findMany({
+        where: {
+          eventId,
+          response: "YES",
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              displayName: true,
+            },
+          },
+        },
+      });
+
+      // Get all responses for this event
+      const responses = await prisma.questionnaireResponse.findMany({
+        where: { eventId },
+        include: {
+          question: true,
+        },
+      });
+
+      // Build CSV header
+      const headers = [
+        "Display Name",
+        "RSVP Status",
+        ...questions.map(q => q.questionText),
+      ];
+
+      // Build CSV rows
+      const rows = yesRSVPs.map(rsvp => {
+        const userResponses = responses.filter(r => r.userId === rsvp.userId);
+        const responsesMap = new Map(
+          userResponses.map(r => [r.questionId, r.response])
+        );
+
+        const row = [
+          rsvp.user.displayName,
+          "Yes",
+          ...questions.map(q => {
+            const responseJson = responsesMap.get(q.id);
+            if (!responseJson) return "";
+
+            try {
+              const parsed = JSON.parse(responseJson);
+              // Format based on type
+              if (Array.isArray(parsed)) {
+                return parsed.join("; ");
+              } else if (typeof parsed === "boolean") {
+                return parsed ? "Yes" : "No";
+              } else {
+                return String(parsed);
+              }
+            } catch (error) {
+              return "";
+            }
+          }),
+        ];
+
+        return row;
+      });
+
+      // Convert to CSV format
+      const escapeCSV = (value: string) => {
+        if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      };
+
+      const csvLines = [
+        headers.map(escapeCSV).join(","),
+        ...rows.map(row => row.map(escapeCSV).join(",")),
+      ];
+
+      const csvContent = csvLines.join("\n");
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="questionnaire-responses-${eventId}.csv"`
+      );
+
+      res.send(csvContent);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;

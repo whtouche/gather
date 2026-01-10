@@ -2232,6 +2232,115 @@ export async function reorderQuestions(
 }
 
 // =============================================================================
+// Questionnaire Response Management (Organizers)
+// =============================================================================
+
+export interface QuestionnaireResponseSummary {
+  userId: string;
+  displayName: string;
+  response: unknown;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QuestionStatistics {
+  choiceCounts?: Record<string, number>;
+  yesCount?: number;
+  noCount?: number;
+  average?: number;
+  min?: number;
+  max?: number;
+  count?: number;
+}
+
+export interface QuestionWithResponses {
+  question: QuestionnaireQuestion;
+  responseCount: number;
+  responses: QuestionnaireResponseSummary[];
+  statistics: QuestionStatistics;
+}
+
+export interface QuestionnaireResponsesSummary {
+  questions: QuestionWithResponses[];
+  totalRespondents: number;
+}
+
+export interface IncompleteAttendee {
+  userId: string;
+  displayName: string;
+  missingQuestions: Array<{
+    id: string;
+    questionText: string;
+  }>;
+  totalRequired: number;
+  answeredRequired: number;
+}
+
+export interface IncompleteAttendeesResponse {
+  incompleteAttendees: IncompleteAttendee[];
+  totalAttendees: number;
+  incompleteCount: number;
+  requiredQuestionCount: number;
+}
+
+/**
+ * Get summary of all questionnaire responses for an event (organizers only)
+ * Optionally filter by userId
+ */
+export async function getQuestionnaireResponsesSummary(
+  eventId: string,
+  userId?: string
+): Promise<QuestionnaireResponsesSummary> {
+  const queryParams = userId ? `?userId=${encodeURIComponent(userId)}` : "";
+  return await request<QuestionnaireResponsesSummary>(
+    `/events/${eventId}/questionnaire/responses/summary${queryParams}`
+  );
+}
+
+/**
+ * Get list of attendees who haven't completed the questionnaire (organizers only)
+ */
+export async function getIncompleteAttendees(
+  eventId: string
+): Promise<IncompleteAttendeesResponse> {
+  return await request<IncompleteAttendeesResponse>(
+    `/events/${eventId}/questionnaire/responses/incomplete`
+  );
+}
+
+/**
+ * Export questionnaire responses as CSV (organizers only)
+ * Returns a blob URL that can be used to download the file
+ */
+export async function exportQuestionnaireResponses(
+  eventId: string
+): Promise<Blob> {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  const token = localStorage.getItem("authToken");
+
+  const response = await fetch(
+    `${API_BASE_URL}/events/${eventId}/questionnaire/responses/export`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const data = await response.json();
+    const error: ApiError = {
+      message: data.message || "An error occurred",
+      code: data.code,
+      statusCode: response.status,
+    };
+    throw error;
+  }
+
+  return await response.blob();
+}
+
+// =============================================================================
 // Connections Types & API
 // =============================================================================
 

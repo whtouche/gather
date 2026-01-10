@@ -248,7 +248,7 @@ Gather the info you need.
 - Optional questionnaire for "Maybe" responses
 - Save responses with RSVP
 
-### G3: Response Management
+### G3: Response Management [DONE]
 *Make sense of all those answers.*
 - View responses grouped by question
 - Filter responses by attendee
