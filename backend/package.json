@@ -12,7 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "job:retention": "tsx src/jobs/retentionJob.ts"
   },
   "keywords": [],
   "author": "",

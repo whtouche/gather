@@ -138,6 +138,14 @@ model Event {
   attendeeListVisibility AttendeeListVisibility @default(ATTENDEES_ONLY)
   allowInviteSharing     Boolean                @default(true)
 
+  // Data retention settings
+  dataRetentionMonths         Int      @default(24)  // Default 2 years (24 months)
+  wallRetentionMonths         Int?                   // Optional wall message retention period
+  retentionNotificationSent   Boolean  @default(false)
+  retentionNotificationSentAt DateTime?
+  archivedAt                  DateTime?              // When event was archived
+  scheduledForDeletionAt      DateTime?              // When event will be auto-deleted
+
   // Creator/owner
   creatorId       String
   creator         User        @relation("EventOrganizer", fields: [creatorId], references: [id])

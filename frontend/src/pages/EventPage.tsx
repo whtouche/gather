@@ -25,6 +25,7 @@ import { MassSmsHistoryPanel } from "../components/MassSmsHistoryPanel";
 import { PreviousAttendeesModal } from "../components/PreviousAttendeesModal";
 import { SmartSuggestionsModal } from "../components/SmartSuggestionsModal";
 import { EventNotificationSettings } from "../components/EventNotificationSettings";
+import { RetentionSettings } from "../components/RetentionSettings";
 import { QuestionnaireBuilder } from "../components/QuestionnaireBuilder";
 
 interface EventPageProps {
@@ -890,6 +891,13 @@ export function EventPage({ eventId }: EventPageProps) {
         {loggedIn && (
           <div className="mt-6">
             <EventNotificationSettings eventId={event.id} />
+          </div>
+        )}
+
+        {/* Data Retention Settings Section (Organizers Only) */}
+        {isOrganizer && (
+          <div className="mt-6">
+            <RetentionSettings eventId={event.id} isOrganizer={isOrganizer} />
           </div>
         )}
 

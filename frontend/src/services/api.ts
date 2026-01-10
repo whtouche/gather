@@ -857,6 +857,86 @@ export async function getEventState(eventId: string): Promise<EventStateResponse
 }
 
 // =============================================================================
+// Data Retention Types & API
+// =============================================================================
+
+/**
+ * Event retention settings
+ */
+export interface EventRetentionSettings {
+  dataRetentionMonths: number;
+  wallRetentionMonths: number | null;
+  retentionNotificationSent: boolean;
+  retentionNotificationSentAt: string | null;
+  archivedAt: string | null;
+  scheduledForDeletionAt: string | null;
+  estimatedArchivalDate: string | null;
+}
+
+/**
+ * Update retention settings input
+ */
+export interface UpdateRetentionSettingsInput {
+  dataRetentionMonths?: number;
+  wallRetentionMonths?: number | null;
+}
+
+/**
+ * Get retention settings for an event (organizers only)
+ */
+export async function getEventRetentionSettings(
+  eventId: string
+): Promise<EventRetentionSettings> {
+  return request(`/events/${eventId}/retention`);
+}
+
+/**
+ * Update retention settings for an event (organizers only)
+ */
+export async function updateEventRetentionSettings(
+  eventId: string,
+  data: UpdateRetentionSettingsInput
+): Promise<{ message: string }> {
+  return request(`/events/${eventId}/retention`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Archive an event immediately (organizers only)
+ */
+export async function archiveEvent(eventId: string): Promise<{ message: string }> {
+  return request(`/events/${eventId}/archive`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Schedule an event for permanent deletion (organizers only)
+ */
+export async function scheduleEventForDeletion(
+  eventId: string,
+  gracePeriodDays?: number
+): Promise<{ message: string; gracePeriodDays: number }> {
+  return request(`/events/${eventId}/schedule-deletion`, {
+    method: "POST",
+    body: JSON.stringify({ gracePeriodDays }),
+  });
+}
+
+/**
+ * Cancel scheduled deletion of an event (organizers only)
+ */
+export async function cancelScheduledDeletion(
+  eventId: string
+): Promise<{ message: string }> {
+  return request(`/events/${eventId}/schedule-deletion`, {
+    method: "DELETE",
+  });
+}
+
+// =============================================================================
 // Notification Types & API
 // =============================================================================
 

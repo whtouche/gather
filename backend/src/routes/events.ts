@@ -7,6 +7,13 @@ import { prisma } from "../utils/db.js";
 import { requireAuth } from "../middleware/auth.js";
 import { requireEventOrganizer } from "../middleware/eventAuth.js";
 import { computeEventState, canBeCancelled, getStateLabel } from "../utils/eventState.js";
+import {
+  updateEventRetentionSettings,
+  calculateArchivalDate,
+  archiveEvent,
+  scheduleEventForDeletion,
+  deleteExpiredWallPosts,
+} from "../utils/retention.js";
 
 const router = Router();
 
@@ -1296,6 +1303,257 @@ router.delete(
 
       res.json({
         message: "Organizer demoted successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// =============================================================================
+// Data Retention Endpoints
+// =============================================================================
+
+/**
+ * GET /api/events/:id/retention
+ * Get retention settings for an event
+ */
+router.get(
+  "/:id/retention",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: {
+          id: true,
+          dataRetentionMonths: true,
+          wallRetentionMonths: true,
+          retentionNotificationSent: true,
+          retentionNotificationSentAt: true,
+          archivedAt: true,
+          scheduledForDeletionAt: true,
+          state: true,
+          dateTime: true,
+          endDateTime: true,
+          createdAt: true,
+        },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Calculate archival date
+      const archivalDate = calculateArchivalDate(event);
+
+      res.json({
+        dataRetentionMonths: event.dataRetentionMonths,
+        wallRetentionMonths: event.wallRetentionMonths,
+        retentionNotificationSent: event.retentionNotificationSent,
+        retentionNotificationSentAt: event.retentionNotificationSentAt,
+        archivedAt: event.archivedAt,
+        scheduledForDeletionAt: event.scheduledForDeletionAt,
+        estimatedArchivalDate: archivalDate,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * PUT /api/events/:id/retention
+ * Update retention settings for an event
+ */
+router.put(
+  "/:id/retention",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+      const { dataRetentionMonths, wallRetentionMonths } = req.body;
+
+      // Validate inputs
+      if (dataRetentionMonths !== undefined) {
+        if (
+          typeof dataRetentionMonths !== "number" ||
+          dataRetentionMonths < 1 ||
+          dataRetentionMonths > 120
+        ) {
+          throw createApiError(
+            "Data retention months must be between 1 and 120",
+            400,
+            "INVALID_RETENTION_PERIOD"
+          );
+        }
+      }
+
+      if (wallRetentionMonths !== undefined && wallRetentionMonths !== null) {
+        if (
+          typeof wallRetentionMonths !== "number" ||
+          wallRetentionMonths < 1 ||
+          wallRetentionMonths > 120
+        ) {
+          throw createApiError(
+            "Wall retention months must be between 1 and 120",
+            400,
+            "INVALID_RETENTION_PERIOD"
+          );
+        }
+      }
+
+      // Update retention settings
+      await updateEventRetentionSettings(eventId, dataRetentionMonths, wallRetentionMonths);
+
+      // If wall retention is updated, apply it immediately
+      if (wallRetentionMonths !== undefined && wallRetentionMonths !== null) {
+        await deleteExpiredWallPosts(eventId, wallRetentionMonths);
+      }
+
+      res.json({
+        message: "Retention settings updated successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/events/:id/archive
+ * Archive an event immediately (organizer action)
+ */
+router.post(
+  "/:id/archive",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+
+      // Get event to check state
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { state: true, archivedAt: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      if (event.archivedAt) {
+        throw createApiError("Event is already archived", 400, "ALREADY_ARCHIVED");
+      }
+
+      // Archive the event
+      await archiveEvent(eventId);
+
+      res.json({
+        message: "Event archived successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/events/:id/schedule-deletion
+ * Schedule an event for permanent deletion
+ */
+router.post(
+  "/:id/schedule-deletion",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+      const { gracePeriodDays } = req.body;
+
+      // Validate grace period
+      const gracePeriod = gracePeriodDays || 30;
+      if (typeof gracePeriod !== "number" || gracePeriod < 1 || gracePeriod > 365) {
+        throw createApiError(
+          "Grace period must be between 1 and 365 days",
+          400,
+          "INVALID_GRACE_PERIOD"
+        );
+      }
+
+      // Get event to check state
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { scheduledForDeletionAt: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      if (event.scheduledForDeletionAt) {
+        throw createApiError(
+          "Event is already scheduled for deletion",
+          400,
+          "ALREADY_SCHEDULED"
+        );
+      }
+
+      // Schedule for deletion
+      await scheduleEventForDeletion(eventId, gracePeriod);
+
+      res.json({
+        message: "Event scheduled for deletion",
+        gracePeriodDays: gracePeriod,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * DELETE /api/events/:id/schedule-deletion
+ * Cancel scheduled deletion of an event
+ */
+router.delete(
+  "/:id/schedule-deletion",
+  requireAuth,
+  requireEventOrganizer,
+  async (req: EventAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = req.params.id;
+
+      // Get event to check state
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { scheduledForDeletionAt: true },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      if (!event.scheduledForDeletionAt) {
+        throw createApiError(
+          "Event is not scheduled for deletion",
+          400,
+          "NOT_SCHEDULED"
+        );
+      }
+
+      // Cancel scheduled deletion
+      await prisma.event.update({
+        where: { id: eventId },
+        data: { scheduledForDeletionAt: null },
+      });
+
+      res.json({
+        message: "Scheduled deletion cancelled",
       });
     } catch (error) {
       next(error);

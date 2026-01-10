@@ -358,7 +358,7 @@ Nice-to-haves for when the core is solid.
 - Recommend people from previous events
 - Relevance ranking for suggestions
 
-### J3: Data Retention System
+### J3: Data Retention System [DONE]
 *Keep it tidy.*
 - Configurable retention periods per event
 - Organizer notification before archival
