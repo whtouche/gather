@@ -1,0 +1,66 @@
+Perfect! Now let me provide a summary of what I implemented:
+
+## Summary
+
+I have successfully implemented **F4: Invite from Previous Attendees** (REQ-INV-025) for the Gather app. This feature allows event organizers to easily invite people from their previous events.
+
+### What Was Implemented
+
+#### Backend (Node.js/Express/TypeScript)
+
+1. **Utility Module** (`backend/src/utils/previousAttendees.ts`):
+   - `getPreviousAttendees()` - Retrieves users from events the organizer previously organized or attended
+   - `filterPreviousAttendeesByEvent()` - Filters attendees by a specific shared event
+   - Only includes users who RSVP'd "YES" to COMPLETED events
+   - Returns metadata: last event attended together, number of shared events
+
+2. **API Routes** (`backend/src/routes/previousAttendees.ts`):
+   - `GET /api/events/:id/previous-attendees` - List previous attendees with optional filtering
+   - `POST /api/events/:id/previous-attendees/invite` - Bulk invite selected users
+   - Masks contact information (email/phone) for privacy
+   - Automatically uses preferred contact method (email first, then SMS)
+   - Prevents duplicate invitations and notifies about existing RSVPs
+
+3. **Integration**:
+   - Registered routes in `backend/src/app.ts`
+   - Follows existing patterns from mass email/SMS features
+   - Uses existing invitation utilities (`createAndSendEmailInvitation`, `createAndSendSmsInvitation`)
+
+#### Frontend (React/TypeScript/Tailwind CSS)
+
+1. **API Client** (`frontend/src/services/api.ts`):
+   - Added `PreviousAttendee` interface and related types
+   - `getPreviousAttendees()` function with optional event filtering
+   - `invitePreviousAttendees()` function for bulk invitations
+
+2. **Modal Component** (`frontend/src/components/PreviousAttendeesModal.tsx`):
+   - Browse previous attendees with rich metadata display
+   - Shows last event attended together and shared event count
+   - Checkbox-based bulk selection with Select All/Clear options
+   - Visual indicators for available contact methods (Email/SMS badges)
+   - Disabled state for users without contact methods
+   - Loading, browse, sending, and results states
+   - Detailed results with breakdown of sent/failed/already invited/already RSVP'd
+
+3. **EventPage Integration** (`frontend/src/pages/EventPage.tsx`):
+   - Added "Invite from Previous Events" button in Organizer Actions section
+   - Styled with teal color scheme to distinguish from other invitation methods
+   - Only visible for PUBLISHED or ONGOING events
+   - Positioned alongside other mass communication features
+
+### Key Features
+
+✅ **Smart User Discovery**: Finds people from both events you organized AND events you attended  
+✅ **Rich Context**: Shows which event you last attended together and total shared events  
+✅ **Bulk Operations**: Select multiple people and send all invitations at once  
+✅ **Automatic Contact Method**: Uses email if available, falls back to SMS  
+✅ **Privacy-First**: Contact details are masked in all responses  
+✅ **Duplicate Prevention**: Checks for existing invitations and RSVPs  
+✅ **Clear Feedback**: Detailed results showing exactly what happened with each invitation  
+
+### TypeScript Compliance
+
+- ✅ Backend: No TypeScript errors in production code
+- ✅ Frontend: No TypeScript errors
+
+All code follows existing patterns and conventions from the codebase, particularly the mass email/SMS communication features.

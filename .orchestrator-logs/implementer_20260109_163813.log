@@ -1,0 +1,53 @@
+## Summary
+
+I've successfully implemented **D2: SMS Invitations** for the Gather app. Here's what was done:
+
+### Backend Changes
+
+1. **Database Schema** (`backend/prisma/schema.prisma`):
+   - Added `SmsInvitation` model to track SMS invitations with status (PENDING, SENT, RSVPD, FAILED)
+   - Added `SmsQuota` model to track daily and total SMS limits per event (100/day, 500/total as per spec)
+   - Added relations to `Event` and `InviteLink` models
+
+2. **SMS Service** (`backend/src/utils/sms.ts`):
+   - `sendInvitationSms()` - Sends SMS (currently logs to console, ready for Twilio integration)
+   - `createAndSendSmsInvitation()` - Creates invite link and SMS invitation record
+   - `getSmsQuotaInfo()` - Returns quota information for an event
+   - `checkSmsQuota()` - Validates if SMS can be sent within limits
+   - `getSmsInvitationStats()` - Returns aggregated stats
+   - `markSmsInvitationRsvpd()` - Updates status when recipient RSVPs
+   - `maskPhone()` - Privacy masking for phone numbers (shows last 4 digits)
+
+3. **API Routes** (`backend/src/routes/invitations.ts`):
+   - `POST /api/events/:id/invitations/sms` - Send SMS invitations to recipients
+   - `GET /api/events/:id/invitations/sms` - Get SMS invitation list and stats
+   - `GET /api/events/:id/invitations/sms/quota` - Get SMS quota info
+
+### Frontend Changes
+
+1. **API Types & Functions** (`frontend/src/services/api.ts`):
+   - Added SMS invitation types (recipient, send result, quota info, stats)
+   - Added `sendSmsInvitations()`, `getSmsInvitations()`, `getSmsQuota()` functions
+
+2. **SmsInviteModal** (`frontend/src/components/SmsInviteModal.tsx`):
+   - Modal for entering phone numbers and sending SMS invitations
+   - Displays quota information and limits
+   - Shows send results with success/failure status
+
+3. **SmsInvitationsPanel** (`frontend/src/components/SmsInvitationsPanel.tsx`):
+   - Panel showing all SMS invitations for an event
+   - Displays stats (total, sent, RSVP'd, failed)
+   - Shows quota usage information
+
+4. **EventPage** (`frontend/src/pages/EventPage.tsx`):
+   - Added "Send SMS Invites" button for organizers
+   - Added SmsInvitationsPanel below EmailInvitationsPanel
+   - Added SmsInviteModal
+
+### Key Features Implemented (per spec REQ-INV-005 and REQ-INV-006):
+- Send SMS invitations with event title, date/time, and invitation link
+- Messages fit within 160 characters
+- Rate limiting: 100 SMS/day and 500 SMS total per event
+- Quota tracking and warnings
+- Deduplication (prevents sending to already-invited numbers)
+- Masked phone display for privacy (***4567)

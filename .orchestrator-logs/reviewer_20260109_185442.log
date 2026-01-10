@@ -1,0 +1,50 @@
+## Review Summary
+
+### Files Reviewed
+The changes implement **F1: Waitlist Management** feature for the Gather app:
+
+**Backend:**
+- `backend/prisma/schema.prisma` - Added `Waitlist` model and `waitlistEnabled` field to Event
+- `backend/src/app.ts` - Added waitlist routes
+- `backend/src/routes/events.ts` - Added `waitlistEnabled` field handling
+- `backend/src/routes/rsvps.ts` - Added capacity/waitlist checks and notifications
+- `backend/src/routes/waitlist.ts` - New waitlist routes (join, leave, confirm, get status)
+
+**Frontend:**
+- `frontend/src/components/RSVPButtons.tsx` - Added waitlist UI (join/leave/confirm)
+- `frontend/src/pages/CreateEventPage.tsx` - Added waitlist toggle when capacity is set
+- `frontend/src/pages/EditEventPage.tsx` - Added waitlist toggle when capacity is set
+- `frontend/src/services/api.ts` - Added waitlist API types and functions
+
+### Issues Found and Fixed
+**No critical issues found.** The code is well-structured with:
+- Proper input validation
+- No SQL injection (using Prisma ORM)
+- No XSS vulnerabilities (React handles escaping)
+- Proper TypeScript typing
+- Good error handling patterns
+
+### Tests Written
+1. **Backend** (`backend/src/__tests__/waitlist.test.ts`): 14 tests covering:
+   - Waitlist model validation
+   - Position calculation (FIFO)
+   - Business logic (capacity checks, waitlist enable/disable)
+   - Notification flow logic
+   - Error code handling
+
+2. **Frontend** (`frontend/src/components/RSVPButtons.test.tsx`): 19 tests covering:
+   - Basic RSVP functionality
+   - Capacity and waitlist UI states
+   - Waitlist position display
+   - Spot notification and confirmation
+   - Join/leave waitlist actions
+   - Error handling
+   - Loading states
+
+### Test Results
+- **Backend**: 127 tests passed ✅
+- **Frontend**: 104 tests passed ✅
+- **TypeScript**: Both backend and frontend compile without errors ✅
+
+### Remaining Concerns
+None. The feature is well-implemented and ready for commit.

@@ -1,0 +1,45 @@
+No remote is configured. The commit was successful locally.
+
+---
+
+## Summary
+
+**Commit Message:**
+```
+feat(wall): E1 Event Wall (Basic)
+
+Implement the basic event wall functionality:
+- Wall access control (confirmed attendees only)
+- Create text posts (max 2000 characters)
+- Display posts with author, timestamp, role badge
+- Chronological post feed
+
+Key changes:
+- Add WallPost model to Prisma schema
+- Add wall routes for CRUD operations
+- Add EventWall component with post creation/display
+- Integrate wall into EventPage for attendees
+- Add API service methods for wall operations
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**Commit Hash:** `2d24855`
+
+**Push Status:** Failed - no remote repository configured. The commit is saved locally.
+
+**Roadmap Update:**
+- **E1: Event Wall (Basic)** → marked as **[DONE]**
+- Group E header remains unmarked (E2, E3, E4 still pending)
+
+**Files Committed (10 files, +1647 lines):**
+- `backend/prisma/schema.prisma` (modified)
+- `backend/src/routes/wall.ts` (new)
+- `backend/src/__tests__/wall.test.ts` (new)
+- `backend/src/app.ts` (modified)
+- `frontend/src/components/EventWall.tsx` (new)
+- `frontend/src/components/EventWall.test.tsx` (new)
+- `frontend/src/pages/EventPage.tsx` (modified)
+- `frontend/src/pages/EventPage.test.tsx` (modified)
+- `frontend/src/services/api.ts` (modified)
+- `openspec/ROADMAP.md` (modified)

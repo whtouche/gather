@@ -1,0 +1,53 @@
+## Summary
+
+I successfully implemented **F2: Mass SMS Communication** for the Gather app. Here's what was implemented:
+
+### Backend Changes
+
+1. **New Prisma model** (`backend/prisma/schema.prisma`):
+   - Added `SmsOptOut` model to track users who opted out of SMS for specific events
+
+2. **New utility file** (`backend/src/utils/massSms.ts`):
+   - `checkMassSmsQuota()` - Check if organizer can send mass SMS (3/week limit, 24h spacing)
+   - `getMassSmsQuotaInfo()` - Get quota info for display
+   - `getSmsRecipientsByAudience()` - Get recipients filtered by audience (ALL, YES_ONLY, MAYBE_ONLY, NO_ONLY, WAITLIST_ONLY)
+   - `sendMassSms()` - Send mass SMS to selected audience
+   - `getMassSmsHistory()` - Get history of sent mass SMS
+   - `getMassSmsDetails()` - Get details of a specific mass SMS
+   - `handleSmsOptOut()` - Handle STOP opt-out from users
+
+3. **Updated routes** (`backend/src/routes/messages.ts`):
+   - `GET /api/events/:id/messages/sms/quota` - Get SMS quota
+   - `GET /api/events/:id/messages/sms/preview` - Preview recipients
+   - `POST /api/events/:id/messages/sms` - Send mass SMS
+   - `GET /api/events/:id/messages/sms/history` - Get SMS history
+   - `GET /api/events/:id/messages/sms/:messageId` - Get specific SMS details
+   - `POST /api/events/:id/messages/sms/opt-out` - Opt out of SMS for an event
+
+### Frontend Changes
+
+1. **New API types and functions** (`frontend/src/services/api.ts`):
+   - Added types for `MassSmsQuota`, `MassSmsRecipientPreview`, `SendMassSmsResponse`, `MassSmsRecord`, `MassSmsDetails`
+   - Added API functions: `getMassSmsQuota()`, `previewMassSmsRecipients()`, `sendMassSms()`, `getMassSmsHistory()`, `getMassSmsDetails()`, `optOutOfEventSms()`
+
+2. **New component** (`frontend/src/components/MassSmsModal.tsx`):
+   - Modal for composing and sending mass SMS
+   - Real-time character counter (160 char limit)
+   - Audience selection with recipient preview
+   - Shows opted-out count
+   - Quota display with progress bar
+
+3. **New component** (`frontend/src/components/MassSmsHistoryPanel.tsx`):
+   - Displays history of sent mass SMS messages
+   - Expandable cards showing message details and stats
+
+4. **Updated EventPage** (`frontend/src/pages/EventPage.tsx`):
+   - Added "Send Mass SMS" button for organizers
+   - Integrated MassSmsModal and MassSmsHistoryPanel
+
+### Features per spec REQ-MSG-012:
+- Compose mass SMS (max 160 characters) with real-time character count
+- Target specific audiences (All RSVP'd, Yes only, Maybe only, No only, Waitlist only)
+- STOP opt-out handling (users can opt out of SMS for specific events)
+- Delivery tracking with sent/failed counts
+- Rate limiting (3 SMS/week per event, 24h minimum spacing)

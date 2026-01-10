@@ -1,0 +1,69 @@
+All tests pass. Let me provide a summary of the review:
+
+---
+
+## Review Summary
+
+### Issues Found and Fixed
+
+1. **Backend Test Mocks Missing** - Added mocks for `moderationLog`, `notification`, and `user` tables in `wall.test.ts`
+
+2. **Mock WallPost Missing New Fields** - Added `isPinned` and `pinnedAt` fields to the mock wall post in tests
+
+3. **Test Case Incorrectly Expected 403 for Organizer Delete** - The existing test expected non-organizers to get 403 when deleting others' posts, but didn't account for the new organizer moderation capability. Updated test to clarify that non-organizers cannot delete others' posts, and added a new test for organizers deleting others' posts.
+
+4. **Frontend Mock Posts Missing New Fields** - Added `isPinned` and `pinnedAt` to all mock WallPost objects in `EventWall.test.tsx`
+
+5. **Frontend API Mocks Missing New Functions** - Added mocks for `pinWallPost`, `unpinWallPost`, and `getModerationLog` in the test file
+
+### Tests Written
+
+**Backend (47 tests, 12 new):**
+- `POST /api/events/:id/wall/:postId/pin` - 6 tests
+  - Requires authentication
+  - Returns 404 for non-existent event
+  - Returns 403 for non-organizers
+  - Returns 404 for non-existent post
+  - Returns 400 when trying to pin a reply
+  - Returns 400 when post is already pinned
+  - Pins a post successfully
+
+- `DELETE /api/events/:id/wall/:postId/pin` - 4 tests
+  - Requires authentication
+  - Returns 403 for non-organizers
+  - Returns 400 when post is not pinned
+  - Unpins a post successfully
+
+- `GET /api/events/:id/wall/moderation-log` - 4 tests
+  - Requires authentication
+  - Returns 404 for non-existent event
+  - Returns 403 for non-organizers
+  - Returns moderation logs for organizers
+
+- Updated `DELETE /api/events/:id/wall/:postId` test to cover organizer delete behavior
+
+**Frontend (38 tests, 10 new):**
+- Shows pinned posts with pinned indicator
+- Shows pin button for organizers
+- Does not show pin button for non-organizers
+- Shows moderation log button for organizers
+- Does not show moderation log button for non-organizers
+- Allows organizer to delete another user's post
+- Pins a post when pin button is clicked
+- Unpins a post when unpin button is clicked
+- Opens moderation log modal when button is clicked
+
+### Code Quality Review
+
+The implementation is solid with:
+- Proper authorization checks (organizers only for moderation actions)
+- Correct error codes and messages
+- Moderation log entries created for all moderation actions
+- Notification sent to post author when their post is deleted by moderator
+- Proper sorting of pinned posts (pinned first, then by creation time)
+- Only top-level posts can be pinned (replies cannot be pinned)
+- Clean TypeScript types for all new API functions
+
+### No Critical Issues Found
+
+The implementation follows the existing patterns in the codebase and handles edge cases properly. Security is maintained with proper authentication and authorization checks on all endpoints.

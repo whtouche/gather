@@ -1,0 +1,44 @@
+Implementation complete. Here's a summary of what was implemented for **E4: Capacity & Waitlist**:
+
+## Summary
+
+### Backend Changes
+
+1. **Prisma Schema** (`backend/prisma/schema.prisma`):
+   - Added `Waitlist` model with fields for tracking position, notification status, and expiration
+   - Added `waitlistEnabled` boolean field to `Event` model
+   - Added `WAITLIST_SPOT_AVAILABLE` notification type
+   - Added relations between `Waitlist`, `User`, and `Event` models
+
+2. **Waitlist Routes** (`backend/src/routes/waitlist.ts` - new file):
+   - `POST /api/events/:id/waitlist` - Join the waitlist
+   - `GET /api/events/:id/waitlist` - Get user's waitlist status and position
+   - `DELETE /api/events/:id/waitlist` - Leave the waitlist
+   - `POST /api/events/:id/waitlist/confirm` - Confirm attendance when notified of available spot
+
+3. **RSVP Routes** (`backend/src/routes/rsvps.ts`):
+   - Updated to notify waitlist when someone changes from YES to NO/MAYBE
+   - Updated to notify waitlist when someone removes their RSVP
+   - Updated error handling to indicate when waitlist is available
+
+4. **Event Routes** (`backend/src/routes/events.ts`):
+   - Added `waitlistEnabled` to create/update event validation and responses
+
+### Frontend Changes
+
+1. **API Service** (`frontend/src/services/api.ts`):
+   - Added `waitlistEnabled` to `EventDetails`, `CreatedEvent`, `CreateEventInput`, `UpdateEventInput` interfaces
+   - Added waitlist-related types: `WaitlistEntry`, `WaitlistStatusResponse`, `JoinWaitlistResponse`
+   - Added functions: `getWaitlistStatus`, `joinWaitlist`, `leaveWaitlist`, `confirmWaitlistSpot`
+   - Added `WAITLIST_SPOT_AVAILABLE` to notification types
+
+2. **RSVPButtons Component** (`frontend/src/components/RSVPButtons.tsx`):
+   - Added waitlist state management
+   - Shows waitlist notification when user's spot is available
+   - Shows waitlist position when user is on waitlist
+   - Shows "Event at capacity" message with waitlist join option
+   - Hides YES button when at capacity (unless user already RSVP'd yes)
+
+3. **Create/Edit Event Pages**:
+   - Added `waitlistEnabled` checkbox that appears when capacity is set
+   - Checkbox enables/disables waitlist functionality for the event

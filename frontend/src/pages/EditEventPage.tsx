@@ -8,6 +8,7 @@ import {
   type EventDetails,
   type UpdateEventInput,
 } from "../services/api";
+import { QuestionnaireBuilder } from "../components/QuestionnaireBuilder";
 
 /**
  * Event form data structure
@@ -855,6 +856,11 @@ export function EditEventPage() {
                 </p>
               </div>
             </div>
+          </section>
+
+          {/* Questionnaire Section */}
+          <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <QuestionnaireBuilder eventId={eventId!} isOrganizer={true} />
           </section>
 
           {/* Action Buttons */}

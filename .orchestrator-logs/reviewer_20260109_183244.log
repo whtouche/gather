@@ -1,0 +1,62 @@
+## Review Summary
+
+### Files Reviewed
+- `backend/src/routes/wall.ts` - Event Wall API routes
+- `frontend/src/components/EventWall.tsx` - Event Wall UI component  
+- `frontend/src/services/api.ts` - API client functions
+- `backend/prisma/schema.prisma` - Database schema for WallPost and WallReaction
+
+### Code Quality Assessment
+
+**Backend (`wall.ts`)**:
+- Clean, well-structured code with proper TypeScript types
+- Good security practices:
+  - Authentication via `requireAuth` middleware on all routes
+  - Authorization checks (only confirmed attendees/organizers can access)
+  - Input validation (content length limits, empty content checks)
+  - Event/Post ownership verification before operations
+- No SQL injection risks (using Prisma ORM)
+- Proper error handling with descriptive error codes
+
+**Frontend (`EventWall.tsx`)**:
+- Well-organized component structure with separated sub-components
+- Proper state management for loading, error, and data states
+- Good user feedback (loading spinners, error messages)
+- Recursive reply handling for nested comments
+
+**API Client (`api.ts`)**:
+- Clean type definitions for Wall types
+- Proper API functions for all wall operations
+
+**Schema (`schema.prisma`)**:
+- Proper relationships and indexes for WallPost and WallReaction
+- Depth tracking for reply nesting limits
+
+### Issues Found and Fixed
+None - the code was well-written with no critical issues.
+
+### Tests Written/Updated
+
+**Backend** (`backend/src/__tests__/wall.test.ts`):
+- Added `wallReaction` mocks to the Prisma mock
+- Added complete test coverage for reaction endpoints:
+  - `POST /api/events/:id/wall/:postId/reactions` - 6 test cases
+  - `DELETE /api/events/:id/wall/:postId/reactions` - 5 test cases
+- Updated `mockWallPost` to include required fields for nested data
+
+**Frontend** (`frontend/src/components/EventWall.test.tsx`):
+- Added `addReaction` and `removeReaction` to API mocks
+- Updated `mockPosts` to include reaction and reply fields
+- Added new test sections:
+  - **Reactions**: 3 tests for displaying counts, adding, and removing reactions
+  - **Replies**: 3 tests for displaying replies, counts, and reply forms
+- Fixed delete button selector to match component (`"Delete"` instead of `"Delete post"`)
+- Fixed tests that found multiple elements due to nested replies
+
+### Test Results
+- **Backend**: 97 tests passing (all wall tests green)
+- **Frontend**: 76 tests passing (all EventWall tests green)
+- **TypeScript**: No compilation errors in either frontend or backend
+
+### Remaining Concerns
+None - the feature implementation is solid and well-tested.

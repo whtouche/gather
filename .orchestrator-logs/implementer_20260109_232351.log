@@ -1,0 +1,70 @@
+Perfect! Now let me create a summary of what was implemented.
+
+## Summary
+
+I have successfully implemented **G1: Questionnaire Builder** for the Gather app. Here's what was completed:
+
+### Backend Implementation
+
+1. **Database Schema** (`backend/prisma/schema.prisma`):
+   - Added `QuestionnaireQuestion` model with support for 7 question types:
+     - SHORT_TEXT (single line, max 200 chars)
+     - LONG_TEXT (paragraph, max 2000 chars)
+     - SINGLE_CHOICE (radio buttons, 2-10 options)
+     - MULTIPLE_CHOICE (checkboxes, 2-10 options)
+     - YES_NO (boolean)
+     - NUMBER (integer or decimal)
+     - DATE (date picker)
+   - Added `QuestionnaireResponse` model for storing attendee answers
+   - Included fields for required/optional questions, help text, and ordering
+
+2. **API Routes** (`backend/src/routes/questionnaire.ts`):
+   - `GET /api/events/:eventId/questionnaire` - Get all questions for an event
+   - `POST /api/events/:eventId/questionnaire` - Create a new question (organizers only)
+   - `PATCH /api/events/:eventId/questionnaire/:questionId` - Update a question (organizers only)
+   - `DELETE /api/events/:eventId/questionnaire/:questionId` - Delete a question (organizers only)
+   - `POST /api/events/:eventId/questionnaire/reorder` - Reorder questions (organizers only)
+   - Full validation for all question types and constraints (max lengths, choice counts, etc.)
+
+3. **App Integration** (`backend/src/app.ts`):
+   - Registered questionnaire routes in the Express app
+
+### Frontend Implementation
+
+1. **API Client** (`frontend/src/services/api.ts`):
+   - Added TypeScript types for `QuestionType`, `QuestionnaireQuestion`, `CreateQuestionInput`, `UpdateQuestionInput`
+   - Implemented all API functions: `getQuestionnaire`, `createQuestion`, `updateQuestion`, `deleteQuestion`, `reorderQuestions`
+
+2. **QuestionnaireBuilder Component** (`frontend/src/components/QuestionnaireBuilder.tsx`):
+   - Full CRUD interface for managing questionnaire questions
+   - Question form with:
+     - Question text input (500 char limit)
+     - Question type selector with descriptions
+     - Dynamic choice editor for single/multiple choice questions (add/remove options)
+     - Required/optional toggle
+     - Help text input (200 char limit)
+   - Questions list showing all questions with order numbers
+   - Edit and delete functionality for each question
+   - Different views for organizers (full builder) vs attendees (read-only view)
+
+3. **Page Integration**:
+   - Added to `EditEventPage.tsx` - Organizers can build questionnaires while editing events
+   - Added to `EventPage.tsx` - Visible to all users (organizers can edit, attendees can view)
+
+### Testing
+
+- ✅ Backend TypeScript compilation passes (no new errors)
+- ✅ Frontend TypeScript compilation passes with no errors
+- ✅ Prisma schema validation passes
+
+### Features Delivered
+
+All requirements from REQ-INV-019 and REQ-INV-020 have been implemented:
+- ✅ Create custom questions for events
+- ✅ Multiple question types (text, choice, yes/no, number, date)
+- ✅ Mark questions required or optional
+- ✅ Add help text to questions
+- ✅ Question ordering support
+- ✅ Full validation (character limits, choice counts, etc.)
+
+The implementation is ready for the next tasks in Group G (G2: Questionnaire During RSVP, G3: Response Management, G4: Questionnaire Editing).

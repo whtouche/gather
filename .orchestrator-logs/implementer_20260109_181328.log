@@ -1,0 +1,29 @@
+## Summary
+
+I implemented **D4: Event Privacy Settings** which completes Group D (Communication Station).
+
+### What was implemented:
+
+**Backend Changes (`backend/src/middleware/eventAuth.ts`):**
+- Added new `InviteSharingRequest` interface
+- Added new `requireCanShareInvite` middleware that allows:
+  - Organizers to always share invite links
+  - Confirmed attendees (RSVP YES) to share invite links when `allowInviteSharing` is enabled on the event
+
+**Backend Changes (`backend/src/routes/invitations.ts`):**
+- Updated the `POST /api/events/:id/invitations` endpoint to use the new `requireCanShareInvite` middleware instead of `requireEventOrganizer`
+- This allows confirmed attendees to generate shareable invite links when the event's `allowInviteSharing` setting is true
+
+**Frontend Changes (`frontend/src/pages/EventPage.tsx`):**
+- Added a "Share This Event" section that shows for non-organizer users who:
+  - Have RSVP'd "YES" (confirmed attendees)
+  - Are viewing an event where `allowInviteSharing` is true
+  - The event is in "PUBLISHED" or "ONGOING" state
+
+### Pre-existing functionality that was already in place:
+- Database schema already had `attendeeListVisibility` and `allowInviteSharing` fields
+- CreateEventPage and EditEventPage already had the privacy settings UI
+- The attendee list endpoint already respected `attendeeListVisibility` (showing full list to attendees only when set to `ATTENDEES_ONLY`, otherwise only to organizers)
+
+### TypeScript checks:
+- Both backend and frontend pass TypeScript checks with no errors

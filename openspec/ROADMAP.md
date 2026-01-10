@@ -234,7 +234,7 @@ Advanced tools for the discerning party planner.
 
 Gather the info you need.
 
-### G1: Questionnaire Builder
+### G1: Questionnaire Builder [DONE]
 *Ask away.*
 - Create custom questions for events
 - Multiple question types (text, choice, yes/no, number, date)

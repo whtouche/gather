@@ -1,0 +1,45 @@
+I have successfully implemented **E1: Event Wall (Basic)**. Here's a summary of what was implemented:
+
+## Summary
+
+### Database Schema
+- Added `WallPost` model to Prisma schema with:
+  - `id`, `eventId`, `authorId`, `content`, `createdAt`, `updatedAt`
+  - Relations to `Event` and `User` models
+  - Indexes for efficient queries
+
+### Backend API (`backend/src/routes/wall.ts`)
+- **GET /api/events/:id/wall** - Get wall posts for an event
+  - Only accessible by confirmed attendees (RSVP YES) or organizers
+  - Returns posts in reverse chronological order (newest first)
+  - Includes author info with organizer badge
+  
+- **POST /api/events/:id/wall** - Create a new wall post
+  - Content validation (1-2000 characters)
+  - Only confirmed attendees or organizers can post
+  
+- **DELETE /api/events/:id/wall/:postId** - Delete a wall post
+  - Only the author can delete their own post
+
+### Frontend
+- Added wall API functions to `frontend/src/services/api.ts`:
+  - `getWallPosts()`, `createWallPost()`, `deleteWallPost()`
+  - TypeScript types for `WallPost`, `WallPostAuthor`, etc.
+
+- Created `frontend/src/components/EventWall.tsx`:
+  - Post creation form with character counter (max 2000)
+  - Posts displayed with author photo, name, organizer badge
+  - Relative timestamps ("2 hours ago")
+  - Delete button for own posts
+  - Access control UI (locked message for non-attendees)
+
+- Integrated into `EventPage.tsx`:
+  - Wall shown for non-draft, non-cancelled events
+  - Refreshes on RSVP change
+
+### Features Implemented
+- Wall access control (confirmed attendees only)
+- Create text posts (max 2000 characters)
+- Display posts with author, timestamp, role badge
+- Chronological post feed (newest first)
+- Delete own posts

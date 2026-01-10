@@ -1,0 +1,44 @@
+No remote is configured. The commit was successful locally.
+
+---
+
+## Summary
+
+**Commit Message:**
+```
+feat(capacity): E4 Capacity & Waitlist - event capacity limits
+
+Implement event capacity management with waitlist functionality:
+- Add maxCapacity field to events in schema
+- Create waitlist model with position tracking
+- Block RSVP when event reaches capacity
+- Waitlist signup with automatic position assignment
+- Auto-notify waitlist when spots open (RSVP cancellation)
+- Frontend capacity input on create/edit event pages
+- RSVPButtons shows waitlist status and join/leave options
+- API endpoints for waitlist management
+
+Completes Group E: The Wall
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**Push Status:** ⚠️ Failed - No remote repository configured. Commit `379bea9` created locally.
+
+**Roadmap Updates:**
+- ✅ E4: Capacity & Waitlist → [DONE]
+- ✅ Group E: The Wall → [DONE] (all tasks in group complete)
+
+**Files Committed (12 files, +2048/-62 lines):**
+- `backend/prisma/schema.prisma`
+- `backend/src/app.ts`
+- `backend/src/routes/events.ts`
+- `backend/src/routes/rsvps.ts`
+- `backend/src/routes/waitlist.ts` (new)
+- `backend/src/__tests__/waitlist.test.ts` (new)
+- `frontend/src/components/RSVPButtons.tsx`
+- `frontend/src/components/RSVPButtons.test.tsx` (new)
+- `frontend/src/pages/CreateEventPage.tsx`
+- `frontend/src/pages/EditEventPage.tsx`
+- `frontend/src/services/api.ts`
+- `openspec/ROADMAP.md`

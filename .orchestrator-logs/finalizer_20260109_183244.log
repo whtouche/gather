@@ -1,0 +1,30 @@
+No remote is configured. The commit is complete locally.
+
+---
+
+## Summary
+
+**Commit Message:**
+```
+feat(wall): E2 Wall Interactions - reactions and replies
+
+Implement wall interaction features:
+- Like/heart reactions on posts with toggle functionality
+- Reply to posts (nested comments, 2-level max)
+- Remove own reactions
+- Post and reply count display
+
+Key changes:
+- backend/prisma/schema.prisma: Add Reaction and Reply models
+- backend/src/routes/wall.ts: Add endpoints for reactions and replies
+- frontend/src/components/EventWall.tsx: Interactive UI for likes/replies
+- frontend/src/services/api.ts: API client methods for wall interactions
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**Push Status:** ⚠️ Failed - No remote repository configured. The commit `7b991c8` has been created locally.
+
+**Roadmap Update:**
+- **E2: Wall Interactions** → [DONE] ✓
+- Group E header remains unmarked (E3: Wall Moderation and E4: Capacity & Waitlist still pending)

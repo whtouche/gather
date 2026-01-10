@@ -1,0 +1,45 @@
+## Summary
+
+I've successfully implemented **D3: Profile Management** for the Gather app. Here's what was implemented:
+
+### Backend Changes
+
+1. **Database Schema** (`backend/prisma/schema.prisma`):
+   - Added `ProfileVisibility` enum with values: `CONNECTIONS`, `ORGANIZERS_ONLY`, `PRIVATE`
+   - Added visibility fields to User model: `photoVisibility`, `bioVisibility`, `locationVisibility` (all defaulting to `CONNECTIONS`)
+
+2. **Profile Routes** (`backend/src/routes/profile.ts`):
+   - `GET /api/profile` - Get current user's full profile with visibility settings
+   - `PATCH /api/profile` - Update profile fields and visibility settings with validation
+   - `GET /api/users/:id` - View another user's public profile with visibility filtering based on relationship (connection via shared events, organizer status)
+
+3. **Updated Auth Routes** (`backend/src/routes/auth.ts`):
+   - Added visibility settings to `/auth/login/verify` and `/auth/me` responses
+
+4. **App Registration** (`backend/src/app.ts`):
+   - Registered profile routes at `/api/profile` and `/api` (for `/api/users/:id`)
+
+### Frontend Changes
+
+1. **API Service** (`frontend/src/services/api.ts`):
+   - Added `ProfileVisibility` type
+   - Added `UserProfile`, `UpdateProfileInput`, `PublicUserProfile` interfaces
+   - Added `getProfile()`, `updateProfile()`, `getPublicProfile()`, `getCurrentUser()` functions
+
+2. **Profile Page** (`frontend/src/pages/ProfilePage.tsx`):
+   - Full profile editing UI with photo URL, display name, bio, location
+   - Per-field visibility controls with dropdown selectors
+   - Privacy settings legend explaining visibility options
+   - Save functionality with validation and success feedback
+
+3. **User Profile Page** (`frontend/src/pages/UserProfilePage.tsx`):
+   - View other users' public profiles with visibility-filtered fields
+   - Shows relationship badges (Connection, Event Organizer)
+   - Privacy notice for non-connections
+
+4. **Routes** (`frontend/src/App.tsx`):
+   - Added `/profile` route for ProfilePage
+   - Added `/users/:id` route for UserProfilePage
+
+5. **Dashboard** (`frontend/src/pages/DashboardPage.tsx`):
+   - Added Profile link in header navigation

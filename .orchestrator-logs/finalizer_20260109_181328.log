@@ -1,0 +1,31 @@
+No remotes are configured. The commit is complete locally.
+
+---
+
+## Summary
+
+**Commit Message Used:**
+```
+feat(privacy): D4 Event Privacy Settings
+
+Implement event privacy controls for the Gather app:
+- Attendee list visibility control (all attendees vs organizers only)
+- Allow/disallow invite link sharing toggle
+- Middleware to enforce sharing permissions (requireCanShareInvite)
+- Frontend privacy settings display on EventPage
+
+Key files:
+- backend/src/middleware/eventAuth.ts: New sharing permission middleware
+- backend/src/routes/invitations.ts: Updated invitation routes
+- frontend/src/pages/EventPage.tsx: Privacy settings UI
+
+Completes Group D (Communication Station) - all D1-D4 tasks now done.
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**Push Status:** Failed - no remote repository configured. Commit completed locally (SHA: `189670d`).
+
+**Roadmap Status:**
+- **D4: Event Privacy Settings** - [DONE]
+- **Group D: Communication Station** - [DONE] (all tasks D1-D4 complete)

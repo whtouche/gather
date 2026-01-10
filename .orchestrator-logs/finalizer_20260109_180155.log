@@ -1,0 +1,37 @@
+No remote is configured. The commit is complete locally.
+
+## Summary
+
+**Commit Message:**
+```
+feat(communications): D2 SMS Invitations & D3 Profile Management
+
+Implements SMS invitation system and user profile management:
+
+D2 - SMS Invitations:
+- Add SMS utility for sending invitations via SMS
+- Implement SmsInvitationsPanel and SmsInviteModal components
+- Add shortened invitation links for SMS
+- Include rate limiting and quota tracking
+- Add SMS invitation tests
+
+D3 - Profile Management:
+- Add ProfilePage for managing own profile
+- Add UserProfilePage for viewing other users
+- Implement profile routes with visibility settings
+- Support optional profile fields (photo, bio, location)
+- Add profile tests
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**Commit:** `73a5b51` (27 files changed, 4897 insertions, 411 deletions)
+
+**Push Status:** Failed - no remote repository configured. Commit is saved locally.
+
+**Roadmap Status:**
+- **D1: Email Invitations** - [DONE] ✓
+- **D2: SMS Invitations** - [DONE] ✓
+- **D3: Profile Management** - [DONE] ✓
+- **D4: Event Privacy Settings** - Still pending
+- **Group D** - Not yet complete (D4 remaining)

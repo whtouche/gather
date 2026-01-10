@@ -12,6 +12,7 @@ import wallRoutes from "./routes/wall.js";
 import waitlistRoutes from "./routes/waitlist.js";
 import messagesRoutes from "./routes/messages.js";
 import previousAttendeesRoutes from "./routes/previousAttendees.js";
+import questionnaireRoutes from "./routes/questionnaire.js";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/events", rsvpRoutes);
 app.use("/api/events", wallRoutes);
 app.use("/api/events", waitlistRoutes);
 app.use("/api/events", messagesRoutes);
+app.use("/api/events", questionnaireRoutes);
 app.use("/api", invitationRoutes);
 app.use("/api", previousAttendeesRoutes);
 app.use("/api/dashboard", dashboardRoutes);

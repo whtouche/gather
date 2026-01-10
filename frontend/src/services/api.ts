@@ -1818,6 +1818,124 @@ export async function invitePreviousAttendees(
   });
 }
 
+// =============================================================================
+// Questionnaire API
+// =============================================================================
+
+export type QuestionType =
+  | "SHORT_TEXT"
+  | "LONG_TEXT"
+  | "SINGLE_CHOICE"
+  | "MULTIPLE_CHOICE"
+  | "YES_NO"
+  | "NUMBER"
+  | "DATE";
+
+export interface QuestionnaireQuestion {
+  id: string;
+  eventId: string;
+  questionText: string;
+  questionType: QuestionType;
+  isRequired: boolean;
+  helpText: string | null;
+  orderIndex: number;
+  choices: string[] | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateQuestionInput {
+  questionText: string;
+  questionType: QuestionType;
+  isRequired?: boolean;
+  helpText?: string;
+  choices?: string[];
+}
+
+export interface UpdateQuestionInput {
+  questionText?: string;
+  isRequired?: boolean;
+  helpText?: string | null;
+  choices?: string[];
+  orderIndex?: number;
+}
+
+/**
+ * Get all questions for an event's questionnaire
+ */
+export async function getQuestionnaire(
+  eventId: string
+): Promise<QuestionnaireQuestion[]> {
+  const response = await request<{ questions: QuestionnaireQuestion[] }>(
+    `/events/${eventId}/questionnaire`
+  );
+  return response.questions;
+}
+
+/**
+ * Create a new question for an event's questionnaire
+ */
+export async function createQuestion(
+  eventId: string,
+  input: CreateQuestionInput
+): Promise<QuestionnaireQuestion> {
+  const response = await request<{ question: QuestionnaireQuestion }>(
+    `/events/${eventId}/questionnaire`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    }
+  );
+  return response.question;
+}
+
+/**
+ * Update a question
+ */
+export async function updateQuestion(
+  eventId: string,
+  questionId: string,
+  input: UpdateQuestionInput
+): Promise<QuestionnaireQuestion> {
+  const response = await request<{ question: QuestionnaireQuestion }>(
+    `/events/${eventId}/questionnaire/${questionId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }
+  );
+  return response.question;
+}
+
+/**
+ * Delete a question
+ */
+export async function deleteQuestion(
+  eventId: string,
+  questionId: string
+): Promise<void> {
+  await request<void>(`/events/${eventId}/questionnaire/${questionId}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Reorder questions
+ */
+export async function reorderQuestions(
+  eventId: string,
+  questionIds: string[]
+): Promise<QuestionnaireQuestion[]> {
+  const response = await request<{ questions: QuestionnaireQuestion[] }>(
+    `/events/${eventId}/questionnaire/reorder`,
+    {
+      method: "POST",
+      body: JSON.stringify({ questionIds }),
+    }
+  );
+  return response.questions;
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -1882,4 +2000,9 @@ export default {
   confirmWaitlistSpot,
   getPreviousAttendees,
   invitePreviousAttendees,
+  getQuestionnaire,
+  createQuestion,
+  updateQuestion,
+  deleteQuestion,
+  reorderQuestions,
 };

@@ -1,0 +1,39 @@
+## Summary
+
+I successfully implemented **E2: Wall Interactions** for the Gather app. Here's what was completed:
+
+### Database Changes (`backend/prisma/schema.prisma`)
+- Added `WallReaction` model for heart/like reactions with unique constraint per user/post
+- Extended `WallPost` model with:
+  - `parentId` field for reply support (self-referential relation)
+  - `depth` field to track nesting level (0 = post, 1 = reply, 2 = reply-to-reply)
+  - `reactions` relation to track reactions
+
+### Backend Routes (`backend/src/routes/wall.ts`)
+- Updated `GET /:id/wall` to fetch posts with nested replies (2 levels max) and reactions
+- Updated `POST /:id/wall` to support creating replies via `parentId` parameter, with:
+  - Different max content length for replies (1000 chars) vs posts (2000 chars)
+  - Automatic depth calculation with max depth enforcement
+- Added `POST /:id/wall/:postId/reactions` to add a heart reaction
+- Added `DELETE /:id/wall/:postId/reactions` to remove own reaction
+
+### Frontend API (`frontend/src/services/api.ts`)
+- Added `WallReply` interface for nested replies
+- Extended `WallPost` interface with `reactionCount`, `userHasReacted`, `replyCount`, and `replies`
+- Added `addReaction()` and `removeReaction()` API functions
+- Updated `createWallPost()` to accept optional `parentId` for replies
+
+### Frontend Component (`frontend/src/components/EventWall.tsx`)
+- Refactored into modular components:
+  - `PostItem` - Renders posts/replies with reactions and reply buttons
+  - `ReplyForm` - Inline form for submitting replies
+  - Icon components (`HeartIcon`, `ReplyIcon`, `TrashIcon`, `SpinnerIcon`)
+- Features implemented:
+  - Heart/like reactions with toggle (click to add, click again to remove)
+  - Reply functionality with max 2-level nesting
+  - Real-time reaction count display
+  - Reply count display on posts
+  - Visual distinction between posts and replies (indentation, smaller avatars)
+  - Delete functionality works for both posts and replies
+
+All TypeScript checks pass in both backend and frontend.

@@ -138,6 +138,7 @@ model Event {
   waitlistEntries  Waitlist[]
   massCommunications      MassCommunication[]
   massCommunicationQuota  MassCommunicationQuota?
+  questionnaireQuestions  QuestionnaireQuestion[]
 
   @@index([creatorId])
   @@index([state])
@@ -548,4 +549,63 @@ model SmsOptOut {
   @@unique([eventId, userId])
   @@index([eventId])
   @@index([userId])
+}
+
+// Questionnaire questions for events
+model QuestionnaireQuestion {
+  id          String       @id @default(cuid())
+  eventId     String
+  event       Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  questionText String      // Max 500 characters
+  questionType QuestionType
+  isRequired   Boolean     @default(false)
+  helpText     String?     // Max 200 characters
+  orderIndex   Int         // For ordering questions
+
+  // For choice questions - JSON array of strings
+  choices      String?     // JSON array like ["Option 1", "Option 2"]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  responses    QuestionnaireResponse[]
+
+  @@index([eventId])
+  @@index([eventId, orderIndex])
+}
+
+enum QuestionType {
+  SHORT_TEXT
+  LONG_TEXT
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  YES_NO
+  NUMBER
+  DATE
+}
+
+// Questionnaire responses from attendees
+model QuestionnaireResponse {
+  id         String                @id @default(cuid())
+  questionId String
+  question   QuestionnaireQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  eventId    String
+  userId     String
+
+  // Response stored as JSON for flexibility
+  // - text questions: string
+  // - choice questions: string or array of strings
+  // - yes/no: boolean
+  // - number: number
+  // - date: ISO date string
+  response   String                // JSON stringified
+
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+
+  @@unique([questionId, userId])
+  @@index([questionId])
+  @@index([eventId, userId])
 }

@@ -1,0 +1,54 @@
+## Summary
+
+I have implemented **D1: Email Invitations** for the Gather app. Here's what was added:
+
+### Backend Changes
+
+1. **Database Schema** (`backend/prisma/schema.prisma`):
+   - Added `EmailInvitation` model to track email invitations with fields for recipient email, name, and status tracking (PENDING, SENT, OPENED, RSVPD, FAILED)
+   - Added `EmailInvitationStatus` enum
+   - Added relation from `InviteLink` to `EmailInvitation`
+   - Added relation from `Event` to `EmailInvitation[]`
+
+2. **Email Service Utility** (`backend/src/utils/email.ts`):
+   - `sendInvitationEmail()` - Sends email invitation (currently logs to console, ready for provider integration)
+   - `createAndSendEmailInvitation()` - Creates invite link, email invitation record, and sends email
+   - `markEmailInvitationOpened()` - Tracks when email recipient opens the invite link
+   - `markEmailInvitationRsvpd()` - Tracks when recipient RSVPs
+   - `getEmailInvitationStats()` - Gets aggregate statistics for an event
+   - `maskEmail()` - Masks email addresses for privacy display
+
+3. **API Routes** (`backend/src/routes/invitations.ts`):
+   - `POST /api/events/:id/invitations/email` - Send email invitations to recipients (organizers only)
+   - `GET /api/events/:id/invitations/email` - Get email invitation list and stats (organizers only)
+   - Updated `GET /api/invitations/:token` to mark email as opened when viewed
+
+### Frontend Changes
+
+1. **API Service** (`frontend/src/services/api.ts`):
+   - Added types for email invitations
+   - Added `sendEmailInvitations()` and `getEmailInvitations()` functions
+
+2. **EmailInviteModal** (`frontend/src/components/EmailInviteModal.tsx`):
+   - Modal for organizers to input email addresses
+   - Supports multiple formats: `email@example.com`, `Name <email@example.com>`, `email, name`
+   - Shows sending progress and results
+
+3. **EmailInvitationsPanel** (`frontend/src/components/EmailInvitationsPanel.tsx`):
+   - Panel showing email invitation list and statistics
+   - Displays sent/opened/RSVP'd status for each invitation
+   - Shows aggregate stats (total, sent, opened, RSVP'd, failed)
+
+4. **EventPage** (`frontend/src/pages/EventPage.tsx`):
+   - Added "Send Email Invites" button in organizer actions
+   - Added EmailInvitationsPanel below organizer actions
+   - Added EmailInviteModal integration
+
+### Features Implemented
+
+- Send invitations via email (multiple recipients at once)
+- Unique invitation link per recipient
+- Event details included in email body
+- Track sent/opened/RSVP'd status
+- Email masking for privacy (e.g., `jo***@example.com`)
+- Prevents duplicate invitations to same email

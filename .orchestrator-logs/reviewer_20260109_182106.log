@@ -1,0 +1,57 @@
+## Review Summary
+
+### Files Reviewed
+
+**New Files:**
+- `backend/src/routes/wall.ts` - Event wall API routes
+- `frontend/src/components/EventWall.tsx` - Event wall React component
+
+**Modified Files:**
+- `backend/prisma/schema.prisma` - Added WallPost model
+- `backend/src/app.ts` - Registered wall routes
+- `frontend/src/pages/EventPage.tsx` - Integrated EventWall component
+- `frontend/src/services/api.ts` - Added wall API types and functions
+
+### Issues Found and Fixed
+None - the code was well-written with:
+- Proper authentication checks
+- Input validation (content length, empty content)
+- Authorization checks (only confirmed attendees/organizers can access)
+- No SQL injection (using Prisma ORM)
+- No XSS vulnerabilities (React auto-escapes content)
+- Proper error handling with descriptive error codes
+
+### Tests Written
+
+**Backend Tests (`backend/src/__tests__/wall.test.ts`):**
+- 20 tests covering:
+  - Authentication requirements for GET, POST, DELETE
+  - 404 responses for missing events/posts
+  - Access control (non-attendees cannot access wall)
+  - Content validation (empty, whitespace, too long)
+  - Post creation for attendees and organizers
+  - Post deletion (only by author)
+  - Cross-event post protection
+
+**Frontend Tests (`frontend/src/components/EventWall.test.tsx`):**
+- 23 tests covering:
+  - Unauthenticated state (login prompt)
+  - No access state (RSVP prompt)
+  - Loading state
+  - Posts display with organizer badges
+  - Empty state
+  - Error states
+  - Character count
+  - Post creation
+  - Post deletion
+  - Relative time formatting
+
+### Test Results
+- **Backend:** 86 tests passed
+- **Frontend:** 70 tests passed
+- **TypeScript:** No errors in backend or frontend
+
+### Remaining Concerns
+1. **Minor UX concern**: The frontend uses `alert()` for delete errors (EventWall.tsx:131-134). This works but could be improved with a toast/notification component in the future.
+
+2. **Database constraint**: The WallPost content max length (2000 chars) is enforced at the application level but not at the database level. Could add `@db.VarChar(2000)` to the schema for defense in depth, but the application layer validation is sufficient.

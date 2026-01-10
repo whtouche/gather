@@ -1,0 +1,36 @@
+## Summary
+
+I have successfully implemented **E3: Wall Moderation** for the Gather app. Here's what was implemented:
+
+### Database Schema Changes (`backend/prisma/schema.prisma`)
+- Added `isPinned` (Boolean) and `pinnedAt` (DateTime) fields to `WallPost` model
+- Added `POST_DELETED_BY_MODERATOR` to `NotificationType` enum
+- Created new `ModerationLog` model to track all moderation actions with:
+  - `eventId`, `moderatorId`, `action` (DELETE/PIN/UNPIN)
+  - `targetPostId`, `postContent`, `postAuthorId` for audit trail
+- Added index for efficient querying of pinned posts
+
+### Backend API Routes (`backend/src/routes/wall.ts`)
+- **Updated DELETE** `/api/events/:id/wall/:postId` - Now allows organizers to delete any post (not just their own), creates moderation log entry, and notifies the post author
+- **Added POST** `/api/events/:id/wall/:postId/pin` - Allows organizers to pin top-level posts
+- **Added DELETE** `/api/events/:id/wall/:postId/pin` - Allows organizers to unpin posts
+- **Added GET** `/api/events/:id/wall/moderation-log` - Returns moderation log for organizers
+- Updated GET wall posts to sort pinned posts first (by pin time), then by creation time
+
+### Frontend API Service (`frontend/src/services/api.ts`)
+- Added `isPinned` and `pinnedAt` fields to `WallPost` interface
+- Added `pinWallPost()` and `unpinWallPost()` functions
+- Added `getModerationLog()` function and `ModerationLogEntry` interface
+- Updated `deleteWallPost()` return type to include `moderatorDeleted` flag
+
+### Frontend UI (`frontend/src/components/EventWall.tsx`)
+- Added `isOrganizer` prop to enable moderation features
+- Added pin/unpin icons with visual feedback
+- Pinned posts display with yellow highlight and "Pinned" badge
+- Organizers can delete any post (with "(moderator)" tooltip)
+- Added "Moderation Log" button in header for organizers
+- Added modal to view moderation history with action details
+- Posts re-sort automatically when pinned/unpinned
+
+### EventPage Update (`frontend/src/pages/EventPage.tsx`)
+- Now passes `isOrganizer` prop to EventWall component

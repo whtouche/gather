@@ -23,6 +23,7 @@ import { MassEmailHistoryPanel } from "../components/MassEmailHistoryPanel";
 import { MassSmsModal } from "../components/MassSmsModal";
 import { MassSmsHistoryPanel } from "../components/MassSmsHistoryPanel";
 import { PreviousAttendeesModal } from "../components/PreviousAttendeesModal";
+import { QuestionnaireBuilder } from "../components/QuestionnaireBuilder";
 
 interface EventPageProps {
   eventId: string;
@@ -811,6 +812,13 @@ export function EventPage({ eventId }: EventPageProps) {
             </>
           )}
         </div>
+
+        {/* Questionnaire Section */}
+        {event.state !== "DRAFT" && event.state !== "CANCELLED" && (
+          <div className="mt-6">
+            <QuestionnaireBuilder eventId={event.id} isOrganizer={isOrganizer} />
+          </div>
+        )}
 
         {/* Event Wall Section */}
         {event.state !== "DRAFT" && event.state !== "CANCELLED" && (

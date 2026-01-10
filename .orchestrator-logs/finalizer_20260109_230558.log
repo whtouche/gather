@@ -1,0 +1,37 @@
+## Summary
+
+**Commit Message:**
+```
+feat(invites): F3 & F4 Communication Rate Limits and Previous Attendees - complete Group F
+
+Implements communication rate limiting with history tracking and delivery stats,
+plus invite-from-previous-attendees feature allowing organizers to bulk invite
+users from past events.
+
+Key changes:
+- Backend: previousAttendees routes, utils, and comprehensive tests
+- Frontend: PreviousAttendeesModal component with tests  
+- Integration: EventPage integration and API service updates
+- Enhanced mass email/SMS components with history panels and improved UI
+- Roadmap: Group F marked complete (all organizer superpower features done)
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**Commit Status:** ✅ Successfully committed (commit hash: e098d30)
+
+**Push Status:** ⚠️ No remote repository configured
+- The commit was created successfully and is saved locally
+- No remote named 'origin' exists in this repository
+- If you want to push to a remote, you'll need to configure it first with `git remote add origin <url>`
+
+**Roadmap Updates:**
+- ✅ Task F3: Communication Rate Limits - marked as [DONE]
+- ✅ Group F: Organizer Superpowers - marked as [DONE] (all F1-F4 tasks complete)
+
+**Files Changed:** 16 files, 2024 insertions(+), 11 deletions(-)
+- New backend: previousAttendees routes, utils, and tests
+- New frontend: PreviousAttendeesModal component and tests
+- Updated: mass email/SMS components, EventPage, API services, and roadmap
+
+All changes have been successfully committed locally. The repository doesn't have a remote configured, so the changes remain local only.

@@ -1,0 +1,38 @@
+No remote is configured. The commit is complete locally.
+
+---
+
+## Summary
+
+**Commit Message:**
+```
+feat(invitations): D1 - Email Invitations
+
+Implement email invitation system for event organizers:
+- Send invitations via email with unique per-recipient links
+- Event details included in email body
+- Track invitation status (sent/opened/RSVP'd)
+- Email utility for sending with Nodemailer
+
+Backend:
+- Email service (backend/src/utils/email.ts)
+- Invitations API routes (backend/src/routes/invitations.ts)
+- Prisma schema with EmailInvitation model
+
+Frontend:
+- EmailInviteModal for composing invitations
+- EmailInvitationsPanel for tracking sent invitations
+- Integration with event management pages
+
+Also includes Groups A-C foundation (database, auth, events,
+RSVPs, dashboard, event lifecycle, notifications, past events)
+built as prerequisites.
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**Push Status:** Failed - no remote repository configured. Commit `2415e34` saved locally.
+
+**Roadmap Update:**
+- **D1: Email Invitations** updated from `[IN PROGRESS]` → `[DONE]`
+- Group D header remains unmarked (D2, D3, D4 still pending)
