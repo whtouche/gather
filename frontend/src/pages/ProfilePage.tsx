@@ -96,6 +96,10 @@ export function ProfilePage() {
   const [photoVisibility, setPhotoVisibility] = useState<ProfileVisibility>("CONNECTIONS");
   const [bioVisibility, setBioVisibility] = useState<ProfileVisibility>("CONNECTIONS");
   const [locationVisibility, setLocationVisibility] = useState<ProfileVisibility>("CONNECTIONS");
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [smsNotifications, setSmsNotifications] = useState(true);
+  const [wallActivityNotifications, setWallActivityNotifications] = useState(true);
+  const [connectionEventNotifications, setConnectionEventNotifications] = useState(true);
 
   const fetchProfile = async () => {
     setLoadingState("loading");
@@ -112,6 +116,10 @@ export function ProfilePage() {
       setPhotoVisibility(data.profile.photoVisibility);
       setBioVisibility(data.profile.bioVisibility);
       setLocationVisibility(data.profile.locationVisibility);
+      setEmailNotifications(data.profile.emailNotifications);
+      setSmsNotifications(data.profile.smsNotifications);
+      setWallActivityNotifications(data.profile.wallActivityNotifications);
+      setConnectionEventNotifications(data.profile.connectionEventNotifications);
       setLoadingState("success");
     } catch (error) {
       setLoadingState("error");
@@ -148,6 +156,10 @@ export function ProfilePage() {
     if (photoVisibility !== profile.photoVisibility) updates.photoVisibility = photoVisibility;
     if (bioVisibility !== profile.bioVisibility) updates.bioVisibility = bioVisibility;
     if (locationVisibility !== profile.locationVisibility) updates.locationVisibility = locationVisibility;
+    if (emailNotifications !== profile.emailNotifications) updates.emailNotifications = emailNotifications;
+    if (smsNotifications !== profile.smsNotifications) updates.smsNotifications = smsNotifications;
+    if (wallActivityNotifications !== profile.wallActivityNotifications) updates.wallActivityNotifications = wallActivityNotifications;
+    if (connectionEventNotifications !== profile.connectionEventNotifications) updates.connectionEventNotifications = connectionEventNotifications;
 
     if (Object.keys(updates).length === 0) {
       setSaving(false);
@@ -177,7 +189,11 @@ export function ProfilePage() {
     photoUrl !== (profile.photoUrl || "") ||
     photoVisibility !== profile.photoVisibility ||
     bioVisibility !== profile.bioVisibility ||
-    locationVisibility !== profile.locationVisibility
+    locationVisibility !== profile.locationVisibility ||
+    emailNotifications !== profile.emailNotifications ||
+    smsNotifications !== profile.smsNotifications ||
+    wallActivityNotifications !== profile.wallActivityNotifications ||
+    connectionEventNotifications !== profile.connectionEventNotifications
   );
 
   return (
@@ -347,6 +363,100 @@ export function ProfilePage() {
                   </label>
                   <VisibilitySelect value={locationVisibility} onChange={setLocationVisibility} />
                 </div>
+              </div>
+            </div>
+
+            {/* Notification Preferences Section */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Notification Preferences</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Control how you receive notifications from Gather
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="checkbox"
+                      id="emailNotifications"
+                      checked={emailNotifications}
+                      onChange={(e) => setEmailNotifications(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="emailNotifications" className="font-medium text-gray-900 text-sm">
+                      Email Notifications
+                    </label>
+                    <p className="text-gray-500 text-xs">
+                      Receive event updates, RSVP changes, and invitations via email
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="checkbox"
+                      id="smsNotifications"
+                      checked={smsNotifications}
+                      onChange={(e) => setSmsNotifications(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="smsNotifications" className="font-medium text-gray-900 text-sm">
+                      SMS Notifications
+                    </label>
+                    <p className="text-gray-500 text-xs">
+                      Receive important event updates via text message
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="checkbox"
+                      id="wallActivityNotifications"
+                      checked={wallActivityNotifications}
+                      onChange={(e) => setWallActivityNotifications(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="wallActivityNotifications" className="font-medium text-gray-900 text-sm">
+                      Wall Activity Notifications
+                    </label>
+                    <p className="text-gray-500 text-xs">
+                      Get notified about new posts and replies on event walls
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="checkbox"
+                      id="connectionEventNotifications"
+                      checked={connectionEventNotifications}
+                      onChange={(e) => setConnectionEventNotifications(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="connectionEventNotifications" className="font-medium text-gray-900 text-sm">
+                      New Event Notifications from Connections
+                    </label>
+                    <p className="text-gray-500 text-xs">
+                      Be notified when people you've attended events with create new events
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 bg-gray-50 rounded-md p-3">
+                <p className="text-xs text-gray-600">
+                  You can also mute notifications for individual events from the event page.
+                </p>
               </div>
             </div>
 

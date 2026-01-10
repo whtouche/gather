@@ -25,6 +25,12 @@ model User {
   bioVisibility      ProfileVisibility @default(CONNECTIONS)
   locationVisibility ProfileVisibility @default(CONNECTIONS)
 
+  // Notification preferences (global)
+  emailNotifications          Boolean @default(true)
+  smsNotifications            Boolean @default(true)
+  wallActivityNotifications   Boolean @default(true)
+  connectionEventNotifications Boolean @default(true)
+
   // Relations
   sessions          Session[]
   verificationCodes VerificationCode[]
@@ -37,6 +43,7 @@ model User {
   waitlistEntries   Waitlist[]
   massCommunicationsSent     MassCommunication[]          @relation("MassCommunicationOrganizer")
   massCommunicationsReceived MassCommunicationRecipient[] @relation("MassCommunicationRecipient")
+  eventNotificationSettings  EventNotificationSetting[]
 
   @@index([phone])
   @@index([email])
@@ -139,6 +146,7 @@ model Event {
   massCommunications      MassCommunication[]
   massCommunicationQuota  MassCommunicationQuota?
   questionnaireQuestions  QuestionnaireQuestion[]
+  eventNotificationSettings EventNotificationSetting[]
 
   @@index([creatorId])
   @@index([state])
@@ -608,4 +616,23 @@ model QuestionnaireResponse {
   @@unique([questionId, userId])
   @@index([questionId])
   @@index([eventId, userId])
+}
+
+// Per-event notification settings
+model EventNotificationSetting {
+  id              String   @id @default(cuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  muteAll         Boolean  @default(false)
+  muteWallOnly    Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
 }

@@ -308,7 +308,7 @@ Build connections beyond single events.
 
 The features that make people smile.
 
-### I1: Notification Preferences
+### I1: Notification Preferences [DONE]
 *You control the volume.*
 - Global notification toggles (email, SMS, push)
 - Per-event mute option

@@ -23,6 +23,7 @@ import { MassEmailHistoryPanel } from "../components/MassEmailHistoryPanel";
 import { MassSmsModal } from "../components/MassSmsModal";
 import { MassSmsHistoryPanel } from "../components/MassSmsHistoryPanel";
 import { PreviousAttendeesModal } from "../components/PreviousAttendeesModal";
+import { EventNotificationSettings } from "../components/EventNotificationSettings";
 import { QuestionnaireBuilder } from "../components/QuestionnaireBuilder";
 
 interface EventPageProps {
@@ -859,6 +860,13 @@ export function EventPage({ eventId }: EventPageProps) {
         <div className="mt-6">
           <AttendeeList eventId={event.id} refreshKey={attendeeRefreshKey} />
         </div>
+
+        {/* Event Notification Settings Section */}
+        {loggedIn && (
+          <div className="mt-6">
+            <EventNotificationSettings eventId={event.id} />
+          </div>
+        )}
 
         {/* Back to Dashboard link */}
         {loggedIn && (

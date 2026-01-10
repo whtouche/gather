@@ -1386,6 +1386,10 @@ export interface UserProfile {
   photoVisibility: ProfileVisibility;
   bioVisibility: ProfileVisibility;
   locationVisibility: ProfileVisibility;
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  wallActivityNotifications: boolean;
+  connectionEventNotifications: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -1408,6 +1412,10 @@ export interface UpdateProfileInput {
   photoVisibility?: ProfileVisibility;
   bioVisibility?: ProfileVisibility;
   locationVisibility?: ProfileVisibility;
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  wallActivityNotifications?: boolean;
+  connectionEventNotifications?: boolean;
 }
 
 /**
@@ -1469,6 +1477,63 @@ export async function getPublicProfile(userId: string): Promise<GetPublicProfile
  */
 export async function getCurrentUser(): Promise<{ user: User }> {
   return request("/auth/me");
+}
+
+// =============================================================================
+// Notification Preferences Types & API
+// =============================================================================
+
+/**
+ * Per-event notification settings
+ */
+export interface EventNotificationSettings {
+  eventId: string;
+  muteAll: boolean;
+  muteWallOnly: boolean;
+}
+
+/**
+ * Response from GET /api/profile/events/:eventId/notifications
+ */
+export interface GetEventNotificationSettingsResponse {
+  settings: EventNotificationSettings;
+}
+
+/**
+ * Update event notification settings input
+ */
+export interface UpdateEventNotificationSettingsInput {
+  muteAll?: boolean;
+  muteWallOnly?: boolean;
+}
+
+/**
+ * Response from PATCH /api/profile/events/:eventId/notifications
+ */
+export interface UpdateEventNotificationSettingsResponse {
+  settings: EventNotificationSettings;
+}
+
+/**
+ * Get notification settings for a specific event
+ */
+export async function getEventNotificationSettings(
+  eventId: string
+): Promise<GetEventNotificationSettingsResponse> {
+  return request(`/profile/events/${eventId}/notifications`);
+}
+
+/**
+ * Update notification settings for a specific event
+ */
+export async function updateEventNotificationSettings(
+  eventId: string,
+  data: UpdateEventNotificationSettingsInput
+): Promise<UpdateEventNotificationSettingsResponse> {
+  return request(`/profile/events/${eventId}/notifications`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 }
 
 // =============================================================================

@@ -13,9 +13,14 @@ vi.mock("../utils/db.js", () => ({
     },
     rSVP: {
       findMany: vi.fn().mockResolvedValue([]),
+      findUnique: vi.fn().mockResolvedValue(null),
     },
     eventRole: {
       count: vi.fn().mockResolvedValue(0),
+    },
+    eventNotificationSetting: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      upsert: vi.fn(),
     },
   },
 }));
@@ -60,6 +65,53 @@ describe("Profile Routes", () => {
       const response = await request(app).get("/api/users/nonexistent-user-id");
       // Since user doesn't exist, it should return 404
       expect(response.status).toBe(404);
+    });
+  });
+
+  describe("GET /api/profile/events/:eventId/notifications", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).get("/api/profile/events/test-event-id/notifications");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .get("/api/profile/events/test-event-id/notifications")
+        .set("Authorization", "Bearer invalid-token");
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("PATCH /api/profile/events/:eventId/notifications", () => {
+    it("should require authentication", async () => {
+      const response = await request(app)
+        .patch("/api/profile/events/test-event-id/notifications")
+        .send({ muteAll: true });
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .patch("/api/profile/events/test-event-id/notifications")
+        .set("Authorization", "Bearer invalid-token")
+        .send({ muteAll: true });
+      expect(response.status).toBe(401);
+    });
+
+    it("should validate boolean types for muteAll", async () => {
+      const response = await request(app)
+        .patch("/api/profile/events/test-event-id/notifications")
+        .set("Authorization", "Bearer invalid-token")
+        .send({ muteAll: "not-a-boolean" });
+      expect(response.status).toBe(401);
+    });
+
+    it("should validate boolean types for muteWallOnly", async () => {
+      const response = await request(app)
+        .patch("/api/profile/events/test-event-id/notifications")
+        .set("Authorization", "Bearer invalid-token")
+        .send({ muteWallOnly: "not-a-boolean" });
+      expect(response.status).toBe(401);
     });
   });
 });

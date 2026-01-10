@@ -83,6 +83,10 @@ router.get(
           photoVisibility: user.photoVisibility,
           bioVisibility: user.bioVisibility,
           locationVisibility: user.locationVisibility,
+          emailNotifications: user.emailNotifications,
+          smsNotifications: user.smsNotifications,
+          wallActivityNotifications: user.wallActivityNotifications,
+          connectionEventNotifications: user.connectionEventNotifications,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -116,6 +120,10 @@ router.patch(
         photoVisibility,
         bioVisibility,
         locationVisibility,
+        emailNotifications,
+        smsNotifications,
+        wallActivityNotifications,
+        connectionEventNotifications,
       } = req.body;
 
       // Build update data object
@@ -193,6 +201,35 @@ router.patch(
         updateData.locationVisibility = locationVisibility;
       }
 
+      // Validate and set notification preferences
+      if (emailNotifications !== undefined) {
+        if (typeof emailNotifications !== "boolean") {
+          throw createApiError("Email notifications must be a boolean", 400, "INVALID_EMAIL_NOTIFICATIONS");
+        }
+        updateData.emailNotifications = emailNotifications;
+      }
+
+      if (smsNotifications !== undefined) {
+        if (typeof smsNotifications !== "boolean") {
+          throw createApiError("SMS notifications must be a boolean", 400, "INVALID_SMS_NOTIFICATIONS");
+        }
+        updateData.smsNotifications = smsNotifications;
+      }
+
+      if (wallActivityNotifications !== undefined) {
+        if (typeof wallActivityNotifications !== "boolean") {
+          throw createApiError("Wall activity notifications must be a boolean", 400, "INVALID_WALL_NOTIFICATIONS");
+        }
+        updateData.wallActivityNotifications = wallActivityNotifications;
+      }
+
+      if (connectionEventNotifications !== undefined) {
+        if (typeof connectionEventNotifications !== "boolean") {
+          throw createApiError("Connection event notifications must be a boolean", 400, "INVALID_CONNECTION_NOTIFICATIONS");
+        }
+        updateData.connectionEventNotifications = connectionEventNotifications;
+      }
+
       // Update user
       const updatedUser = await prisma.user.update({
         where: { id: user.id },
@@ -211,6 +248,10 @@ router.patch(
           photoVisibility: updatedUser.photoVisibility,
           bioVisibility: updatedUser.bioVisibility,
           locationVisibility: updatedUser.locationVisibility,
+          emailNotifications: updatedUser.emailNotifications,
+          smsNotifications: updatedUser.smsNotifications,
+          wallActivityNotifications: updatedUser.wallActivityNotifications,
+          connectionEventNotifications: updatedUser.connectionEventNotifications,
           createdAt: updatedUser.createdAt,
           updatedAt: updatedUser.updatedAt,
         },
@@ -304,6 +345,150 @@ router.get(
           isSelf,
           isConnection,
           isOrganizer,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/profile/events/:eventId/notifications
+ * Get notification settings for a specific event
+ */
+router.get(
+  "/events/:eventId/notifications",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+      const { eventId } = req.params;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      // Verify user is an attendee of the event (has RSVP'd)
+      const rsvp = await prisma.rSVP.findUnique({
+        where: {
+          eventId_userId: {
+            eventId,
+            userId: user.id,
+          },
+        },
+      });
+
+      if (!rsvp) {
+        throw createApiError("Not an attendee of this event", 403, "NOT_ATTENDEE");
+      }
+
+      // Get or create event notification settings
+      let settings = await prisma.eventNotificationSetting.findUnique({
+        where: {
+          eventId_userId: {
+            eventId,
+            userId: user.id,
+          },
+        },
+      });
+
+      // If no settings exist, return defaults
+      if (!settings) {
+        settings = {
+          id: "",
+          eventId,
+          userId: user.id,
+          muteAll: false,
+          muteWallOnly: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+
+      res.status(200).json({
+        settings: {
+          eventId: settings.eventId,
+          muteAll: settings.muteAll,
+          muteWallOnly: settings.muteWallOnly,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * PATCH /api/profile/events/:eventId/notifications
+ * Update notification settings for a specific event
+ */
+router.patch(
+  "/events/:eventId/notifications",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+      const { eventId } = req.params;
+      const { muteAll, muteWallOnly } = req.body;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      // Verify user is an attendee of the event (has RSVP'd)
+      const rsvp = await prisma.rSVP.findUnique({
+        where: {
+          eventId_userId: {
+            eventId,
+            userId: user.id,
+          },
+        },
+      });
+
+      if (!rsvp) {
+        throw createApiError("Not an attendee of this event", 403, "NOT_ATTENDEE");
+      }
+
+      // Build update data
+      const updateData: Record<string, unknown> = {};
+
+      if (muteAll !== undefined) {
+        if (typeof muteAll !== "boolean") {
+          throw createApiError("muteAll must be a boolean", 400, "INVALID_MUTE_ALL");
+        }
+        updateData.muteAll = muteAll;
+      }
+
+      if (muteWallOnly !== undefined) {
+        if (typeof muteWallOnly !== "boolean") {
+          throw createApiError("muteWallOnly must be a boolean", 400, "INVALID_MUTE_WALL_ONLY");
+        }
+        updateData.muteWallOnly = muteWallOnly;
+      }
+
+      // Upsert event notification settings
+      const settings = await prisma.eventNotificationSetting.upsert({
+        where: {
+          eventId_userId: {
+            eventId,
+            userId: user.id,
+          },
+        },
+        update: updateData,
+        create: {
+          eventId,
+          userId: user.id,
+          muteAll: muteAll ?? false,
+          muteWallOnly: muteWallOnly ?? false,
+        },
+      });
+
+      res.status(200).json({
+        settings: {
+          eventId: settings.eventId,
+          muteAll: settings.muteAll,
+          muteWallOnly: settings.muteWallOnly,
         },
       });
     } catch (error) {
