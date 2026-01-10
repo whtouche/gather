@@ -1679,6 +1679,13 @@ export interface WallPost {
   updatedAt: string;
   isPinned: boolean;
   pinnedAt: string | null;
+  imageUrl: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
+  linkUrl: string | null;
+  linkTitle: string | null;
+  linkDescription: string | null;
+  linkImageUrl: string | null;
   author: WallPostAuthor;
   reactionCount: number;
   userHasReacted: boolean;
@@ -1712,15 +1719,52 @@ export async function getWallPosts(eventId: string): Promise<GetWallPostsRespons
 /**
  * Create a new wall post or reply (confirmed attendees only)
  * @param parentId - Optional parent post ID for replies
+ * @param image - Optional image file for top-level posts
+ * @param generatePreview - Whether to generate link preview (default: true)
  */
 export async function createWallPost(
   eventId: string,
   content: string,
-  parentId?: string
+  parentId?: string,
+  image?: File,
+  generatePreview: boolean = true
 ): Promise<CreateWallPostResponse> {
+  // If there's an image, use FormData
+  if (image) {
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("image", image);
+    formData.append("generatePreview", String(generatePreview));
+    if (parentId) {
+      formData.append("parentId", parentId);
+    }
+
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`${API_BASE_URL}/events/${eventId}/wall`, {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw {
+        error: errorData.error || "Request failed",
+        code: errorData.code || "UNKNOWN_ERROR",
+        message: errorData.message || "An unknown error occurred",
+        status: response.status,
+      };
+    }
+
+    return response.json();
+  }
+
+  // Otherwise use JSON
   return request(`/events/${eventId}/wall`, {
     method: "POST",
-    body: JSON.stringify({ content, parentId }),
+    body: JSON.stringify({ content, parentId, generatePreview: String(generatePreview) }),
   });
 }
 

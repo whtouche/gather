@@ -4,8 +4,24 @@ import type { AuthenticatedRequest } from "../types/index.js";
 import { createApiError } from "../types/index.js";
 import { prisma } from "../utils/db.js";
 import { requireAuth } from "../middleware/auth.js";
+import multer from "multer";
+import { saveImage, validateImage, deleteImage } from "../utils/imageUpload.js";
+import { generateLinkPreview } from "../utils/linkPreview.js";
 
 const router = Router();
+
+// =============================================================================
+// Multer configuration for image uploads
+// =============================================================================
+
+// Use memory storage to process images before saving
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 1, // Only one image per post
+  },
+});
 
 // =============================================================================
 // Helper functions
@@ -63,6 +79,13 @@ interface WallPostData {
   parentId: string | null;
   isPinned: boolean;
   pinnedAt: Date | null;
+  imageUrl: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
+  linkUrl: string | null;
+  linkTitle: string | null;
+  linkDescription: string | null;
+  linkImageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
   author: {
@@ -105,6 +128,13 @@ interface FormattedPost {
   updatedAt: string;
   isPinned: boolean;
   pinnedAt: string | null;
+  imageUrl: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
+  linkUrl: string | null;
+  linkTitle: string | null;
+  linkDescription: string | null;
+  linkImageUrl: string | null;
   author: {
     id: string;
     displayName: string;
@@ -145,10 +175,17 @@ function formatWallPost(
     replies: [],
   };
 
-  // Add pinning info for top-level posts
+  // Add pinning info and media for top-level posts
   if (post.depth === 0) {
     (formatted as FormattedPost).isPinned = post.isPinned;
     (formatted as FormattedPost).pinnedAt = post.pinnedAt?.toISOString() ?? null;
+    (formatted as FormattedPost).imageUrl = post.imageUrl;
+    (formatted as FormattedPost).imageWidth = post.imageWidth;
+    (formatted as FormattedPost).imageHeight = post.imageHeight;
+    (formatted as FormattedPost).linkUrl = post.linkUrl;
+    (formatted as FormattedPost).linkTitle = post.linkTitle;
+    (formatted as FormattedPost).linkDescription = post.linkDescription;
+    (formatted as FormattedPost).linkImageUrl = post.linkImageUrl;
   }
 
   // Format nested replies if they exist
@@ -308,15 +345,18 @@ router.get(
 /**
  * POST /api/events/:id/wall
  * Create a new wall post or reply (confirmed attendees only)
+ * Supports multipart/form-data for image uploads
  */
 router.post(
   "/:id/wall",
   requireAuth,
+  upload.single("image"),
   async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const eventId = req.params.id;
       const userId = req.user!.id;
-      const { content, parentId } = req.body;
+      const { content, parentId, generatePreview } = req.body;
+      const imageFile = req.file;
 
       // Validate content
       if (!content || typeof content !== "string") {
@@ -402,6 +442,43 @@ router.post(
         }
       }
 
+      // Handle image upload (only for top-level posts, not replies)
+      let imageUrl: string | null = null;
+      let imageWidth: number | null = null;
+      let imageHeight: number | null = null;
+
+      if (imageFile && depth === 0) {
+        // Validate image
+        const validation = await validateImage(imageFile.buffer);
+        if (!validation.isValid) {
+          throw createApiError(validation.error, 400, validation.errorCode);
+        }
+
+        // Save image
+        const imageResult = await saveImage(imageFile.buffer, userId);
+        imageUrl = imageResult.url;
+        imageWidth = imageResult.width;
+        imageHeight = imageResult.height;
+      } else if (imageFile && depth > 0) {
+        throw createApiError("Replies cannot contain image attachments", 400, "REPLY_NO_IMAGES");
+      }
+
+      // Generate link preview (only for top-level posts, not replies)
+      let linkUrl: string | null = null;
+      let linkTitle: string | null = null;
+      let linkDescription: string | null = null;
+      let linkImageUrl: string | null = null;
+
+      if (depth === 0 && generatePreview !== "false") {
+        const preview = await generateLinkPreview(trimmedContent);
+        if (preview) {
+          linkUrl = preview.url;
+          linkTitle = preview.title;
+          linkDescription = preview.description;
+          linkImageUrl = preview.imageUrl;
+        }
+      }
+
       // Create the post/reply
       const post = await prisma.wallPost.create({
         data: {
@@ -410,6 +487,13 @@ router.post(
           content: trimmedContent,
           parentId: effectiveParentId || null,
           depth,
+          imageUrl,
+          imageWidth,
+          imageHeight,
+          linkUrl,
+          linkTitle,
+          linkDescription,
+          linkImageUrl,
         },
         include: {
           author: {
@@ -473,7 +557,7 @@ router.delete(
         throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
       }
 
-      // Get the post with content for moderation log
+      // Get the post with content and image for cleanup
       const post = await prisma.wallPost.findUnique({
         where: { id: postId },
         select: {
@@ -481,6 +565,7 @@ router.delete(
           eventId: true,
           authorId: true,
           content: true,
+          imageUrl: true,
         },
       });
 
@@ -509,6 +594,11 @@ router.delete(
       await prisma.wallPost.delete({
         where: { id: postId },
       });
+
+      // Clean up image file if exists
+      if (post.imageUrl) {
+        await deleteImage(post.imageUrl);
+      }
 
       // If an organizer deleted someone else's post, create moderation log and notify author
       if (isOrganizer && !isAuthor) {

@@ -380,6 +380,50 @@ function PostItem({
         {/* Post content */}
         <p className={`text-gray-700 whitespace-pre-wrap ${isReply ? "text-sm" : ""}`}>{post.content}</p>
 
+        {/* Image attachment (top-level posts only) */}
+        {isTopLevelPost && wallPost?.imageUrl && (
+          <div className="mt-3">
+            <img
+              src={wallPost.imageUrl}
+              alt="Post attachment"
+              className="max-w-full max-h-96 rounded-lg object-contain"
+              style={{
+                width: wallPost.imageWidth ? `${wallPost.imageWidth}px` : 'auto',
+                height: wallPost.imageHeight ? `${wallPost.imageHeight}px` : 'auto',
+                maxWidth: '100%',
+                maxHeight: '24rem',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Link preview (top-level posts only) */}
+        {isTopLevelPost && wallPost?.linkUrl && !wallPost?.imageUrl && (
+          <a
+            href={wallPost.linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 block border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 transition-colors"
+          >
+            {wallPost.linkImageUrl && (
+              <img
+                src={wallPost.linkImageUrl}
+                alt={wallPost.linkTitle || 'Link preview'}
+                className="w-full h-48 object-cover"
+              />
+            )}
+            <div className="p-3 bg-gray-50">
+              {wallPost.linkTitle && (
+                <p className="font-medium text-gray-900 text-sm line-clamp-1">{wallPost.linkTitle}</p>
+              )}
+              {wallPost.linkDescription && (
+                <p className="text-xs text-gray-600 mt-1 line-clamp-2">{wallPost.linkDescription}</p>
+              )}
+              <p className="text-xs text-gray-400 mt-1 truncate">{wallPost.linkUrl}</p>
+            </div>
+          </a>
+        )}
+
         {/* Actions bar */}
         <div className="flex items-center gap-4 mt-3">
           {/* Reaction button */}
@@ -458,6 +502,8 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [newPostContent, setNewPostContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
@@ -502,6 +548,38 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
     fetchWall();
   }, [eventId, loggedIn]);
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.match(/^image\/(jpeg|png)$/)) {
+      setSubmitError("Only JPEG and PNG images are allowed");
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setSubmitError("Image must be 5MB or less");
+      return;
+    }
+
+    setSelectedImage(file);
+    setSubmitError("");
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
   const handleSubmitPost = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -513,7 +591,7 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
     setSubmitError("");
 
     try {
-      const response = await createWallPost(eventId, newPostContent);
+      const response = await createWallPost(eventId, newPostContent, undefined, selectedImage || undefined);
       // Add new post after pinned posts (which are at the top)
       setPosts((prev) => {
         const pinnedPosts = prev.filter((p) => p.isPinned);
@@ -521,6 +599,8 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
         return [...pinnedPosts, response.post, ...unpinnedPosts];
       });
       setNewPostContent("");
+      setSelectedImage(null);
+      setImagePreview(null);
     } catch (err) {
       if (isApiError(err)) {
         setSubmitError(err.message);
@@ -779,8 +859,36 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
             rows={3}
             maxLength={2000}
           />
+          {imagePreview && (
+            <div className="px-4 py-2 relative">
+              <img src={imagePreview} alt="Preview" className="max-w-xs max-h-64 rounded-lg object-cover" />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-4 left-6 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
           <div className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-b-lg">
-            <span className="text-sm text-gray-500">{newPostContent.length}/2000</span>
+            <div className="flex items-center gap-2">
+              <label className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                  disabled={isSubmitting}
+                />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </label>
+              <span className="text-sm text-gray-500">{newPostContent.length}/2000</span>
+            </div>
             <button
               type="submit"
               disabled={!newPostContent.trim() || isSubmitting}

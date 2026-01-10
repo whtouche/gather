@@ -345,7 +345,7 @@ The features that make people smile.
 
 Nice-to-haves for when the core is solid.
 
-### J1: Wall Media
+### J1: Wall Media [DONE]
 *Pictures or it didn't happen.*
 - Image attachments on posts
 - Link previews

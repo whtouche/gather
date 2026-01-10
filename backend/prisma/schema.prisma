@@ -367,6 +367,17 @@ model WallPost {
 
   content   String   // Max 2000 characters for posts, 1000 for replies, enforced in application
 
+  // Media attachments (only for top-level posts, not replies)
+  imageUrl     String?  // Uploaded image URL (JPEG/PNG, max 5MB)
+  imageWidth   Int?     // Image dimensions for display
+  imageHeight  Int?
+
+  // Link preview (only for top-level posts, not replies)
+  linkUrl      String?  // URL extracted from post content
+  linkTitle    String?  // OG title or page title
+  linkDescription String?  // OG description
+  linkImageUrl String?  // OG image URL
+
   // Reply support - parentId null means top-level post
   parentId  String?
   parent    WallPost?  @relation("WallPostReplies", fields: [parentId], references: [id], onDelete: Cascade)
