@@ -83,6 +83,7 @@ router.get(
           photoVisibility: user.photoVisibility,
           bioVisibility: user.bioVisibility,
           locationVisibility: user.locationVisibility,
+          isProfileHidden: user.isProfileHidden,
           emailNotifications: user.emailNotifications,
           smsNotifications: user.smsNotifications,
           wallActivityNotifications: user.wallActivityNotifications,
@@ -123,6 +124,7 @@ router.patch(
         photoVisibility,
         bioVisibility,
         locationVisibility,
+        isProfileHidden,
         emailNotifications,
         smsNotifications,
         wallActivityNotifications,
@@ -204,6 +206,14 @@ router.patch(
         updateData.locationVisibility = locationVisibility;
       }
 
+      // Validate and set advanced privacy option
+      if (isProfileHidden !== undefined) {
+        if (typeof isProfileHidden !== "boolean") {
+          throw createApiError("isProfileHidden must be a boolean", 400, "INVALID_PROFILE_HIDDEN");
+        }
+        updateData.isProfileHidden = isProfileHidden;
+      }
+
       // Validate and set notification preferences
       if (emailNotifications !== undefined) {
         if (typeof emailNotifications !== "boolean") {
@@ -251,6 +261,7 @@ router.patch(
           photoVisibility: updatedUser.photoVisibility,
           bioVisibility: updatedUser.bioVisibility,
           locationVisibility: updatedUser.locationVisibility,
+          isProfileHidden: updatedUser.isProfileHidden,
           emailNotifications: updatedUser.emailNotifications,
           smsNotifications: updatedUser.smsNotifications,
           wallActivityNotifications: updatedUser.wallActivityNotifications,
@@ -318,17 +329,23 @@ router.get(
         displayName: targetUser.displayName,
       };
 
-      // Add optional fields based on visibility
-      if (isFieldVisible(targetUser.photoVisibility)) {
-        publicProfile.photoUrl = targetUser.photoUrl;
-      }
+      // Check if profile is fully hidden (overrides all field-level settings)
+      // When hidden: only display name is visible, still appears in attendee lists, notes can still be added
+      const isProfileFullyHidden = targetUser.isProfileHidden && !isSelf;
 
-      if (isFieldVisible(targetUser.bioVisibility)) {
-        publicProfile.bio = targetUser.bio;
-      }
+      if (!isProfileFullyHidden) {
+        // Add optional fields based on granular visibility settings
+        if (isFieldVisible(targetUser.photoVisibility)) {
+          publicProfile.photoUrl = targetUser.photoUrl;
+        }
 
-      if (isFieldVisible(targetUser.locationVisibility)) {
-        publicProfile.location = targetUser.location;
+        if (isFieldVisible(targetUser.bioVisibility)) {
+          publicProfile.bio = targetUser.bio;
+        }
+
+        if (isFieldVisible(targetUser.locationVisibility)) {
+          publicProfile.location = targetUser.location;
+        }
       }
 
       // If viewing self, include all visibility settings
@@ -338,6 +355,7 @@ router.get(
         publicProfile.photoVisibility = targetUser.photoVisibility;
         publicProfile.bioVisibility = targetUser.bioVisibility;
         publicProfile.locationVisibility = targetUser.locationVisibility;
+        publicProfile.isProfileHidden = targetUser.isProfileHidden;
         publicProfile.createdAt = targetUser.createdAt;
         publicProfile.updatedAt = targetUser.updatedAt;
       }

@@ -37,6 +37,7 @@ describe("ProfilePage", () => {
     photoVisibility: "CONNECTIONS",
     bioVisibility: "CONNECTIONS",
     locationVisibility: "CONNECTIONS",
+    isProfileHidden: false,
     emailNotifications: true,
     smsNotifications: true,
     wallActivityNotifications: true,
@@ -285,5 +286,165 @@ describe("ProfilePage", () => {
 
     const saveButton = screen.getByRole("button", { name: /save changes/i });
     expect(saveButton).toBeDisabled();
+  });
+
+  describe("Advanced Privacy (isProfileHidden)", () => {
+    it("should display the Hide My Profile checkbox", async () => {
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/hide my profile/i)).toBeInTheDocument();
+      });
+
+      const checkbox = screen.getByLabelText(/hide my profile/i) as HTMLInputElement;
+      expect(checkbox.type).toBe("checkbox");
+      expect(checkbox.checked).toBe(false);
+    });
+
+    it("should allow checking the Hide My Profile checkbox", async () => {
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/hide my profile/i)).toBeInTheDocument();
+      });
+
+      const checkbox = screen.getByLabelText(/hide my profile/i) as HTMLInputElement;
+      fireEvent.click(checkbox);
+
+      expect(checkbox.checked).toBe(true);
+    });
+
+    it("should show warning message when profile is hidden", async () => {
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/hide my profile/i)).toBeInTheDocument();
+      });
+
+      const checkbox = screen.getByLabelText(/hide my profile/i);
+      fireEvent.click(checkbox);
+
+      await waitFor(() => {
+        expect(screen.getByText(/your profile is currently hidden/i)).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/only your display name is visible/i)).toBeInTheDocument();
+    });
+
+    it("should hide warning message when profile is unhidden", async () => {
+      const hiddenProfile = { ...mockProfile, isProfileHidden: true };
+      vi.mocked(api.getProfile).mockResolvedValue({ profile: hiddenProfile });
+
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/your profile is currently hidden/i)).toBeInTheDocument();
+      });
+
+      const checkbox = screen.getByLabelText(/hide my profile/i) as HTMLInputElement;
+      expect(checkbox.checked).toBe(true);
+
+      fireEvent.click(checkbox);
+
+      await waitFor(() => {
+        expect(screen.queryByText(/your profile is currently hidden/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it("should include isProfileHidden in update request when changed", async () => {
+      const updatedProfile = { ...mockProfile, isProfileHidden: true };
+      vi.mocked(api.updateProfile).mockResolvedValue({ profile: updatedProfile });
+
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/hide my profile/i)).toBeInTheDocument();
+      });
+
+      const checkbox = screen.getByLabelText(/hide my profile/i);
+      fireEvent.click(checkbox);
+
+      const saveButton = screen.getByRole("button", { name: /save changes/i });
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(api.updateProfile).toHaveBeenCalledWith({
+          isProfileHidden: true,
+        });
+      });
+    });
+
+    it("should not include isProfileHidden in update request when unchanged", async () => {
+      const updatedProfile = { ...mockProfile, displayName: "New Name" };
+      vi.mocked(api.updateProfile).mockResolvedValue({ profile: updatedProfile });
+
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test User")).toBeInTheDocument();
+      });
+
+      const displayNameInput = screen.getByLabelText(/display name/i);
+      fireEvent.change(displayNameInput, { target: { value: "New Name" } });
+
+      const saveButton = screen.getByRole("button", { name: /save changes/i });
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(api.updateProfile).toHaveBeenCalledWith({
+          displayName: "New Name",
+        });
+      });
+
+      // Should not include isProfileHidden since it wasn't changed
+      const callArgs = vi.mocked(api.updateProfile).mock.calls[0][0];
+      expect(callArgs).not.toHaveProperty("isProfileHidden");
+    });
+
+    it("should show description text for privacy feature", async () => {
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/hide my profile/i)).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByText(/when enabled, only your display name will be visible/i)
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByText(/you will still appear in event attendee lists/i)
+      ).toBeInTheDocument();
+    });
+
+    it("should load with isProfileHidden checked when true in profile", async () => {
+      const hiddenProfile = { ...mockProfile, isProfileHidden: true };
+      vi.mocked(api.getProfile).mockResolvedValue({ profile: hiddenProfile });
+
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        const checkbox = screen.getByLabelText(/hide my profile/i) as HTMLInputElement;
+        expect(checkbox.checked).toBe(true);
+      });
+
+      expect(screen.getByText(/your profile is currently hidden/i)).toBeInTheDocument();
+    });
+
+    it("should enable save button when isProfileHidden is toggled", async () => {
+      renderWithRouter(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/hide my profile/i)).toBeInTheDocument();
+      });
+
+      const saveButton = screen.getByRole("button", { name: /save changes/i });
+      expect(saveButton).toBeDisabled(); // Initially disabled (no changes)
+
+      const checkbox = screen.getByLabelText(/hide my profile/i);
+      fireEvent.click(checkbox);
+
+      expect(saveButton).toBeEnabled(); // Enabled after change
+    });
   });
 });

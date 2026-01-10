@@ -365,7 +365,7 @@ Nice-to-haves for when the core is solid.
 - Auto-archive/delete old data
 - Wall message retention settings
 
-### J4: Advanced Profile Privacy
+### J4: Advanced Profile Privacy [DONE]
 *For the privacy maximalists.*
 - Fully hidden profile option
 - Granular field-level controls

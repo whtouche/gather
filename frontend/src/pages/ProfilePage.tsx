@@ -102,6 +102,7 @@ export function ProfilePage() {
   const [photoVisibility, setPhotoVisibility] = useState<ProfileVisibility>("CONNECTIONS");
   const [bioVisibility, setBioVisibility] = useState<ProfileVisibility>("CONNECTIONS");
   const [locationVisibility, setLocationVisibility] = useState<ProfileVisibility>("CONNECTIONS");
+  const [isProfileHidden, setIsProfileHidden] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(true);
   const [wallActivityNotifications, setWallActivityNotifications] = useState(true);
@@ -128,6 +129,7 @@ export function ProfilePage() {
       setPhotoVisibility(data.profile.photoVisibility);
       setBioVisibility(data.profile.bioVisibility);
       setLocationVisibility(data.profile.locationVisibility);
+      setIsProfileHidden(data.profile.isProfileHidden);
       setEmailNotifications(data.profile.emailNotifications);
       setSmsNotifications(data.profile.smsNotifications);
       setWallActivityNotifications(data.profile.wallActivityNotifications);
@@ -178,6 +180,7 @@ export function ProfilePage() {
     if (photoVisibility !== profile.photoVisibility) updates.photoVisibility = photoVisibility;
     if (bioVisibility !== profile.bioVisibility) updates.bioVisibility = bioVisibility;
     if (locationVisibility !== profile.locationVisibility) updates.locationVisibility = locationVisibility;
+    if (isProfileHidden !== profile.isProfileHidden) updates.isProfileHidden = isProfileHidden;
     if (emailNotifications !== profile.emailNotifications) updates.emailNotifications = emailNotifications;
     if (smsNotifications !== profile.smsNotifications) updates.smsNotifications = smsNotifications;
     if (wallActivityNotifications !== profile.wallActivityNotifications) updates.wallActivityNotifications = wallActivityNotifications;
@@ -212,6 +215,7 @@ export function ProfilePage() {
     photoVisibility !== profile.photoVisibility ||
     bioVisibility !== profile.bioVisibility ||
     locationVisibility !== profile.locationVisibility ||
+    isProfileHidden !== profile.isProfileHidden ||
     emailNotifications !== profile.emailNotifications ||
     smsNotifications !== profile.smsNotifications ||
     wallActivityNotifications !== profile.wallActivityNotifications ||
@@ -453,6 +457,47 @@ export function ProfilePage() {
                   </label>
                   <VisibilitySelect value={locationVisibility} onChange={setLocationVisibility} />
                 </div>
+              </div>
+            </div>
+
+            {/* Advanced Privacy Section */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Advanced Privacy</h2>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="checkbox"
+                      id="isProfileHidden"
+                      checked={isProfileHidden}
+                      onChange={(e) => setIsProfileHidden(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="isProfileHidden" className="font-medium text-gray-900 text-sm">
+                      Hide My Profile
+                    </label>
+                    <p className="text-gray-500 text-xs mt-1">
+                      When enabled, only your display name will be visible to others. Your profile photo, bio, and location will be hidden regardless of individual field visibility settings.
+                    </p>
+                    <p className="text-gray-500 text-xs mt-1">
+                      Note: You will still appear in event attendee lists, and others can still add private notes about you.
+                    </p>
+                  </div>
+                </div>
+                {isProfileHidden && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-yellow-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-xs text-yellow-800">
+                        Your profile is currently hidden. Only your display name is visible to other users.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

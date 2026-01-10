@@ -1567,6 +1567,7 @@ export interface UserProfile {
   photoVisibility: ProfileVisibility;
   bioVisibility: ProfileVisibility;
   locationVisibility: ProfileVisibility;
+  isProfileHidden: boolean;
   emailNotifications: boolean;
   smsNotifications: boolean;
   wallActivityNotifications: boolean;
@@ -1596,6 +1597,7 @@ export interface UpdateProfileInput {
   photoVisibility?: ProfileVisibility;
   bioVisibility?: ProfileVisibility;
   locationVisibility?: ProfileVisibility;
+  isProfileHidden?: boolean;
   emailNotifications?: boolean;
   smsNotifications?: boolean;
   wallActivityNotifications?: boolean;
