@@ -22,11 +22,22 @@ interface RSVPState {
   rsvpDeadline: string | null;
 }
 
+interface WaitlistState {
+  onWaitlist: boolean;
+  position: number | null;
+  totalWaitlist: number;
+  notifiedAt: string | null;
+  expiresAt: string | null;
+}
+
 interface RSVPButtonsProps {
   eventId: string;
   authToken: string;
   initialRsvp?: RSVPResponse | null;
   rsvpDeadline?: string | null;
+  capacity?: number | null;
+  waitlistEnabled?: boolean;
+  currentYesCount?: number;
   onRsvpChange?: (response: RSVPResponse | null) => void;
   apiBaseUrl?: string;
 }
@@ -77,6 +88,9 @@ export function RSVPButtons({
   authToken,
   initialRsvp = null,
   rsvpDeadline = null,
+  capacity = null,
+  waitlistEnabled = false,
+  currentYesCount = 0,
   onRsvpChange,
   apiBaseUrl = "/api",
 }: RSVPButtonsProps) {
@@ -86,10 +100,20 @@ export function RSVPButtons({
     deadlinePassed: false,
     rsvpDeadline,
   });
+  const [waitlistState, setWaitlistState] = useState<WaitlistState>({
+    onWaitlist: false,
+    position: null,
+    totalWaitlist: 0,
+    notifiedAt: null,
+    expiresAt: null,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Calculate if event is at capacity
+  const isAtCapacity = capacity !== null && currentYesCount >= capacity && rsvpState.rsvp?.response !== "YES";
 
   // Fetch current RSVP state
   const fetchRsvp = useCallback(async () => {
@@ -126,10 +150,39 @@ export function RSVPButtons({
     }
   }, [eventId, authToken, apiBaseUrl]);
 
-  // Fetch RSVP on mount
+  // Fetch waitlist status
+  const fetchWaitlist = useCallback(async () => {
+    if (!authToken || !waitlistEnabled) return;
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/events/${eventId}/waitlist`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setWaitlistState({
+          onWaitlist: data.onWaitlist,
+          position: data.waitlist?.position || null,
+          totalWaitlist: data.waitlist?.totalWaitlist || 0,
+          notifiedAt: data.waitlist?.notifiedAt || null,
+          expiresAt: data.waitlist?.expiresAt || null,
+        });
+      }
+    } catch {
+      // Silently fail - waitlist status is optional
+    }
+  }, [eventId, authToken, apiBaseUrl, waitlistEnabled]);
+
+  // Fetch RSVP and waitlist on mount
   useEffect(() => {
     fetchRsvp();
-  }, [fetchRsvp]);
+    fetchWaitlist();
+  }, [fetchRsvp, fetchWaitlist]);
 
   // Submit RSVP
   const submitRsvp = async (response: RSVPResponse) => {
@@ -202,6 +255,129 @@ export function RSVPButtons({
       onRsvpChange?.(null);
 
       // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Join waitlist
+  const joinWaitlist = async () => {
+    if (!authToken) return;
+
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/events/${eventId}/waitlist`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to join waitlist");
+      }
+
+      setWaitlistState({
+        onWaitlist: true,
+        position: data.waitlist?.position || null,
+        totalWaitlist: 0,
+        notifiedAt: null,
+        expiresAt: null,
+      });
+      setSuccessMessage(data.message || "You have been added to the waitlist!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Leave waitlist
+  const leaveWaitlist = async () => {
+    if (!authToken) return;
+
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/events/${eventId}/waitlist`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to leave waitlist");
+      }
+
+      setWaitlistState({
+        onWaitlist: false,
+        position: null,
+        totalWaitlist: 0,
+        notifiedAt: null,
+        expiresAt: null,
+      });
+      setSuccessMessage("You have been removed from the waitlist");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Confirm waitlist spot
+  const confirmWaitlistSpot = async () => {
+    if (!authToken) return;
+
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/events/${eventId}/waitlist/confirm`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to confirm spot");
+      }
+
+      // Update states - user is now RSVP'd YES
+      setRsvpState((prev) => ({
+        ...prev,
+        rsvp: { response: "YES" } as RSVPData,
+      }));
+      setWaitlistState({
+        onWaitlist: false,
+        position: null,
+        totalWaitlist: 0,
+        notifiedAt: null,
+        expiresAt: null,
+      });
+      setSuccessMessage(data.message || "Your attendance has been confirmed!");
+      onRsvpChange?.("YES");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -318,62 +494,133 @@ export function RSVPButtons({
         </div>
       )}
 
-      {/* RSVP Buttons */}
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => submitRsvp("YES")}
-          disabled={!rsvpState.canModify || isSubmitting}
-          className={getButtonClasses("YES")}
-          aria-pressed={currentResponse === "YES"}
-        >
-          {isSubmitting && currentResponse !== "YES" ? (
-            <span className="flex items-center gap-2">
-              <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
-              Saving...
-            </span>
-          ) : (
-            "Yes"
-          )}
-        </button>
+      {/* Waitlist notification - user has been notified of available spot */}
+      {waitlistState.onWaitlist && waitlistState.notifiedAt && (
+        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+          <p className="text-green-800 font-medium">A spot has opened up!</p>
+          <p className="text-green-600 text-sm mt-1">
+            {waitlistState.expiresAt
+              ? `You have until ${new Date(waitlistState.expiresAt).toLocaleString()} to confirm your spot.`
+              : "Please confirm your attendance."}
+          </p>
+          <button
+            type="button"
+            onClick={confirmWaitlistSpot}
+            disabled={isSubmitting}
+            className="mt-3 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+          >
+            {isSubmitting ? "Confirming..." : "Confirm My Spot"}
+          </button>
+        </div>
+      )}
 
-        <button
-          type="button"
-          onClick={() => submitRsvp("NO")}
-          disabled={!rsvpState.canModify || isSubmitting}
-          className={getButtonClasses("NO")}
-          aria-pressed={currentResponse === "NO"}
-        >
-          {isSubmitting && currentResponse !== "NO" ? (
-            <span className="flex items-center gap-2">
-              <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
-              Saving...
-            </span>
-          ) : (
-            "No"
-          )}
-        </button>
+      {/* Waitlist status - user is on waitlist but not notified yet */}
+      {waitlistState.onWaitlist && !waitlistState.notifiedAt && (
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-blue-800 font-medium">You're on the waitlist</p>
+          <p className="text-blue-600 text-sm mt-1">
+            {waitlistState.position
+              ? `Position: #${waitlistState.position}${waitlistState.totalWaitlist > 0 ? ` of ${waitlistState.totalWaitlist}` : ""}`
+              : "We'll notify you when a spot opens up."}
+          </p>
+          <button
+            type="button"
+            onClick={leaveWaitlist}
+            disabled={isSubmitting}
+            className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline disabled:opacity-50"
+          >
+            Leave waitlist
+          </button>
+        </div>
+      )}
 
-        <button
-          type="button"
-          onClick={() => submitRsvp("MAYBE")}
-          disabled={!rsvpState.canModify || isSubmitting}
-          className={getButtonClasses("MAYBE")}
-          aria-pressed={currentResponse === "MAYBE"}
-        >
-          {isSubmitting && currentResponse !== "MAYBE" ? (
-            <span className="flex items-center gap-2">
-              <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
-              Saving...
-            </span>
+      {/* At capacity message with waitlist option */}
+      {isAtCapacity && !waitlistState.onWaitlist && !currentResponse && (
+        <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+          <p className="text-orange-800 font-medium">This event is at capacity</p>
+          {waitlistEnabled ? (
+            <>
+              <p className="text-orange-600 text-sm mt-1">
+                You can join the waitlist to be notified if a spot opens up.
+              </p>
+              <button
+                type="button"
+                onClick={joinWaitlist}
+                disabled={isSubmitting}
+                className="mt-3 px-4 py-2 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50"
+              >
+                {isSubmitting ? "Joining..." : "Join Waitlist"}
+              </button>
+            </>
           ) : (
-            "Maybe"
+            <p className="text-orange-600 text-sm mt-1">
+              No more spots are available for this event.
+            </p>
           )}
-        </button>
-      </div>
+        </div>
+      )}
+
+      {/* RSVP Buttons - hide Yes button if at capacity and not already RSVP'd yes */}
+      {!waitlistState.onWaitlist && (
+        <div className="flex flex-wrap gap-3">
+          {/* Only show Yes button if not at capacity or user already RSVP'd yes */}
+          {(!isAtCapacity || currentResponse === "YES") && (
+            <button
+              type="button"
+              onClick={() => submitRsvp("YES")}
+              disabled={!rsvpState.canModify || isSubmitting}
+              className={getButtonClasses("YES")}
+              aria-pressed={currentResponse === "YES"}
+            >
+              {isSubmitting && currentResponse !== "YES" ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
+                  Saving...
+                </span>
+              ) : (
+                "Yes"
+              )}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => submitRsvp("NO")}
+            disabled={!rsvpState.canModify || isSubmitting}
+            className={getButtonClasses("NO")}
+            aria-pressed={currentResponse === "NO"}
+          >
+            {isSubmitting && currentResponse !== "NO" ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
+                Saving...
+              </span>
+            ) : (
+              "No"
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => submitRsvp("MAYBE")}
+            disabled={!rsvpState.canModify || isSubmitting}
+            className={getButtonClasses("MAYBE")}
+            aria-pressed={currentResponse === "MAYBE"}
+          >
+            {isSubmitting && currentResponse !== "MAYBE" ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
+                Saving...
+              </span>
+            ) : (
+              "Maybe"
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Remove RSVP option */}
-      {currentResponse && rsvpState.canModify && (
+      {currentResponse && rsvpState.canModify && !waitlistState.onWaitlist && (
         <button
           type="button"
           onClick={removeRsvp}

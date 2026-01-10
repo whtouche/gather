@@ -34,6 +34,7 @@ model User {
   notifications     Notification[]
   wallPosts         WallPost[]
   wallReactions     WallReaction[]
+  waitlistEntries   Waitlist[]
 
   @@index([phone])
   @@index([email])
@@ -103,6 +104,7 @@ model Event {
   // Optional fields
   imageUrl        String?
   capacity        Int?
+  waitlistEnabled Boolean     @default(false)
   rsvpDeadline    DateTime?
   category        String?
   dressCode       String?
@@ -131,6 +133,7 @@ model Event {
   smsInvitations   SmsInvitation[]
   smsQuota         SmsQuota?
   wallPosts        WallPost[]
+  waitlistEntries  Waitlist[]
 
   @@index([creatorId])
   @@index([state])
@@ -325,6 +328,7 @@ enum NotificationType {
   EVENT_CANCELLED
   RSVP_RECONFIRM
   POST_DELETED_BY_MODERATOR
+  WAITLIST_SPOT_AVAILABLE
 }
 
 // Wall posts on events
@@ -407,4 +411,25 @@ enum ModerationAction {
   DELETE
   PIN
   UNPIN
+}
+
+// Waitlist for events at capacity
+model Waitlist {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Position is determined by createdAt (first-come, first-served)
+  createdAt DateTime @default(now())
+
+  // When a spot opens, user is notified and has 24h to confirm
+  notifiedAt     DateTime?
+  expiresAt      DateTime?
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([eventId, createdAt])
 }

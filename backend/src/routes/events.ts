@@ -23,6 +23,7 @@ interface CreateEventInput {
   location: string;
   imageUrl?: string;
   capacity?: number;
+  waitlistEnabled?: boolean;
   rsvpDeadline?: string;
   category?: string;
   dressCode?: string;
@@ -40,6 +41,7 @@ interface UpdateEventInput {
   location?: string;
   imageUrl?: string | null;
   capacity?: number | null;
+  waitlistEnabled?: boolean;
   rsvpDeadline?: string | null;
   category?: string | null;
   dressCode?: string | null;
@@ -133,6 +135,7 @@ function validateCreateEventInput(input: unknown): CreateEventInput {
     location: data.location.trim(),
     imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : undefined,
     capacity: typeof data.capacity === "number" ? data.capacity : undefined,
+    waitlistEnabled: typeof data.waitlistEnabled === "boolean" ? data.waitlistEnabled : undefined,
     rsvpDeadline: typeof data.rsvpDeadline === "string" ? data.rsvpDeadline : undefined,
     category: typeof data.category === "string" ? data.category.trim() : undefined,
     dressCode: typeof data.dressCode === "string" ? data.dressCode.trim() : undefined,
@@ -264,6 +267,13 @@ function validateUpdateEventInput(input: unknown): UpdateEventInput {
     result.allowInviteSharing = data.allowInviteSharing;
   }
 
+  if (data.waitlistEnabled !== undefined) {
+    if (typeof data.waitlistEnabled !== "boolean") {
+      throw createApiError("Waitlist enabled must be a boolean", 400, "INVALID_WAITLIST_ENABLED");
+    }
+    result.waitlistEnabled = data.waitlistEnabled;
+  }
+
   return result;
 }
 
@@ -296,6 +306,7 @@ router.post(
             location: input.location,
             imageUrl: input.imageUrl,
             capacity: input.capacity,
+            waitlistEnabled: input.waitlistEnabled ?? false,
             rsvpDeadline: input.rsvpDeadline ? new Date(input.rsvpDeadline) : null,
             category: input.category,
             dressCode: input.dressCode,
@@ -330,6 +341,7 @@ router.post(
           location: event.location,
           imageUrl: event.imageUrl,
           capacity: event.capacity,
+          waitlistEnabled: event.waitlistEnabled,
           rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
           category: event.category,
           dressCode: event.dressCode,
@@ -469,6 +481,7 @@ router.get(
           location: event.location,
           imageUrl: event.imageUrl,
           capacity: event.capacity,
+          waitlistEnabled: event.waitlistEnabled,
           rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
           category: event.category,
           dressCode: event.dressCode,
@@ -540,6 +553,7 @@ router.patch(
       if (input.location !== undefined) updateData.location = input.location;
       if (input.imageUrl !== undefined) updateData.imageUrl = input.imageUrl;
       if (input.capacity !== undefined) updateData.capacity = input.capacity;
+      if (input.waitlistEnabled !== undefined) updateData.waitlistEnabled = input.waitlistEnabled;
       if (input.rsvpDeadline !== undefined) {
         updateData.rsvpDeadline = input.rsvpDeadline ? new Date(input.rsvpDeadline) : null;
       }
@@ -624,6 +638,7 @@ router.patch(
           location: event.location,
           imageUrl: event.imageUrl,
           capacity: event.capacity,
+          waitlistEnabled: event.waitlistEnabled,
           rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
           category: event.category,
           dressCode: event.dressCode,
@@ -834,6 +849,7 @@ router.post(
           location: event.location,
           imageUrl: event.imageUrl,
           capacity: event.capacity,
+          waitlistEnabled: event.waitlistEnabled,
           rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
           category: event.category,
           dressCode: event.dressCode,
@@ -967,6 +983,7 @@ router.post(
           location: event.location,
           imageUrl: event.imageUrl,
           capacity: event.capacity,
+          waitlistEnabled: event.waitlistEnabled,
           rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
           category: event.category,
           dressCode: event.dressCode,

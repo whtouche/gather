@@ -9,6 +9,7 @@ import dashboardRoutes from "./routes/dashboard.js";
 import notificationRoutes from "./routes/notifications.js";
 import profileRoutes from "./routes/profile.js";
 import wallRoutes from "./routes/wall.js";
+import waitlistRoutes from "./routes/waitlist.js";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/events", rsvpRoutes);
 app.use("/api/events", wallRoutes);
+app.use("/api/events", waitlistRoutes);
 app.use("/api", invitationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);

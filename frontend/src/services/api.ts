@@ -440,6 +440,7 @@ export interface EventDetails {
   location: string;
   imageUrl: string | null;
   capacity: number | null;
+  waitlistEnabled: boolean;
   rsvpDeadline: string | null;
   category: string | null;
   dressCode: string | null;
@@ -487,6 +488,7 @@ export interface CreateEventInput {
   timezone?: string;
   imageUrl?: string;
   capacity?: number;
+  waitlistEnabled?: boolean;
   rsvpDeadline?: string;
   category?: string;
   dressCode?: string;
@@ -508,6 +510,7 @@ export interface CreatedEvent {
   location: string;
   imageUrl: string | null;
   capacity: number | null;
+  waitlistEnabled: boolean;
   rsvpDeadline: string | null;
   category: string | null;
   dressCode: string | null;
@@ -659,6 +662,7 @@ export interface UpdateEventInput {
   location?: string;
   imageUrl?: string | null;
   capacity?: number | null;
+  waitlistEnabled?: boolean;
   rsvpDeadline?: string | null;
   category?: string | null;
   dressCode?: string | null;
@@ -758,7 +762,7 @@ export async function getEventState(eventId: string): Promise<EventStateResponse
 /**
  * Notification type enum
  */
-export type NotificationType = "EVENT_UPDATED" | "EVENT_CANCELLED" | "RSVP_RECONFIRM";
+export type NotificationType = "EVENT_UPDATED" | "EVENT_CANCELLED" | "RSVP_RECONFIRM" | "WAITLIST_SPOT_AVAILABLE";
 
 /**
  * Notification object
@@ -1340,6 +1344,78 @@ export async function getModerationLog(eventId: string): Promise<GetModerationLo
   return request(`/events/${eventId}/wall/moderation-log`);
 }
 
+// =============================================================================
+// Waitlist Types & API
+// =============================================================================
+
+/**
+ * Waitlist entry info
+ */
+export interface WaitlistEntry {
+  id: string;
+  position: number | null;
+  totalWaitlist?: number;
+  createdAt: string;
+  notifiedAt: string | null;
+  expiresAt: string | null;
+}
+
+/**
+ * Response from GET /api/events/:id/waitlist
+ */
+export interface WaitlistStatusResponse {
+  onWaitlist: boolean;
+  waitlist: WaitlistEntry | null;
+  waitlistEnabled: boolean;
+  capacity: number | null;
+}
+
+/**
+ * Response from POST /api/events/:id/waitlist
+ */
+export interface JoinWaitlistResponse {
+  message: string;
+  waitlist: {
+    id: string;
+    position: number | null;
+    createdAt: string;
+  };
+}
+
+/**
+ * Get user's waitlist status for an event
+ */
+export async function getWaitlistStatus(eventId: string): Promise<WaitlistStatusResponse> {
+  return request(`/events/${eventId}/waitlist`);
+}
+
+/**
+ * Join the waitlist for an event
+ */
+export async function joinWaitlist(eventId: string): Promise<JoinWaitlistResponse> {
+  return request(`/events/${eventId}/waitlist`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Leave the waitlist for an event
+ */
+export async function leaveWaitlist(eventId: string): Promise<{ message: string }> {
+  return request(`/events/${eventId}/waitlist`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Confirm attendance from waitlist notification
+ */
+export async function confirmWaitlistSpot(eventId: string): Promise<{ message: string; rsvp: { eventId: string; userId: string; response: string } }> {
+  return request(`/events/${eventId}/waitlist/confirm`, {
+    method: "POST",
+  });
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -1387,4 +1463,8 @@ export default {
   pinWallPost,
   unpinWallPost,
   getModerationLog,
+  getWaitlistStatus,
+  joinWaitlist,
+  leaveWaitlist,
+  confirmWaitlistSpot,
 };

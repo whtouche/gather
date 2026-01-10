@@ -21,6 +21,7 @@ interface EventFormData {
   location: string;
   imageUrl: string;
   capacity: string;
+  waitlistEnabled: boolean;
   rsvpDeadline: string;
   category: string;
   dressCode: string;
@@ -106,6 +107,7 @@ function eventToFormData(event: EventDetails): EventFormData {
     location: event.location,
     imageUrl: event.imageUrl || "",
     capacity: event.capacity ? String(event.capacity) : "",
+    waitlistEnabled: event.waitlistEnabled,
     rsvpDeadline: formatDateForInput(event.rsvpDeadline),
     category: event.category || "",
     dressCode: event.dressCode || "",
@@ -138,6 +140,7 @@ export function EditEventPage() {
     location: "",
     imageUrl: "",
     capacity: "",
+    waitlistEnabled: false,
     rsvpDeadline: "",
     category: "",
     dressCode: "",
@@ -322,6 +325,10 @@ export function EditEventPage() {
     const newCapacity = formData.capacity ? parseInt(formData.capacity, 10) : null;
     if (newCapacity !== originalEvent?.capacity) {
       body.capacity = newCapacity;
+    }
+
+    if (formData.waitlistEnabled !== originalEvent?.waitlistEnabled) {
+      body.waitlistEnabled = formData.waitlistEnabled;
     }
 
     if (formData.rsvpDeadline) {
@@ -687,6 +694,22 @@ export function EditEventPage() {
                   }`}
                 />
                 {errors.capacity && <p className="text-sm text-red-600 mt-1">{errors.capacity}</p>}
+                {/* Waitlist toggle - only shown when capacity is set */}
+                {formData.capacity && (
+                  <div className="flex items-center mt-2">
+                    <input
+                      type="checkbox"
+                      id="waitlistEnabled"
+                      name="waitlistEnabled"
+                      checked={formData.waitlistEnabled}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor="waitlistEnabled" className="ml-2 text-sm text-gray-600">
+                      Enable waitlist when full
+                    </label>
+                  </div>
+                )}
               </div>
 
               {/* RSVP Deadline */}

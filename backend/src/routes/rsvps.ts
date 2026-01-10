@@ -5,6 +5,7 @@ import { createApiError } from "../types/index.js";
 import { prisma } from "../utils/db.js";
 import { requireAuth } from "../middleware/auth.js";
 import { computeEventState } from "../utils/eventState.js";
+import { notifyNextOnWaitlist } from "./waitlist.js";
 
 const router = Router();
 
@@ -196,18 +197,32 @@ router.post(
         });
 
         // Get current user's RSVP to see if they're already a YES
-        const existingRsvp = await prisma.rSVP.findUnique({
+        const existingRsvpForCapacity = await prisma.rSVP.findUnique({
           where: { eventId_userId: { eventId, userId } },
           select: { response: true },
         });
 
-        // If at capacity and user isn't already a YES, reject
-        if (currentYesCount >= event.capacity && existingRsvp?.response !== "YES") {
-          throw createApiError(
-            "Event is at capacity",
-            400,
-            "EVENT_AT_CAPACITY"
-          );
+        // If at capacity and user isn't already a YES, check waitlist or reject
+        if (currentYesCount >= event.capacity && existingRsvpForCapacity?.response !== "YES") {
+          // Get full event to check waitlist status
+          const fullEvent = await prisma.event.findUnique({
+            where: { id: eventId },
+            select: { waitlistEnabled: true },
+          });
+
+          if (fullEvent?.waitlistEnabled) {
+            throw createApiError(
+              "Event is at capacity. You can join the waitlist instead.",
+              400,
+              "EVENT_AT_CAPACITY_WAITLIST_AVAILABLE"
+            );
+          } else {
+            throw createApiError(
+              "Event is at capacity",
+              400,
+              "EVENT_AT_CAPACITY"
+            );
+          }
         }
       }
 
@@ -243,6 +258,19 @@ router.post(
       // Notify organizers if this is a new RSVP or a change
       if (!isUpdate || responseChanged) {
         await notifyOrganizersOfRsvpChange(eventId, userId, input.response, isUpdate);
+      }
+
+      // If user changed from YES to something else, notify next person on waitlist
+      if (existingRsvp?.response === "YES" && input.response !== "YES") {
+        // Check if event has waitlist enabled and capacity
+        const eventWithWaitlist = await prisma.event.findUnique({
+          where: { id: eventId },
+          select: { capacity: true, waitlistEnabled: true },
+        });
+
+        if (eventWithWaitlist?.capacity && eventWithWaitlist?.waitlistEnabled) {
+          await notifyNextOnWaitlist(eventId);
+        }
       }
 
       res.status(isUpdate ? 200 : 201).json({
@@ -404,6 +432,9 @@ router.delete(
         throw createApiError("RSVP not found", 404, "RSVP_NOT_FOUND");
       }
 
+      // Store the response before deleting for waitlist logic
+      const wasYes = existingRsvp.response === "YES";
+
       // Delete the RSVP
       await prisma.rSVP.delete({
         where: {
@@ -418,6 +449,18 @@ router.delete(
       console.log(
         `[RSVP Notification] User ${userId} removed their RSVP for event ${eventId}`
       );
+
+      // If user was a YES, notify next person on waitlist
+      if (wasYes) {
+        const eventWithWaitlist = await prisma.event.findUnique({
+          where: { id: eventId },
+          select: { capacity: true, waitlistEnabled: true },
+        });
+
+        if (eventWithWaitlist?.capacity && eventWithWaitlist?.waitlistEnabled) {
+          await notifyNextOnWaitlist(eventId);
+        }
+      }
 
       res.status(200).json({
         message: "RSVP removed successfully",

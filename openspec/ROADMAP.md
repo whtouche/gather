@@ -154,7 +154,7 @@ Time to reach out and touch someone (digitally, of course).
 
 ---
 
-## Group E: The Wall
+## Group E: The Wall [DONE]
 **Theme: "Let's chat"**
 
 The social heart of every event.
@@ -180,7 +180,7 @@ The social heart of every event.
 - Moderation log for accountability
 - Author notification on deletion
 
-### E4: Capacity & Waitlist
+### E4: Capacity & Waitlist [DONE]
 *Popular parties need crowd control.*
 - Set maximum capacity on events
 - Block RSVP when full
