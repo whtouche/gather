@@ -229,7 +229,7 @@ Advanced tools for the discerning party planner.
 
 ---
 
-## Group G: Custom Questions
+## Group G: Custom Questions [DONE]
 **Theme: "Tell me more"**
 
 Gather the info you need.
@@ -255,7 +255,7 @@ Gather the info you need.
 - See who hasn't completed questionnaire
 - CSV export of all responses
 
-### G4: Questionnaire Editing
+### G4: Questionnaire Editing [DONE]
 *Adapt as you go (with guardrails).*
 - Full editing before any responses
 - Add optional questions after responses

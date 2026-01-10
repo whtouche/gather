@@ -35,6 +35,7 @@ const QUESTION_TYPES: { value: QuestionType; label: string; description: string 
 
 export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuilderProps) {
   const [questions, setQuestions] = useState<QuestionnaireQuestion[]>([]);
+  const [hasAnyResponses, setHasAnyResponses] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -58,7 +59,8 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
       setIsLoading(true);
       setError(null);
       const data = await getQuestionnaire(eventId);
-      setQuestions(data);
+      setQuestions(data.questions);
+      setHasAnyResponses(data.hasAnyResponses);
     } catch (err) {
       if (isApiError(err)) {
         setError(err.message);
@@ -97,6 +99,8 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
     });
     setEditingId(question.id);
     setIsAdding(false);
+    // Clear any errors when starting to edit
+    setError(null);
   }
 
   function handleCancelEdit() {
@@ -244,6 +248,29 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
         <form onSubmit={handleSubmit} className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
           <h4 className="font-semibold mb-4">{editingId ? "Edit Question" : "New Question"}</h4>
 
+          {/* G4: Warning when editing question with responses */}
+          {editingId && (() => {
+            const editingQuestion = questions.find(q => q.id === editingId);
+            const hasResponses = editingQuestion && editingQuestion.responseCount && editingQuestion.responseCount > 0;
+            return hasResponses ? (
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> This question has {editingQuestion.responseCount} response{editingQuestion.responseCount !== 1 ? 's' : ''}.
+                  You can only edit the question text and help text. Cannot change choices or make it required.
+                </p>
+              </div>
+            ) : null;
+          })()}
+
+          {/* G4: Warning when adding new question and responses exist */}
+          {isAdding && hasAnyResponses && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> Responses have already been submitted. New questions must be optional (not required).
+              </p>
+            </div>
+          )}
+
           {/* Question Text */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -281,43 +308,51 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
           </div>
 
           {/* Choices (for choice questions) */}
-          {(formData.questionType === "SINGLE_CHOICE" || formData.questionType === "MULTIPLE_CHOICE") && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Choices <span className="text-red-500">*</span>
-              </label>
-              {formData.choices.map((choice, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={choice}
-                    onChange={(e) => handleChoiceChange(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder={`Option ${index + 1}`}
-                    maxLength={200}
-                  />
-                  {formData.choices.length > 2 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveChoice(index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              {formData.choices.length < 10 && (
-                <button
-                  type="button"
-                  onClick={handleAddChoice}
-                  className="text-sm text-blue-600 hover:text-blue-700"
-                >
-                  + Add Choice
-                </button>
-              )}
-            </div>
-          )}
+          {(formData.questionType === "SINGLE_CHOICE" || formData.questionType === "MULTIPLE_CHOICE") && (() => {
+            // G4: Check if we're editing a question with responses
+            const editingQuestion = editingId ? questions.find(q => q.id === editingId) : null;
+            const hasResponses = editingQuestion && editingQuestion.responseCount ? editingQuestion.responseCount > 0 : false;
+            const choicesDisabled = !!(editingId && hasResponses);
+
+            return (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Choices <span className="text-red-500">*</span>
+                </label>
+                {formData.choices.map((choice, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={choice}
+                      onChange={(e) => handleChoiceChange(index, e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                      placeholder={`Option ${index + 1}`}
+                      maxLength={200}
+                      disabled={choicesDisabled}
+                    />
+                    {formData.choices.length > 2 && !choicesDisabled && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveChoice(index)}
+                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {formData.choices.length < 10 && !choicesDisabled && (
+                  <button
+                    type="button"
+                    onClick={handleAddChoice}
+                    className="text-sm text-blue-600 hover:text-blue-700"
+                  >
+                    + Add Choice
+                  </button>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Required */}
           <div className="mb-4">
@@ -326,10 +361,32 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                 type="checkbox"
                 checked={formData.isRequired}
                 onChange={(e) => setFormData({ ...formData, isRequired: e.target.checked })}
-                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                disabled={(() => {
+                  // G4: Disable if adding new question and responses exist
+                  if (isAdding && hasAnyResponses) return true;
+                  // G4: Disable if editing question with responses and trying to make it required
+                  if (editingId) {
+                    const editingQuestion = questions.find(q => q.id === editingId);
+                    const hasResponses = editingQuestion && editingQuestion.responseCount ? editingQuestion.responseCount > 0 : false;
+                    // Only disable if not already required and has responses
+                    return hasResponses && !editingQuestion?.isRequired;
+                  }
+                  return false;
+                })()}
               />
               <span className="text-sm font-medium text-gray-700">Required question</span>
             </label>
+            {isAdding && hasAnyResponses && (
+              <p className="text-xs text-gray-500 mt-1">New questions must be optional when responses already exist</p>
+            )}
+            {editingId && (() => {
+              const editingQuestion = questions.find(q => q.id === editingId);
+              const hasResponses = editingQuestion && editingQuestion.responseCount ? editingQuestion.responseCount > 0 : false;
+              return hasResponses && !editingQuestion?.isRequired ? (
+                <p className="text-xs text-gray-500 mt-1">Cannot make required when responses already exist</p>
+              ) : null;
+            })()}
           </div>
 
           {/* Help Text */}
@@ -387,6 +444,11 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                       {question.questionText}
                       {question.isRequired && <span className="text-red-500 ml-1">*</span>}
                     </p>
+                    {question.responseCount && question.responseCount > 0 && (
+                      <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
+                        {question.responseCount} response{question.responseCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
                     {QUESTION_TYPES.find(t => t.value === question.questionType)?.label}
@@ -411,7 +473,9 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                   </button>
                   <button
                     onClick={() => handleDelete(question.id)}
-                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={question.responseCount ? question.responseCount > 0 : false}
+                    title={question.responseCount && question.responseCount > 0 ? `Cannot delete: ${question.responseCount} response${question.responseCount !== 1 ? 's' : ''} exist` : ''}
                   >
                     Delete
                   </button>

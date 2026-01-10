@@ -2137,6 +2137,7 @@ export interface QuestionnaireQuestion {
   choices: string[] | null;
   createdAt: string;
   updatedAt: string;
+  responseCount?: number; // G4: Number of responses for this question
 }
 
 export interface CreateQuestionInput {
@@ -2160,11 +2161,11 @@ export interface UpdateQuestionInput {
  */
 export async function getQuestionnaire(
   eventId: string
-): Promise<QuestionnaireQuestion[]> {
-  const response = await request<{ questions: QuestionnaireQuestion[] }>(
+): Promise<{ questions: QuestionnaireQuestion[]; hasAnyResponses: boolean }> {
+  const response = await request<{ questions: QuestionnaireQuestion[]; hasAnyResponses: boolean }>(
     `/events/${eventId}/questionnaire`
   );
-  return response.questions;
+  return response;
 }
 
 /**

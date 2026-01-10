@@ -18,7 +18,7 @@ describe("QuestionnaireBuilder", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(api.getQuestionnaire).mockResolvedValue([]);
+    vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: [], hasAnyResponses: false });
   });
 
   describe("Rendering", () => {
@@ -51,7 +51,7 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
     });
 
@@ -93,7 +93,7 @@ describe("QuestionnaireBuilder", () => {
         },
       ];
 
-      vi.mocked(api.getQuestionnaire).mockResolvedValue(mockQuestions);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: mockQuestions, hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={false} />);
 
@@ -119,7 +119,7 @@ describe("QuestionnaireBuilder", () => {
         },
       ];
 
-      vi.mocked(api.getQuestionnaire).mockResolvedValue(mockQuestions);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: mockQuestions, hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={false} />);
 
@@ -146,7 +146,7 @@ describe("QuestionnaireBuilder", () => {
         },
       ];
 
-      vi.mocked(api.getQuestionnaire).mockResolvedValue(mockQuestions);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: mockQuestions, hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={false} />);
 
@@ -171,7 +171,7 @@ describe("QuestionnaireBuilder", () => {
         },
       ];
 
-      vi.mocked(api.getQuestionnaire).mockResolvedValue(mockQuestions);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: mockQuestions, hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={false} />);
 
@@ -188,10 +188,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       expect(screen.getByText(/new question/i)).toBeInTheDocument();
@@ -213,21 +213,21 @@ describe("QuestionnaireBuilder", () => {
       };
 
       vi.mocked(api.createQuestion).mockResolvedValue(newQuestion);
-      vi.mocked(api.getQuestionnaire).mockResolvedValueOnce([]).mockResolvedValueOnce([newQuestion]);
+      vi.mocked(api.getQuestionnaire).mockResolvedValueOnce({ questions: [], hasAnyResponses: false }).mockResolvedValueOnce({ questions: [newQuestion], hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const questionInput = screen.getByPlaceholderText(/enter your question/i);
       fireEvent.change(questionInput, { target: { value: "New question" } });
 
-      const submitButton = screen.getByText(/add question/i);
+      const submitButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -244,10 +244,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const typeSelect = screen.getByRole("combobox");
@@ -263,10 +263,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const typeSelect = screen.getByRole("combobox");
@@ -282,10 +282,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const typeSelect = screen.getByRole("combobox");
@@ -307,10 +307,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const typeSelect = screen.getByRole("combobox");
@@ -331,10 +331,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const typeSelect = screen.getByRole("combobox");
@@ -354,10 +354,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const questionInput = screen.getByPlaceholderText(/enter your question/i);
@@ -368,10 +368,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const helpTextInput = screen.getByPlaceholderText(/additional guidance/i);
@@ -382,10 +382,10 @@ describe("QuestionnaireBuilder", () => {
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const typeSelect = screen.getByRole("combobox");
@@ -417,7 +417,7 @@ describe("QuestionnaireBuilder", () => {
         },
       ];
 
-      vi.mocked(api.getQuestionnaire).mockResolvedValue(mockQuestions);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: mockQuestions, hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
@@ -448,7 +448,7 @@ describe("QuestionnaireBuilder", () => {
         },
       ];
 
-      vi.mocked(api.getQuestionnaire).mockResolvedValue(mockQuestions);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: mockQuestions, hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
@@ -483,8 +483,8 @@ describe("QuestionnaireBuilder", () => {
       };
 
       vi.mocked(api.getQuestionnaire)
-        .mockResolvedValueOnce([mockQuestion])
-        .mockResolvedValueOnce([updatedQuestion]);
+        .mockResolvedValueOnce({ questions: [mockQuestion], hasAnyResponses: false })
+        .mockResolvedValueOnce({ questions: [updatedQuestion], hasAnyResponses: false });
       vi.mocked(api.updateQuestion).mockResolvedValue(updatedQuestion);
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
@@ -530,7 +530,7 @@ describe("QuestionnaireBuilder", () => {
         },
       ];
 
-      vi.mocked(api.getQuestionnaire).mockResolvedValue(mockQuestions);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: mockQuestions, hasAnyResponses: false });
 
       // Mock confirm
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
@@ -568,8 +568,8 @@ describe("QuestionnaireBuilder", () => {
       ];
 
       vi.mocked(api.getQuestionnaire)
-        .mockResolvedValueOnce(mockQuestions)
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce({ questions: mockQuestions, hasAnyResponses: false })
+        .mockResolvedValueOnce({ questions: [], hasAnyResponses: false });
       vi.mocked(api.deleteQuestion).mockResolvedValue();
 
       // Mock confirm to return true
@@ -622,23 +622,23 @@ describe("QuestionnaireBuilder", () => {
     });
 
     it("should display error when creating question fails", async () => {
-      vi.mocked(api.getQuestionnaire).mockResolvedValue([]);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: [], hasAnyResponses: false });
       vi.mocked(api.createQuestion).mockRejectedValue(new Error("Creation failed"));
       vi.mocked(api.isApiError).mockReturnValue(false);
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const questionInput = screen.getByPlaceholderText(/enter your question/i);
       fireEvent.change(questionInput, { target: { value: "Test question" } });
 
-      const submitButton = screen.getByText(/add question/i);
+      const submitButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -647,15 +647,15 @@ describe("QuestionnaireBuilder", () => {
     });
 
     it("should show error when choice validation fails", async () => {
-      vi.mocked(api.getQuestionnaire).mockResolvedValue([]);
+      vi.mocked(api.getQuestionnaire).mockResolvedValue({ questions: [], hasAnyResponses: false });
 
       render(<QuestionnaireBuilder eventId={mockEventId} isOrganizer={true} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/add question/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add question/i })).toBeInTheDocument();
       });
 
-      const addButton = screen.getByText(/add question/i);
+      const addButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(addButton);
 
       const typeSelect = screen.getByRole("combobox");
@@ -665,7 +665,7 @@ describe("QuestionnaireBuilder", () => {
       fireEvent.change(questionInput, { target: { value: "Test question" } });
 
       // Leave choices empty
-      const submitButton = screen.getByText(/add question/i);
+      const submitButton = screen.getByRole("button", { name: /add question/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {

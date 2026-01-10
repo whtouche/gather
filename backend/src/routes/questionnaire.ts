@@ -223,6 +223,28 @@ router.get(
         orderBy: { orderIndex: "asc" },
       });
 
+      // Check if any responses exist for this event (for G4 editing restrictions)
+      const hasAnyResponses = await prisma.questionnaireResponse.findFirst({
+        where: { eventId },
+      });
+
+      // For each question, check if it has responses (for G4 UI warnings)
+      const questionIds = questions.map(q => q.id);
+      const responseCounts = questionIds.length > 0
+        ? await prisma.questionnaireResponse.groupBy({
+            by: ['questionId'],
+            where: {
+              questionId: { in: questionIds },
+            },
+            _count: {
+              id: true,
+            },
+          })
+        : [];
+      const responseCountMap = new Map(
+        responseCounts.map(rc => [rc.questionId, rc._count.id])
+      );
+
       // Parse choices JSON for each question
       const questionsWithParsedChoices = questions.map((q) => {
         let parsedChoices = null;
@@ -245,10 +267,14 @@ router.get(
           choices: parsedChoices,
           createdAt: q.createdAt,
           updatedAt: q.updatedAt,
+          responseCount: responseCountMap.get(q.id) || 0,
         };
       });
 
-      res.json({ questions: questionsWithParsedChoices });
+      res.json({
+        questions: questionsWithParsedChoices,
+        hasAnyResponses: !!hasAnyResponses,
+      });
     } catch (error) {
       next(error);
     }
@@ -268,6 +294,19 @@ router.post(
     try {
       const { eventId } = req.params;
       const input = validateCreateQuestionInput(req.body);
+
+      // G4: Check if responses exist - new questions must be optional (per REQ-INV-024)
+      const hasAnyResponses = await prisma.questionnaireResponse.findFirst({
+        where: { eventId },
+      });
+
+      if (hasAnyResponses && input.isRequired) {
+        throw createApiError(
+          "Cannot add required questions after responses have been submitted. New questions must be optional.",
+          400,
+          "CANNOT_ADD_REQUIRED_QUESTION_WITH_RESPONSES"
+        );
+      }
 
       // Get the current max orderIndex for this event
       const maxOrder = await prisma.questionnaireQuestion.findFirst({
@@ -348,13 +387,33 @@ router.patch(
         throw createApiError("Question does not belong to this event", 403, "FORBIDDEN");
       }
 
-      // Check if there are any responses (for editing restrictions in future iterations)
+      // Check if there are any responses (for editing restrictions per REQ-INV-024)
       const hasResponses = await prisma.questionnaireResponse.findFirst({
         where: { questionId },
       });
 
-      // For G1, we allow full editing. G4 will implement restrictions based on hasResponses
-      // Future: if hasResponses, prevent type changes and deletions
+      // G4: Implement editing restrictions when responses exist
+      if (hasResponses) {
+        // Allow changing question text and help text (these don't affect data integrity)
+
+        // Cannot change to required if currently optional (could invalidate existing responses)
+        if (input.isRequired === true && !existingQuestion.isRequired) {
+          throw createApiError(
+            "Cannot make a question required after responses have been submitted",
+            400,
+            "CANNOT_MAKE_REQUIRED_WITH_RESPONSES"
+          );
+        }
+
+        // Cannot change choices (could invalidate existing responses)
+        if (input.choices !== undefined) {
+          throw createApiError(
+            "Cannot change choices after responses have been submitted",
+            400,
+            "CANNOT_CHANGE_CHOICES_WITH_RESPONSES"
+          );
+        }
+      }
 
       // Build update data
       const updateData: {
@@ -447,15 +506,21 @@ router.delete(
         throw createApiError("Question does not belong to this event", 403, "FORBIDDEN");
       }
 
-      // Check if there are any responses (for editing restrictions in future iterations)
+      // Check if there are any responses (per REQ-INV-024)
       const hasResponses = await prisma.questionnaireResponse.findFirst({
         where: { questionId },
       });
 
-      // For G1, we allow deletion. G4 will prevent deletion if hasResponses
-      // Future: if hasResponses, throw error preventing deletion
+      // G4: Prevent deletion if responses exist (per REQ-INV-024)
+      if (hasResponses) {
+        throw createApiError(
+          "Cannot delete a question that has responses. This would lose user data.",
+          400,
+          "CANNOT_DELETE_QUESTION_WITH_RESPONSES"
+        );
+      }
 
-      // Delete the question (cascade will delete responses)
+      // Delete the question
       await prisma.questionnaireQuestion.delete({
         where: { id: questionId },
       });
