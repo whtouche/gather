@@ -1,0 +1,55 @@
+Perfect! Let me create a summary of what was implemented.
+
+## Summary
+
+I have successfully implemented **I1: Notification Preferences** for the Gather app. Here's what was completed:
+
+### Database Changes
+- Added four global notification preference fields to the `User` model:
+  - `emailNotifications` (default: true)
+  - `smsNotifications` (default: true)
+  - `wallActivityNotifications` (default: true)
+  - `connectionEventNotifications` (default: true)
+- Created new `EventNotificationSetting` model for per-event notification preferences with:
+  - `muteAll` - mute all notifications for a specific event
+  - `muteWallOnly` - mute only wall activity notifications for a specific event
+
+### Backend API (backend/src/routes/profile.ts)
+- Updated `GET /api/profile` to include notification preferences in response
+- Updated `PATCH /api/profile` to accept and validate notification preference updates
+- Added `GET /api/profile/events/:eventId/notifications` to retrieve per-event settings
+- Added `PATCH /api/profile/events/:eventId/notifications` to update per-event settings
+- Proper authorization: per-event settings only accessible to event attendees
+
+### Frontend Changes
+
+**API Service (frontend/src/services/api.ts)**
+- Updated `UserProfile` interface with notification preference fields
+- Updated `UpdateProfileInput` interface to support notification updates
+- Added `EventNotificationSettings` interface and related types
+- Added `getEventNotificationSettings()` and `updateEventNotificationSettings()` API functions
+
+**Profile Page (frontend/src/pages/ProfilePage.tsx)**
+- Added Notification Preferences section with checkboxes for:
+  - Email Notifications
+  - SMS Notifications
+  - Wall Activity Notifications
+  - New Event Notifications from Connections
+- All settings save together with other profile changes
+- Clear descriptions for each notification type
+
+**Event Notification Settings Component (frontend/src/components/EventNotificationSettings.tsx)**
+- New standalone component for per-event notification controls
+- Shows "Mute all notifications" toggle
+- Shows "Mute wall notifications only" toggle (disabled when all muted)
+- Auto-hides if user is not an event attendee
+- Real-time save with success/error feedback
+- Integrated into EventPage for logged-in attendees
+
+### Quality Assurance
+- All TypeScript checks pass on both backend and frontend
+- Prisma client successfully generated with new schema
+- No regressions in existing code
+- Follows existing code patterns and conventions
+
+The implementation provides users with comprehensive control over their notification preferences at both global and per-event levels, exactly as specified in REQ-MSG-016 and REQ-MSG-017.

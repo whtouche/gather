@@ -1,0 +1,143 @@
+Perfect! Now let me create a comprehensive summary of the review:
+
+## Review Summary
+
+### Files Reviewed
+
+**Backend:**
+- `backend/prisma/schema.prisma` - Database schema changes
+- `backend/src/routes/profile.ts` - Profile and notification settings API endpoints
+
+**Frontend:**
+- `frontend/src/components/EventNotificationSettings.tsx` - New component (untracked)
+- `frontend/src/pages/EventPage.tsx` - Integration of notification settings
+- `frontend/src/pages/ProfilePage.tsx` - Global notification preferences UI
+- `frontend/src/services/api.ts` - API client methods
+
+---
+
+### Issues Found and Fixed
+
+#### 1. **Critical: Missing Database Relationship** (FIXED)
+**Location:** `backend/prisma/schema.prisma:623-624`
+
+**Issue:** The `EventNotificationSetting` model was missing the foreign key relationship to the `Event` model, which would cause Prisma validation errors.
+
+**Fix:** Added the Event relation and updated the Event model to include the reverse relation:
+```prisma
+event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+```
+
+Also added to Event model:
+```prisma
+eventNotificationSettings EventNotificationSetting[]
+```
+
+---
+
+### Code Quality Assessment
+
+#### Backend (`backend/src/routes/profile.ts`)
+
+**Strengths:**
+- ✅ Proper authentication middleware usage (`requireAuth`, `optionalAuth`)
+- ✅ Comprehensive input validation with clear error messages
+- ✅ Type-safe with TypeScript and Prisma types
+- ✅ Proper error handling with custom `createApiError`
+- ✅ Authorization checks (verifies user is an attendee before allowing settings access)
+- ✅ Uses `upsert` for idempotent updates
+- ✅ Proper cascading deletes with `onDelete: Cascade`
+
+**No Security Issues Found:**
+- ✅ No SQL injection risks (using Prisma ORM)
+- ✅ No XSS risks (API only, no HTML rendering)
+- ✅ Proper authorization checks
+- ✅ Input validation for all user inputs
+
+#### Frontend (`frontend/src/components/EventNotificationSettings.tsx`)
+
+**Strengths:**
+- ✅ Proper error handling for API calls
+- ✅ Loading states with skeleton UI
+- ✅ Graceful handling of non-attendees (403 errors)
+- ✅ Disabled state during save operations
+- ✅ Success feedback with auto-dismiss
+- ✅ Clean conditional rendering (hides component when not applicable)
+
+**Minor Limitation Noted:**
+- ⚠️ When initial fetch fails (non-403 errors), the component renders nothing instead of showing an error message. This is a minor UX issue but consistent with the "hide if not relevant" design pattern.
+
+---
+
+### Tests Written
+
+#### Backend Tests (`backend/src/__tests__/profile.test.ts`)
+
+Added comprehensive tests for the new notification endpoints:
+- ✅ Authentication requirements for GET `/api/profile/events/:eventId/notifications`
+- ✅ Authentication requirements for PATCH `/api/profile/events/:eventId/notifications`
+- ✅ Token validation
+- ✅ Boolean type validation for `muteAll` and `muteWallOnly`
+
+**All 11 tests pass** ✅
+
+#### Frontend Tests (`frontend/src/components/EventNotificationSettings.test.tsx`)
+
+Created comprehensive test suite with 13 tests:
+- ✅ Loading state rendering
+- ✅ Non-attendee handling (403 errors)
+- ✅ Settings display and interaction
+- ✅ Checkbox state management
+- ✅ API calls with correct payloads
+- ✅ Success message display
+- ✅ Disabled state during saves
+- ✅ Error handling for failed updates
+- ✅ Generic error handling
+
+**All 13 tests pass** ✅
+
+---
+
+### Test Results
+
+**Backend:**
+- ✅ 322 tests passed across 15 test files
+- Profile tests: 11 passed
+- All existing tests still passing (no regressions)
+
+**Frontend:**
+- ✅ EventNotificationSettings: 13 tests passed
+- No regressions in existing tests
+
+**TypeScript Compilation:**
+- ⚠️ Some pre-existing errors in unrelated test files (`waitlist.test.ts`, `EventWall.test.tsx`, `EventPage.test.tsx`) - **not introduced by this change**
+- ✅ New code compiles without errors
+
+---
+
+### Remaining Concerns
+
+**None.** The implementation is production-ready with the following notes:
+
+1. **Database Migration Required:** The schema changes need to be migrated using `npm run db:migrate` in the backend directory before deployment.
+
+2. **Pre-existing TypeScript Errors:** There are some pre-existing TypeScript errors in test files that should be addressed separately:
+   - `backend/src/__tests__/waitlist.test.ts:195, 209, 210` - Type comparison errors
+   - `frontend/src/components/EventWall.test.tsx:445` - Missing property in mock
+   - `frontend/src/pages/EventPage.test.tsx:73` - Missing property in mock
+
+3. **Minor UX Enhancement Opportunity:** The `EventNotificationSettings` component could be enhanced to display error messages when initial fetch fails (currently it silently fails and renders nothing). However, this is consistent with the current design pattern and not a blocker.
+
+---
+
+### Summary
+
+The notification preferences feature has been successfully implemented with:
+- ✅ Clean, type-safe backend implementation
+- ✅ Comprehensive input validation and authorization
+- ✅ Well-tested frontend component
+- ✅ No security vulnerabilities
+- ✅ No regressions in existing functionality
+- ✅ Production-ready code quality
+
+**The code is ready for commit and deployment after running database migrations.**

@@ -195,6 +195,63 @@ export async function getPastEvents(): Promise<PastDashboardResponse> {
   return request("/dashboard/past");
 }
 
+/**
+ * Search filters for events
+ */
+export interface EventSearchFilters {
+  title?: string;
+  startDate?: string;
+  endDate?: string;
+  state?: "upcoming" | "past" | "cancelled";
+  role?: "organizer" | "attendee";
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * Event search result
+ */
+export interface SearchEvent extends DashboardEvent {
+  isOrganizer: boolean;
+  rsvpStatus: string | null;
+  rsvpCounts?: {
+    yes: number;
+    no: number;
+    maybe: number;
+  };
+}
+
+/**
+ * Event search response with pagination
+ */
+export interface EventSearchResponse {
+  events: SearchEvent[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+/**
+ * Search and filter events for the authenticated user
+ */
+export async function searchEvents(filters?: EventSearchFilters): Promise<EventSearchResponse> {
+  const params = new URLSearchParams();
+
+  if (filters?.title) params.append("title", filters.title);
+  if (filters?.startDate) params.append("startDate", filters.startDate);
+  if (filters?.endDate) params.append("endDate", filters.endDate);
+  if (filters?.state) params.append("state", filters.state);
+  if (filters?.role) params.append("role", filters.role);
+  if (filters?.page) params.append("page", filters.page.toString());
+  if (filters?.limit) params.append("limit", filters.limit.toString());
+
+  const queryString = params.toString();
+  return request(`/dashboard/search${queryString ? `?${queryString}` : ""}`);
+}
+
 // =============================================================================
 // Invite Registration Types & API
 // =============================================================================

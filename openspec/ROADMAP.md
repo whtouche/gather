@@ -315,7 +315,7 @@ The features that make people smile.
 - Wall activity notification settings
 - Notification batching for wall posts
 
-### I2: Event Search & Filter
+### I2: Event Search & Filter [DONE]
 *Find that one party.*
 - Search by event title
 - Filter by date range

@@ -519,4 +519,207 @@ router.get(
   }
 );
 
+/**
+ * GET /api/dashboard/search
+ * Search and filter events for the authenticated user
+ * Query parameters:
+ * - title: string (optional) - Search by event title (case-insensitive, partial match)
+ * - startDate: ISO date string (optional) - Filter events starting on or after this date
+ * - endDate: ISO date string (optional) - Filter events starting on or before this date
+ * - state: upcoming | past | cancelled (optional) - Filter by event state category
+ * - role: organizer | attendee (optional) - Filter by user's role in the event
+ * - page: number (optional, default 1) - Page number for pagination
+ * - limit: number (optional, default 20) - Number of results per page
+ *
+ * Returns:
+ * - events: Array of matching events
+ * - pagination: Object with page, limit, total, totalPages
+ */
+router.get(
+  "/search",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+
+      // Parse query parameters
+      const {
+        title,
+        startDate,
+        endDate,
+        state: stateCategory,
+        role,
+        page = "1",
+        limit = "20",
+      } = req.query;
+
+      // Validate and parse pagination parameters
+      const parsedPage = parseInt(page as string, 10);
+      const parsedLimit = parseInt(limit as string, 10);
+      const pageNum = isNaN(parsedPage) ? 1 : Math.max(1, parsedPage);
+      const limitNum = isNaN(parsedLimit) ? 20 : Math.min(100, Math.max(1, parsedLimit));
+      const skip = (pageNum - 1) * limitNum;
+
+      // Build where clause for events
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const andConditions: any[] = [];
+
+      // Add base condition: user must be connected to the event
+      // This will be overridden if a role filter is specified
+      const validRoles = ["organizer", "attendee"];
+      const roleFilter = typeof role === "string" && validRoles.includes(role) ? role : null;
+
+      if (!roleFilter) {
+        andConditions.push({
+          OR: [
+            {
+              eventRoles: {
+                some: {
+                  userId,
+                  role: "ORGANIZER" as const,
+                },
+              },
+            },
+            {
+              rsvps: {
+                some: {
+                  userId,
+                  response: { in: ["YES", "MAYBE"] as RSVPResponse[] },
+                },
+              },
+            },
+          ],
+        });
+      } else if (roleFilter === "organizer") {
+        andConditions.push({
+          eventRoles: {
+            some: {
+              userId,
+              role: "ORGANIZER" as const,
+            },
+          },
+        });
+      } else if (roleFilter === "attendee") {
+        andConditions.push({
+          rsvps: {
+            some: {
+              userId,
+              response: "YES" as RSVPResponse,
+            },
+          },
+        });
+      }
+
+      // Add title search
+      if (title && typeof title === "string") {
+        andConditions.push({
+          title: {
+            contains: title,
+            mode: "insensitive" as const,
+          },
+        });
+      }
+
+      // Add date range filters
+      if (startDate && typeof startDate === "string") {
+        const startDateTime = new Date(startDate);
+        if (!isNaN(startDateTime.getTime())) {
+          andConditions.push({
+            dateTime: { gte: startDateTime },
+          });
+        }
+      }
+      if (endDate && typeof endDate === "string") {
+        const endDateTime = new Date(endDate);
+        if (!isNaN(endDateTime.getTime())) {
+          andConditions.push({
+            dateTime: { lte: endDateTime },
+          });
+        }
+      }
+
+      // Add state category filter
+      if (stateCategory && typeof stateCategory === "string") {
+        const validStates = ["upcoming", "past", "cancelled"];
+        if (validStates.includes(stateCategory)) {
+          if (stateCategory === "upcoming") {
+            andConditions.push({ state: { in: UPCOMING_STATES } });
+          } else if (stateCategory === "past") {
+            andConditions.push({ state: { in: ["COMPLETED" as EventState] } });
+          } else if (stateCategory === "cancelled") {
+            andConditions.push({ state: { in: ["CANCELLED" as EventState] } });
+          }
+        }
+      }
+
+      const where = {
+        AND: andConditions,
+      };
+
+      // Get total count for pagination
+      const total = await prisma.event.count({ where });
+
+      // Get events with pagination
+      const events = await prisma.event.findMany({
+        where,
+        orderBy: { dateTime: "desc" },
+        skip,
+        take: limitNum,
+        include: {
+          eventRoles: {
+            where: { userId },
+            select: { role: true },
+          },
+          rsvps: {
+            select: {
+              response: true,
+              userId: true,
+            },
+          },
+        },
+      });
+
+      // Transform events to include role and RSVP information
+      const transformedEvents = events.map((event) => {
+        const isOrganizer = event.eventRoles.length > 0;
+        const userRsvp = event.rsvps.find((r) => r.userId === userId);
+        const rsvpStatus = userRsvp?.response || null;
+
+        return {
+          id: event.id,
+          title: event.title,
+          dateTime: event.dateTime.toISOString(),
+          endDateTime: event.endDateTime?.toISOString() || null,
+          timezone: event.timezone,
+          location: event.location,
+          state: event.state,
+          imageUrl: event.imageUrl,
+          category: event.category,
+          isOrganizer,
+          rsvpStatus,
+          rsvpCounts: isOrganizer
+            ? {
+                yes: event.rsvps.filter((r) => r.response === "YES").length,
+                no: event.rsvps.filter((r) => r.response === "NO").length,
+                maybe: event.rsvps.filter((r) => r.response === "MAYBE").length,
+              }
+            : undefined,
+        };
+      });
+
+      res.json({
+        events: transformedEvents,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;
