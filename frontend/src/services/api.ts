@@ -1046,6 +1046,165 @@ export async function getSmsQuota(eventId: string): Promise<{ quota: SmsQuotaInf
 }
 
 // =============================================================================
+// Mass Email Communication Types & API
+// =============================================================================
+
+/**
+ * Target audience for mass communications
+ */
+export type TargetAudience = "ALL" | "YES_ONLY" | "MAYBE_ONLY" | "NO_ONLY" | "WAITLIST_ONLY";
+
+/**
+ * Mass email quota information
+ */
+export interface MassEmailQuota {
+  used: number;
+  limit: number;
+  remaining: number;
+  canSendNow: boolean;
+  nextSendAllowed?: string;
+}
+
+/**
+ * Recipient preview for mass email
+ */
+export interface MassEmailRecipientPreview {
+  displayName: string;
+  email: string;
+}
+
+/**
+ * Response from GET /api/events/:id/messages/email/preview
+ */
+export interface MassEmailPreviewResponse {
+  count: number;
+  preview: MassEmailRecipientPreview[];
+  hasMore: boolean;
+}
+
+/**
+ * Response from POST /api/events/:id/messages/email
+ */
+export interface SendMassEmailResponse {
+  message: string;
+  id: string;
+  recipientCount: number;
+  sentCount: number;
+  failedCount: number;
+  quota: MassEmailQuota;
+}
+
+/**
+ * Mass email history record
+ */
+export interface MassEmailRecord {
+  id: string;
+  subject: string | null;
+  body: string;
+  targetAudience: string;
+  recipientCount: number;
+  sentCount: number;
+  failedCount: number;
+  openedCount: number;
+  sentAt: string;
+  organizer: {
+    id: string;
+    displayName: string;
+  };
+}
+
+/**
+ * Response from GET /api/events/:id/messages/email/history
+ */
+export interface MassEmailHistoryResponse {
+  messages: MassEmailRecord[];
+  total: number;
+}
+
+/**
+ * Mass email recipient details
+ */
+export interface MassEmailRecipientDetail {
+  userId: string;
+  displayName: string;
+  email: string;
+  status: string;
+  sentAt: string | null;
+  openedAt: string | null;
+}
+
+/**
+ * Mass email details
+ */
+export interface MassEmailDetails {
+  id: string;
+  subject: string | null;
+  body: string;
+  targetAudience: string;
+  recipientCount: number;
+  sentCount: number;
+  failedCount: number;
+  openedCount: number;
+  sentAt: string;
+  recipients: MassEmailRecipientDetail[];
+}
+
+/**
+ * Get mass email quota for an event (organizers only)
+ */
+export async function getMassEmailQuota(eventId: string): Promise<{ quota: MassEmailQuota }> {
+  return request(`/events/${eventId}/messages/email/quota`);
+}
+
+/**
+ * Preview recipients for a mass email (organizers only)
+ */
+export async function previewMassEmailRecipients(
+  eventId: string,
+  audience: TargetAudience
+): Promise<MassEmailPreviewResponse> {
+  return request(`/events/${eventId}/messages/email/preview?audience=${audience}`);
+}
+
+/**
+ * Send a mass email to event attendees (organizers only)
+ */
+export async function sendMassEmail(
+  eventId: string,
+  data: { subject: string; body: string; targetAudience: TargetAudience }
+): Promise<SendMassEmailResponse> {
+  return request(`/events/${eventId}/messages/email`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Get mass email history for an event (organizers only)
+ */
+export async function getMassEmailHistory(
+  eventId: string,
+  limit?: number,
+  offset?: number
+): Promise<MassEmailHistoryResponse> {
+  const params = new URLSearchParams();
+  if (limit) params.set("limit", String(limit));
+  if (offset) params.set("offset", String(offset));
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return request(`/events/${eventId}/messages/email/history${query}`);
+}
+
+/**
+ * Get details of a specific mass email (organizers only)
+ */
+export async function getMassEmailDetails(
+  eventId: string,
+  messageId: string
+): Promise<MassEmailDetails> {
+  return request(`/events/${eventId}/messages/email/${messageId}`);
+}
+
+// =============================================================================
 // Profile Types & API
 // =============================================================================
 
@@ -1451,6 +1610,11 @@ export default {
   sendSmsInvitations,
   getSmsInvitations,
   getSmsQuota,
+  getMassEmailQuota,
+  previewMassEmailRecipients,
+  sendMassEmail,
+  getMassEmailHistory,
+  getMassEmailDetails,
   getProfile,
   updateProfile,
   getPublicProfile,

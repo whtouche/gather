@@ -35,6 +35,8 @@ model User {
   wallPosts         WallPost[]
   wallReactions     WallReaction[]
   waitlistEntries   Waitlist[]
+  massCommunicationsSent     MassCommunication[]          @relation("MassCommunicationOrganizer")
+  massCommunicationsReceived MassCommunicationRecipient[] @relation("MassCommunicationRecipient")
 
   @@index([phone])
   @@index([email])
@@ -134,6 +136,8 @@ model Event {
   smsQuota         SmsQuota?
   wallPosts        WallPost[]
   waitlistEntries  Waitlist[]
+  massCommunications      MassCommunication[]
+  massCommunicationQuota  MassCommunicationQuota?
 
   @@index([creatorId])
   @@index([state])
@@ -432,4 +436,103 @@ model Waitlist {
   @@index([eventId])
   @@index([userId])
   @@index([eventId, createdAt])
+}
+
+// Mass communication messages sent to event attendees
+model MassCommunication {
+  id            String              @id @default(cuid())
+  eventId       String
+  event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  organizerId   String
+  organizer     User                @relation("MassCommunicationOrganizer", fields: [organizerId], references: [id])
+
+  type          CommunicationType
+  subject       String?             // For email only, max 200 chars
+  body          String              // Max 10000 chars for email, 160 for SMS
+  targetAudience TargetAudience
+
+  // Statistics
+  recipientCount Int                @default(0)
+  sentCount      Int                @default(0)
+  failedCount    Int                @default(0)
+  openedCount    Int                @default(0)  // Email only
+
+  sentAt        DateTime            @default(now())
+  createdAt     DateTime            @default(now())
+
+  // Relations
+  recipients    MassCommunicationRecipient[]
+
+  @@index([eventId])
+  @@index([organizerId])
+  @@index([eventId, sentAt])
+}
+
+// Individual recipient tracking for mass communications
+model MassCommunicationRecipient {
+  id                    String               @id @default(cuid())
+  massCommunicationId   String
+  massCommunication     MassCommunication    @relation(fields: [massCommunicationId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User                 @relation("MassCommunicationRecipient", fields: [userId], references: [id])
+
+  contactMethod         ContactMethod
+  recipient             String               // Actual email or phone
+
+  status                DeliveryStatus       @default(PENDING)
+  sentAt                DateTime?
+  openedAt              DateTime?
+  failedAt              DateTime?
+  failureReason         String?
+
+  createdAt             DateTime             @default(now())
+
+  @@unique([massCommunicationId, userId])
+  @@index([massCommunicationId])
+  @@index([status])
+}
+
+// Communication rate limiting per event
+model MassCommunicationQuota {
+  id              String   @id @default(cuid())
+  eventId         String   @unique
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Weekly tracking (reset Sunday midnight UTC)
+  weeklyEmailCount Int     @default(0)
+  weeklySmsCount   Int     @default(0)
+  weeklyResetAt    DateTime @default(now())
+
+  // Last communication timestamp to enforce 24h spacing
+  lastEmailAt     DateTime?
+  lastSmsAt       DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum CommunicationType {
+  EMAIL
+  SMS
+}
+
+enum TargetAudience {
+  ALL
+  YES_ONLY
+  MAYBE_ONLY
+  NO_ONLY
+  WAITLIST_ONLY
+}
+
+enum ContactMethod {
+  EMAIL
+  SMS
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  OPENED
+  BOUNCED
 }

@@ -196,7 +196,7 @@ The social heart of every event.
 
 Advanced tools for the discerning party planner.
 
-### F1: Mass Email Communication
+### F1: Mass Email Communication [DONE]
 *Blast those updates.*
 - Compose mass emails to attendees
 - Target specific audiences (all, yes only, maybe only)
