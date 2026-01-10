@@ -87,6 +87,9 @@ router.get(
           smsNotifications: user.smsNotifications,
           wallActivityNotifications: user.wallActivityNotifications,
           connectionEventNotifications: user.connectionEventNotifications,
+          isActive: user.isActive,
+          deletionScheduledAt: user.deletionScheduledAt,
+          deletionExecutionAt: user.deletionExecutionAt,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -489,6 +492,290 @@ router.patch(
           eventId: settings.eventId,
           muteAll: settings.muteAll,
           muteWallOnly: settings.muteWallOnly,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/profile/deactivate
+ * Deactivate the user's account temporarily
+ */
+router.post(
+  "/deactivate",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      if (!user.isActive) {
+        throw createApiError("Account is already deactivated", 400, "ALREADY_DEACTIVATED");
+      }
+
+      // Deactivate account
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isActive: false },
+      });
+
+      res.status(200).json({
+        message: "Account deactivated successfully. You can reactivate by logging in again.",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/profile/reactivate
+ * Reactivate a deactivated account
+ */
+router.post(
+  "/reactivate",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      if (user.isActive) {
+        throw createApiError("Account is already active", 400, "ALREADY_ACTIVE");
+      }
+
+      // Reactivate account
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isActive: true },
+      });
+
+      res.status(200).json({
+        message: "Account reactivated successfully.",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/profile/delete-request
+ * Request permanent account deletion with 14-day grace period
+ */
+router.post(
+  "/delete-request",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      if (user.deletionScheduledAt) {
+        throw createApiError("Account deletion already requested", 400, "DELETION_ALREADY_REQUESTED");
+      }
+
+      // Schedule deletion for 14 days from now
+      const deletionScheduledAt = new Date();
+      const deletionExecutionAt = new Date();
+      deletionExecutionAt.setDate(deletionExecutionAt.getDate() + 14);
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          deletionScheduledAt,
+          deletionExecutionAt,
+        },
+      });
+
+      // TODO: Send confirmation email/SMS
+
+      res.status(200).json({
+        message: "Account deletion scheduled. You have 14 days to cancel by logging in.",
+        deletionScheduledAt,
+        deletionExecutionAt,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/profile/cancel-deletion
+ * Cancel a pending account deletion request
+ */
+router.post(
+  "/cancel-deletion",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      if (!user.deletionScheduledAt) {
+        throw createApiError("No deletion request found", 400, "NO_DELETION_REQUEST");
+      }
+
+      // Cancel deletion
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          deletionScheduledAt: null,
+          deletionExecutionAt: null,
+        },
+      });
+
+      res.status(200).json({
+        message: "Account deletion cancelled successfully.",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/profile/export
+ * Request a data export (queued for processing)
+ */
+router.post(
+  "/export",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      // Check for existing pending or processing export
+      const existingExport = await prisma.dataExport.findFirst({
+        where: {
+          userId: user.id,
+          status: {
+            in: ["PENDING", "PROCESSING"],
+          },
+        },
+      });
+
+      if (existingExport) {
+        throw createApiError(
+          "A data export is already in progress",
+          400,
+          "EXPORT_IN_PROGRESS"
+        );
+      }
+
+      // Create new export request
+      const dataExport = await prisma.dataExport.create({
+        data: {
+          userId: user.id,
+          status: "PENDING",
+        },
+      });
+
+      // TODO: Queue background job to process export
+
+      res.status(200).json({
+        message: "Data export requested. You will be notified when it's ready.",
+        exportId: dataExport.id,
+        status: dataExport.status,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/profile/exports
+ * Get list of all data exports for the user
+ */
+router.get(
+  "/exports",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      const exports = await prisma.dataExport.findMany({
+        where: { userId: user.id },
+        orderBy: { requestedAt: "desc" },
+        take: 10, // Limit to most recent 10
+      });
+
+      res.status(200).json({
+        exports: exports.map((exp) => ({
+          id: exp.id,
+          status: exp.status,
+          requestedAt: exp.requestedAt,
+          completedAt: exp.completedAt,
+          fileUrl: exp.status === "COMPLETED" ? exp.fileUrl : null,
+          expiresAt: exp.status === "COMPLETED" ? exp.expiresAt : null,
+        })),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/profile/exports/:exportId
+ * Get details of a specific export, including download URL if ready
+ */
+router.get(
+  "/exports/:exportId",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+      const { exportId } = req.params;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      const dataExport = await prisma.dataExport.findFirst({
+        where: {
+          id: exportId,
+          userId: user.id,
+        },
+      });
+
+      if (!dataExport) {
+        throw createApiError("Export not found", 404, "EXPORT_NOT_FOUND");
+      }
+
+      res.status(200).json({
+        export: {
+          id: dataExport.id,
+          status: dataExport.status,
+          requestedAt: dataExport.requestedAt,
+          completedAt: dataExport.completedAt,
+          fileUrl: dataExport.status === "COMPLETED" ? dataExport.fileUrl : null,
+          expiresAt: dataExport.status === "COMPLETED" ? dataExport.expiresAt : null,
         },
       });
     } catch (error) {

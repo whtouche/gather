@@ -22,6 +22,11 @@ vi.mock("../utils/db.js", () => ({
       findUnique: vi.fn().mockResolvedValue(null),
       upsert: vi.fn(),
     },
+    dataExport: {
+      findFirst: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+    },
   },
 }));
 
@@ -111,6 +116,104 @@ describe("Profile Routes", () => {
         .patch("/api/profile/events/test-event-id/notifications")
         .set("Authorization", "Bearer invalid-token")
         .send({ muteWallOnly: "not-a-boolean" });
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("POST /api/profile/deactivate", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).post("/api/profile/deactivate");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .post("/api/profile/deactivate")
+        .set("Authorization", "Bearer invalid-token");
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("POST /api/profile/reactivate", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).post("/api/profile/reactivate");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .post("/api/profile/reactivate")
+        .set("Authorization", "Bearer invalid-token");
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("POST /api/profile/delete-request", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).post("/api/profile/delete-request");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .post("/api/profile/delete-request")
+        .set("Authorization", "Bearer invalid-token");
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("POST /api/profile/cancel-deletion", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).post("/api/profile/cancel-deletion");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .post("/api/profile/cancel-deletion")
+        .set("Authorization", "Bearer invalid-token");
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("POST /api/profile/export", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).post("/api/profile/export");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .post("/api/profile/export")
+        .set("Authorization", "Bearer invalid-token");
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("GET /api/profile/exports", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).get("/api/profile/exports");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .get("/api/profile/exports")
+        .set("Authorization", "Bearer invalid-token");
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("GET /api/profile/exports/:exportId", () => {
+    it("should require authentication", async () => {
+      const response = await request(app).get("/api/profile/exports/test-export-id");
+      expect(response.status).toBe(401);
+    });
+
+    it("should reject invalid tokens", async () => {
+      const response = await request(app)
+        .get("/api/profile/exports/test-export-id")
+        .set("Authorization", "Bearer invalid-token");
       expect(response.status).toBe(401);
     });
   });

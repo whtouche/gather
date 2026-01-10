@@ -303,7 +303,7 @@ Build connections beyond single events.
 
 ---
 
-## Group I: Polish & Delight
+## Group I: Polish & Delight [DONE]
 **Theme: "The finishing touches"**
 
 The features that make people smile.
@@ -329,7 +329,7 @@ The features that make people smile.
 - Revoke individual sessions
 - Session management UI
 
-### I4: Account Management
+### I4: Account Management [DONE]
 *In case you need to peace out.*
 - Account deactivation (temporary)
 - Account deletion request with grace period

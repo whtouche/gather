@@ -657,12 +657,37 @@ router.post(
       }
 
       // Get the user
-      const user = await prisma.user.findUnique({
+      let user = await prisma.user.findUnique({
         where: { id: verification.userId },
       });
 
       if (!user) {
         throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      // Check if account has a pending deletion
+      const hasPendingDeletion = user.deletionScheduledAt !== null;
+
+      // Check if account is deactivated
+      const wasDeactivated = !user.isActive;
+
+      // Reactivate account if deactivated
+      if (wasDeactivated) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { isActive: true },
+        });
+      }
+
+      // Cancel pending deletion if exists
+      if (hasPendingDeletion) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            deletionScheduledAt: null,
+            deletionExecutionAt: null,
+          },
+        });
       }
 
       // Check if this is a new device (before creating session)
@@ -704,6 +729,8 @@ router.post(
         },
         token: session.token,
         expiresAt: session.expiresAt,
+        accountReactivated: wasDeactivated,
+        deletionCancelled: hasPendingDeletion,
       });
     } catch (error) {
       next(error);

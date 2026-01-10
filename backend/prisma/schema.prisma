@@ -31,6 +31,11 @@ model User {
   wallActivityNotifications   Boolean @default(true)
   connectionEventNotifications Boolean @default(true)
 
+  // Account management
+  isActive                    Boolean   @default(true)  // false when deactivated
+  deletionScheduledAt         DateTime? // When account deletion was requested
+  deletionExecutionAt         DateTime? // When account will be deleted (scheduledAt + 14 days)
+
   // Relations
   sessions          Session[]
   verificationCodes VerificationCode[]
@@ -46,6 +51,7 @@ model User {
   eventNotificationSettings  EventNotificationSetting[]
   privateNotesCreated        PrivateNote[]                @relation("PrivateNoteCreator")
   privateNotesAbout          PrivateNote[]                @relation("PrivateNoteTarget")
+  dataExports                DataExport[]
 
   @@index([phone])
   @@index([email])
@@ -662,4 +668,30 @@ model PrivateNote {
   @@index([creatorId])
   @@index([targetUserId])
   @@index([creatorId, updatedAt])
+}
+
+// Data export requests
+model DataExport {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       DataExportStatus @default(PENDING)
+
+  // Export file (S3/storage URL or null while processing)
+  fileUrl      String?
+  expiresAt    DateTime?        // Export files expire after 7 days
+
+  requestedAt  DateTime         @default(now())
+  completedAt  DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum DataExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
 }

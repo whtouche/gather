@@ -1491,6 +1491,9 @@ export interface UserProfile {
   smsNotifications: boolean;
   wallActivityNotifications: boolean;
   connectionEventNotifications: boolean;
+  isActive: boolean;
+  deletionScheduledAt: string | null;
+  deletionExecutionAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2298,6 +2301,139 @@ export async function deletePrivateNote(targetUserId: string): Promise<void> {
   });
 }
 
+// =============================================================================
+// Account Management Types & API
+// =============================================================================
+
+/**
+ * Data export status
+ */
+export type DataExportStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "EXPIRED";
+
+/**
+ * Data export information
+ */
+export interface DataExport {
+  id: string;
+  status: DataExportStatus;
+  requestedAt: string;
+  completedAt: string | null;
+  fileUrl: string | null;
+  expiresAt: string | null;
+}
+
+/**
+ * Response from POST /api/profile/deactivate
+ */
+export interface DeactivateAccountResponse {
+  message: string;
+}
+
+/**
+ * Response from POST /api/profile/reactivate
+ */
+export interface ReactivateAccountResponse {
+  message: string;
+}
+
+/**
+ * Response from POST /api/profile/delete-request
+ */
+export interface RequestAccountDeletionResponse {
+  message: string;
+  deletionScheduledAt: string;
+  deletionExecutionAt: string;
+}
+
+/**
+ * Response from POST /api/profile/cancel-deletion
+ */
+export interface CancelAccountDeletionResponse {
+  message: string;
+}
+
+/**
+ * Response from POST /api/profile/export
+ */
+export interface RequestDataExportResponse {
+  message: string;
+  exportId: string;
+  status: DataExportStatus;
+}
+
+/**
+ * Response from GET /api/profile/exports
+ */
+export interface GetDataExportsResponse {
+  exports: DataExport[];
+}
+
+/**
+ * Response from GET /api/profile/exports/:exportId
+ */
+export interface GetDataExportResponse {
+  export: DataExport;
+}
+
+/**
+ * Deactivate the user's account temporarily
+ */
+export async function deactivateAccount(): Promise<DeactivateAccountResponse> {
+  return request("/profile/deactivate", {
+    method: "POST",
+  });
+}
+
+/**
+ * Reactivate a deactivated account
+ */
+export async function reactivateAccount(): Promise<ReactivateAccountResponse> {
+  return request("/profile/reactivate", {
+    method: "POST",
+  });
+}
+
+/**
+ * Request permanent account deletion with 14-day grace period
+ */
+export async function requestAccountDeletion(): Promise<RequestAccountDeletionResponse> {
+  return request("/profile/delete-request", {
+    method: "POST",
+  });
+}
+
+/**
+ * Cancel a pending account deletion request
+ */
+export async function cancelAccountDeletion(): Promise<CancelAccountDeletionResponse> {
+  return request("/profile/cancel-deletion", {
+    method: "POST",
+  });
+}
+
+/**
+ * Request a data export
+ */
+export async function requestDataExport(): Promise<RequestDataExportResponse> {
+  return request("/profile/export", {
+    method: "POST",
+  });
+}
+
+/**
+ * Get list of all data exports for the user
+ */
+export async function getDataExports(): Promise<GetDataExportsResponse> {
+  return request("/profile/exports");
+}
+
+/**
+ * Get details of a specific export
+ */
+export async function getDataExport(exportId: string): Promise<GetDataExportResponse> {
+  return request(`/profile/exports/${exportId}`);
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -2368,4 +2504,11 @@ export default {
   deleteQuestion,
   reorderQuestions,
   getConnections,
+  deactivateAccount,
+  reactivateAccount,
+  requestAccountDeletion,
+  cancelAccountDeletion,
+  requestDataExport,
+  getDataExports,
+  getDataExport,
 };

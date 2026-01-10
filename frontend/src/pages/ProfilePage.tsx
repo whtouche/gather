@@ -4,9 +4,15 @@ import {
   getProfile,
   updateProfile,
   isApiError,
+  deactivateAccount,
+  requestAccountDeletion,
+  cancelAccountDeletion,
+  requestDataExport,
+  getDataExports,
   type UserProfile,
   type ProfileVisibility,
   type UpdateProfileInput,
+  type DataExport,
 } from "../services/api";
 
 type LoadingState = "loading" | "success" | "error";
@@ -101,6 +107,12 @@ export function ProfilePage() {
   const [wallActivityNotifications, setWallActivityNotifications] = useState(true);
   const [connectionEventNotifications, setConnectionEventNotifications] = useState(true);
 
+  // Account management state
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [dataExports, setDataExports] = useState<DataExport[]>([]);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
   const fetchProfile = async () => {
     setLoadingState("loading");
     setErrorMessage("");
@@ -135,8 +147,18 @@ export function ProfilePage() {
     }
   };
 
+  const fetchDataExports = async () => {
+    try {
+      const data = await getDataExports();
+      setDataExports(data.exports);
+    } catch (error) {
+      console.error("Failed to fetch data exports:", error);
+    }
+  };
+
   useEffect(() => {
     void fetchProfile();
+    void fetchDataExports();
   }, []);
 
   const handleSave = async () => {
@@ -195,6 +217,74 @@ export function ProfilePage() {
     wallActivityNotifications !== profile.wallActivityNotifications ||
     connectionEventNotifications !== profile.connectionEventNotifications
   );
+
+  const handleDeactivate = async () => {
+    setLoadingAction("deactivate");
+    try {
+      await deactivateAccount();
+      setShowDeactivateConfirm(false);
+      window.location.href = "/login";
+    } catch (error) {
+      if (isApiError(error)) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Failed to deactivate account");
+      }
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleRequestDeletion = async () => {
+    setLoadingAction("delete");
+    try {
+      await requestAccountDeletion();
+      setShowDeleteConfirm(false);
+      await fetchProfile();
+    } catch (error) {
+      if (isApiError(error)) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Failed to request account deletion");
+      }
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleCancelDeletion = async () => {
+    setLoadingAction("cancel-delete");
+    try {
+      await cancelAccountDeletion();
+      await fetchProfile();
+    } catch (error) {
+      if (isApiError(error)) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Failed to cancel account deletion");
+      }
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleRequestExport = async () => {
+    setLoadingAction("export");
+    try {
+      await requestDataExport();
+      await fetchDataExports();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      if (isApiError(error)) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Failed to request data export");
+      }
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -479,6 +569,156 @@ export function ProfilePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
+              </div>
+            </div>
+
+            {/* Account Management */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Account Management</h2>
+
+              {/* Pending Deletion Warning */}
+              {profile.deletionScheduledAt && (
+                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-red-600 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-red-800">Account Deletion Scheduled</h3>
+                      <p className="text-sm text-red-700 mt-1">
+                        Your account is scheduled for deletion on {new Date(profile.deletionExecutionAt!).toLocaleDateString()}.
+                        You can cancel this deletion at any time before that date.
+                      </p>
+                      <button
+                        onClick={handleCancelDeletion}
+                        disabled={loadingAction === "cancel-delete"}
+                        className="mt-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {loadingAction === "cancel-delete" ? "Cancelling..." : "Cancel Deletion"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                {/* Data Export */}
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Export Your Data</h3>
+                  <p className="text-sm text-gray-500 mb-3">
+                    Download a copy of all your personal data including events, RSVPs, and profile information
+                  </p>
+                  <button
+                    onClick={handleRequestExport}
+                    disabled={loadingAction === "export" || dataExports.some(e => e.status === "PENDING" || e.status === "PROCESSING")}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loadingAction === "export" ? "Requesting..." : "Request Data Export"}
+                  </button>
+                  {dataExports.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {dataExports.map((exp) => (
+                        <div key={exp.id} className="flex items-center justify-between text-sm bg-gray-50 rounded p-2">
+                          <div>
+                            <span className="font-medium">{exp.status}</span>
+                            <span className="text-gray-500 ml-2">
+                              Requested {new Date(exp.requestedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {exp.status === "COMPLETED" && exp.fileUrl && (
+                            <a
+                              href={exp.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Account Deactivation */}
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Deactivate Account</h3>
+                  <p className="text-sm text-gray-500 mb-3">
+                    Temporarily deactivate your account. You can reactivate by logging in again.
+                  </p>
+                  {!showDeactivateConfirm ? (
+                    <button
+                      onClick={() => setShowDeactivateConfirm(true)}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      Deactivate Account
+                    </button>
+                  ) : (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-sm text-yellow-800 mb-3">
+                        Are you sure you want to deactivate your account? You can reactivate it by logging in again.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleDeactivate}
+                          disabled={loadingAction === "deactivate"}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
+                        >
+                          {loadingAction === "deactivate" ? "Deactivating..." : "Yes, Deactivate"}
+                        </button>
+                        <button
+                          onClick={() => setShowDeactivateConfirm(false)}
+                          className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Account Deletion */}
+                {!profile.deletionScheduledAt && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Delete Account</h3>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Permanently delete your account and all associated data. This action has a 14-day grace period.
+                    </p>
+                    {!showDeleteConfirm ? (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+                      >
+                        Delete Account
+                      </button>
+                    ) : (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p className="text-sm text-red-800 mb-3 font-medium">
+                          Warning: This will permanently delete your account after a 14-day grace period.
+                        </p>
+                        <p className="text-sm text-red-700 mb-3">
+                          During this period, you can cancel the deletion by logging in. After 14 days, all your data will be permanently deleted and cannot be recovered.
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleRequestDeletion}
+                            disabled={loadingAction === "delete"}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                          >
+                            {loadingAction === "delete" ? "Scheduling..." : "Yes, Delete My Account"}
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

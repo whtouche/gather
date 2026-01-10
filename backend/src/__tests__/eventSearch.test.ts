@@ -27,6 +27,10 @@ const mockSession1 = {
   token: "valid-token-1",
   expiresAt: new Date(Date.now() + 86400000),
   deviceInfo: null,
+  deviceType: null,
+  deviceName: null,
+  ipAddress: null,
+  location: null,
   createdAt: new Date(),
   lastActiveAt: new Date(),
 };
