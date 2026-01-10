@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getConnections, isApiError } from "../services/api";
-import type { Connection } from "../services/api";
+import type { Connection, ConnectionsFilters } from "../services/api";
 
 type LoadingState = "loading" | "success" | "error";
 
@@ -13,7 +13,7 @@ function ConnectionCard({ connection }: { connection: Connection }) {
 
   return (
     <Link
-      to={`/users/${userId}`}
+      to={`/connections/${userId}`}
       className="block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5"
     >
       <div className="flex items-start gap-4">
@@ -197,6 +197,169 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
 }
 
 /**
+ * Filter and sort bar component
+ */
+interface FilterSortBarProps {
+  filters: ConnectionsFilters;
+  onFiltersChange: (filters: ConnectionsFilters) => void;
+}
+
+function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
+  const [showFilters, setShowFilters] = useState(false);
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <h3 className="text-sm font-medium text-gray-700">Filter & Sort</h3>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="text-sm text-blue-600 hover:text-blue-700"
+        >
+          {showFilters ? "Hide" : "Show"} Options
+        </button>
+      </div>
+
+      {/* Sort selector - always visible */}
+      <div className="mb-4">
+        <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
+          Sort by
+        </label>
+        <select
+          id="sort"
+          value={filters.sort || "recent"}
+          onChange={(e) =>
+            onFiltersChange({
+              ...filters,
+              sort: e.target.value as "recent" | "frequency" | "alphabetical",
+            })
+          }
+          className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="recent">Most Recent Event</option>
+          <option value="frequency">Most Events Together</option>
+          <option value="alphabetical">Name (A-Z)</option>
+        </select>
+      </div>
+
+      {showFilters && (
+        <div className="space-y-4 pt-4 border-t border-gray-200">
+          {/* Name search */}
+          <div>
+            <label htmlFor="nameSearch" className="block text-sm font-medium text-gray-700 mb-1">
+              Search by name
+            </label>
+            <input
+              type="text"
+              id="nameSearch"
+              placeholder="Search connections..."
+              value={filters.name || ""}
+              onChange={(e) => onFiltersChange({ ...filters, name: e.target.value || undefined })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Date range filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Events from
+              </label>
+              <input
+                type="date"
+                id="startDate"
+                value={filters.startDate || ""}
+                onChange={(e) =>
+                  onFiltersChange({ ...filters, startDate: e.target.value || undefined })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Events to
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                value={filters.endDate || ""}
+                onChange={(e) =>
+                  onFiltersChange({ ...filters, endDate: e.target.value || undefined })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active filters display */}
+      {(filters.name || filters.startDate || filters.endDate) && (
+        <div className="mt-4 flex items-center gap-2 flex-wrap pt-4 border-t border-gray-200">
+          <span className="text-sm text-gray-600">Active filters:</span>
+          {filters.name && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              Name: {filters.name}
+              <button
+                onClick={() => onFiltersChange({ ...filters, name: undefined })}
+                className="ml-1.5 inline-flex items-center"
+              >
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </span>
+          )}
+          {filters.startDate && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              From: {new Date(filters.startDate).toLocaleDateString()}
+              <button
+                onClick={() => onFiltersChange({ ...filters, startDate: undefined })}
+                className="ml-1.5 inline-flex items-center"
+              >
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </span>
+          )}
+          {filters.endDate && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              To: {new Date(filters.endDate).toLocaleDateString()}
+              <button
+                onClick={() => onFiltersChange({ ...filters, endDate: undefined })}
+                className="ml-1.5 inline-flex items-center"
+              >
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </span>
+          )}
+          <button
+            onClick={() => onFiltersChange({ sort: filters.sort })}
+            className="text-xs text-gray-600 hover:text-gray-800 underline"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * Connections page component.
  * Displays all users who have attended events together with the authenticated user.
  */
@@ -204,13 +367,14 @@ export function ConnectionsPage() {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [filters, setFilters] = useState<ConnectionsFilters>({ sort: "recent" });
 
   const fetchConnections = async () => {
     setLoadingState("loading");
     setErrorMessage("");
 
     try {
-      const data = await getConnections();
+      const data = await getConnections(filters);
       setConnections(data.connections);
       setLoadingState("success");
     } catch (error) {
@@ -229,7 +393,7 @@ export function ConnectionsPage() {
 
   useEffect(() => {
     void fetchConnections();
-  }, []);
+  }, [filters]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -277,23 +441,45 @@ export function ConnectionsPage() {
 
         {loadingState === "success" && (
           <>
-            {connections.length === 0 ? (
+            {connections.length === 0 && !filters.name && !filters.startDate && !filters.endDate ? (
               <EmptyState />
             ) : (
               <>
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-gray-900">
-                    {connections.length} {connections.length === 1 ? "Connection" : "Connections"}
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Sorted by most recent event together
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {connections.map((connection) => (
-                    <ConnectionCard key={connection.userId} connection={connection} />
-                  ))}
-                </div>
+                {/* Filter and Sort Bar */}
+                <FilterSortBar filters={filters} onFiltersChange={setFilters} />
+
+                {/* Results */}
+                {connections.length === 0 ? (
+                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                    <p className="text-gray-500 mb-4">No connections match the current filters.</p>
+                    <button
+                      onClick={() => setFilters({ sort: "recent" })}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-6">
+                      <h2 className="text-lg font-medium text-gray-900">
+                        {connections.length} {connections.length === 1 ? "Connection" : "Connections"}
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {filters.sort === "alphabetical"
+                          ? "Sorted by name (A-Z)"
+                          : filters.sort === "frequency"
+                          ? "Sorted by most events together"
+                          : "Sorted by most recent event together"}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {connections.map((connection) => (
+                        <ConnectionCard key={connection.userId} connection={connection} />
+                      ))}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>

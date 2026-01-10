@@ -278,7 +278,7 @@ Build connections beyond single events.
 - Show number of shared events
 - Most recent event together
 
-### H2: Connection Details
+### H2: Connection Details [DONE]
 *Deep dive on your connections.*
 - View shared event history with someone
 - Access public profile info

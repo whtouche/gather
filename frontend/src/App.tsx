@@ -10,6 +10,7 @@ import { EditEventPage } from "./pages/EditEventPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { UserProfilePage } from "./pages/UserProfilePage";
 import { ConnectionsPage } from "./pages/ConnectionsPage";
+import { ConnectionDetailPage } from "./pages/ConnectionDetailPage";
 import "./App.css";
 
 /**
@@ -123,6 +124,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/past-events" element={<PastEventsPage />} />
         <Route path="/connections" element={<ConnectionsPage />} />
+        <Route path="/connections/:userId" element={<ConnectionDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/users/:id" element={<UserProfilePage />} />
         <Route path="/events/new" element={<CreateEventPage />} />

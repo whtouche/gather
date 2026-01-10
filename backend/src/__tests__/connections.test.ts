@@ -327,5 +327,393 @@ describe("Connections Routes", () => {
 
       expect(response.status).toBe(500);
     });
+
+    it("should filter connections by name", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const userCompletedEvents = [{ eventId: "event-1", event: mockEvent1 }];
+      const otherAttendees = [
+        {
+          userId: "user-456",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection1,
+          event: mockEvent1,
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(userCompletedEvents as any)
+        .mockResolvedValueOnce(otherAttendees as any);
+
+      const response = await request(app)
+        .get("/api/connections?name=Alice")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connections).toHaveLength(1);
+      expect(response.body.connections[0].displayName).toBe("Alice Smith");
+    });
+
+    it("should sort connections alphabetically", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const userCompletedEvents = [{ eventId: "event-1", event: mockEvent1 }];
+      const otherAttendees = [
+        {
+          userId: "user-789",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection2,
+          event: mockEvent1,
+        },
+        {
+          userId: "user-456",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection1,
+          event: mockEvent1,
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(userCompletedEvents as any)
+        .mockResolvedValueOnce(otherAttendees as any);
+
+      const response = await request(app)
+        .get("/api/connections?sort=alphabetical")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connections).toHaveLength(2);
+      expect(response.body.connections[0].displayName).toBe("Alice Smith");
+      expect(response.body.connections[1].displayName).toBe("Bob Johnson");
+    });
+
+    it("should sort connections by frequency", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const userCompletedEvents = [
+        { eventId: "event-1", event: mockEvent1 },
+        { eventId: "event-2", event: mockEvent2 },
+      ];
+
+      const otherAttendees = [
+        {
+          userId: "user-456",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection1,
+          event: mockEvent1,
+        },
+        {
+          userId: "user-456",
+          eventId: "event-2",
+          response: "YES",
+          user: mockConnection1,
+          event: mockEvent2,
+        },
+        {
+          userId: "user-789",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection2,
+          event: mockEvent1,
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(userCompletedEvents as any)
+        .mockResolvedValueOnce(otherAttendees as any);
+
+      const response = await request(app)
+        .get("/api/connections?sort=frequency")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connections).toHaveLength(2);
+      // Alice has 2 shared events
+      expect(response.body.connections[0].userId).toBe("user-456");
+      expect(response.body.connections[0].sharedEventCount).toBe(2);
+      // Bob has 1 shared event
+      expect(response.body.connections[1].userId).toBe("user-789");
+      expect(response.body.connections[1].sharedEventCount).toBe(1);
+    });
+
+    it("should validate date parameters", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const response = await request(app)
+        .get("/api/connections?startDate=invalid-date")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain("Invalid startDate");
+    });
+  });
+
+  describe("GET /api/connections/:userId", () => {
+    const mockTargetUser = {
+      id: "user-456",
+      displayName: "Alice Smith",
+      photoUrl: "https://example.com/alice.jpg",
+      bio: "Software engineer",
+      location: "San Francisco",
+      photoVisibility: "CONNECTIONS" as const,
+      bioVisibility: "CONNECTIONS" as const,
+      locationVisibility: "CONNECTIONS" as const,
+    };
+
+    beforeEach(() => {
+      // Mock the eventRole count query for the detail endpoint
+      vi.mocked(prisma.eventRole).count = vi.fn().mockResolvedValue(0);
+    });
+
+    it("should require authentication", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(null);
+
+      const response = await request(app).get("/api/connections/user-456");
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 404 if target user does not exist", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .get("/api/connections/user-999")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe("User not found");
+    });
+
+    it("should return 404 if users have no shared events", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockTargetUser as any);
+      // Current user has no completed events
+      vi.mocked(prisma.rSVP.findMany).mockResolvedValue([]);
+
+      const response = await request(app)
+        .get("/api/connections/user-456")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toContain("No connection found");
+    });
+
+    it("should return connection detail with shared events", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockTargetUser as any);
+
+      const currentUserEvents = [{ eventId: "event-1" }];
+      const sharedEventRSVPs = [
+        {
+          event: {
+            id: "event-1",
+            title: "Summer BBQ",
+            dateTime: new Date("2024-06-15"),
+            location: "Central Park",
+            creatorId: "user-999",
+            eventRoles: [],
+          },
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(currentUserEvents as any)
+        .mockResolvedValueOnce(sharedEventRSVPs as any);
+
+      const response = await request(app)
+        .get("/api/connections/user-456")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connection).toBeDefined();
+      expect(response.body.connection.userId).toBe("user-456");
+      expect(response.body.connection.displayName).toBe("Alice Smith");
+      expect(response.body.connection.photoUrl).toBe("https://example.com/alice.jpg");
+      expect(response.body.connection.bio).toBe("Software engineer");
+      expect(response.body.connection.location).toBe("San Francisco");
+      expect(response.body.connection.sharedEvents).toHaveLength(1);
+      expect(response.body.connection.totalSharedEvents).toBe(1);
+      expect(response.body.connection.sharedEvents[0].eventTitle).toBe("Summer BBQ");
+      expect(response.body.connection.sharedEvents[0].userRole).toBe("ATTENDEE");
+    });
+
+    it("should identify organizer role correctly", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockTargetUser as any);
+
+      const currentUserEvents = [{ eventId: "event-1" }];
+      const sharedEventRSVPs = [
+        {
+          event: {
+            id: "event-1",
+            title: "Summer BBQ",
+            dateTime: new Date("2024-06-15"),
+            location: "Central Park",
+            creatorId: "user-456", // Alice is the creator
+            eventRoles: [],
+          },
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(currentUserEvents as any)
+        .mockResolvedValueOnce(sharedEventRSVPs as any);
+
+      const response = await request(app)
+        .get("/api/connections/user-456")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connection.sharedEvents[0].userRole).toBe("ORGANIZER");
+    });
+
+    it("should respect privacy settings for PRIVATE visibility", async () => {
+      const privateUser = {
+        ...mockTargetUser,
+        photoVisibility: "PRIVATE" as const,
+        bioVisibility: "PRIVATE" as const,
+        locationVisibility: "PRIVATE" as const,
+      };
+
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(privateUser as any);
+
+      const currentUserEvents = [{ eventId: "event-1" }];
+      const sharedEventRSVPs = [
+        {
+          event: {
+            id: "event-1",
+            title: "Summer BBQ",
+            dateTime: new Date("2024-06-15"),
+            location: "Central Park",
+            creatorId: "user-999",
+            eventRoles: [],
+          },
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(currentUserEvents as any)
+        .mockResolvedValueOnce(sharedEventRSVPs as any);
+
+      const response = await request(app)
+        .get("/api/connections/user-456")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      // Privacy fields should be null
+      expect(response.body.connection.photoUrl).toBeNull();
+      expect(response.body.connection.bio).toBeNull();
+      expect(response.body.connection.location).toBeNull();
+      // Display name should still be visible
+      expect(response.body.connection.displayName).toBe("Alice Smith");
+    });
+
+    it("should validate date parameters", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockTargetUser as any);
+
+      // Mock current user has events
+      const currentUserEvents = [{ eventId: "event-1" }];
+      vi.mocked(prisma.rSVP.findMany).mockResolvedValueOnce(currentUserEvents as any);
+
+      const response = await request(app)
+        .get("/api/connections/user-456?startDate=invalid-date")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain("Invalid startDate");
+    });
+
+    it("should sort shared events by date descending", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockTargetUser as any);
+
+      const currentUserEvents = [{ eventId: "event-1" }, { eventId: "event-2" }];
+      const sharedEventRSVPs = [
+        {
+          event: {
+            id: "event-1",
+            title: "Old Event",
+            dateTime: new Date("2024-01-15"),
+            location: "Location 1",
+            creatorId: "user-999",
+            eventRoles: [],
+          },
+        },
+        {
+          event: {
+            id: "event-2",
+            title: "Recent Event",
+            dateTime: new Date("2024-12-15"),
+            location: "Location 2",
+            creatorId: "user-999",
+            eventRoles: [],
+          },
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(currentUserEvents as any)
+        .mockResolvedValueOnce(sharedEventRSVPs as any);
+
+      const response = await request(app)
+        .get("/api/connections/user-456")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connection.sharedEvents).toHaveLength(2);
+      // Most recent event should be first
+      expect(response.body.connection.sharedEvents[0].eventTitle).toBe("Recent Event");
+      expect(response.body.connection.sharedEvents[1].eventTitle).toBe("Old Event");
+    });
   });
 });

@@ -1962,11 +1962,71 @@ export interface ConnectionsResponse {
   connections: Connection[];
 }
 
+export interface SharedEvent {
+  eventId: string;
+  eventTitle: string;
+  eventDate: string;
+  eventLocation: string;
+  userRole: "ORGANIZER" | "ATTENDEE";
+}
+
+export interface ConnectionDetail {
+  userId: string;
+  displayName: string;
+  photoUrl: string | null;
+  bio: string | null;
+  location: string | null;
+  sharedEvents: SharedEvent[];
+  totalSharedEvents: number;
+}
+
+export interface ConnectionDetailResponse {
+  connection: ConnectionDetail;
+}
+
+export interface ConnectionsFilters {
+  name?: string;
+  eventId?: string;
+  startDate?: string;
+  endDate?: string;
+  sort?: "recent" | "frequency" | "alphabetical";
+}
+
+export interface ConnectionDetailFilters {
+  eventId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 /**
  * Get connections for the authenticated user
  */
-export async function getConnections(): Promise<ConnectionsResponse> {
-  return request("/connections");
+export async function getConnections(filters?: ConnectionsFilters): Promise<ConnectionsResponse> {
+  const params = new URLSearchParams();
+  if (filters?.name) params.append("name", filters.name);
+  if (filters?.eventId) params.append("eventId", filters.eventId);
+  if (filters?.startDate) params.append("startDate", filters.startDate);
+  if (filters?.endDate) params.append("endDate", filters.endDate);
+  if (filters?.sort) params.append("sort", filters.sort);
+
+  const queryString = params.toString();
+  return request(`/connections${queryString ? `?${queryString}` : ""}`);
+}
+
+/**
+ * Get detailed information about a specific connection
+ */
+export async function getConnectionDetail(
+  userId: string,
+  filters?: ConnectionDetailFilters
+): Promise<ConnectionDetailResponse> {
+  const params = new URLSearchParams();
+  if (filters?.eventId) params.append("eventId", filters.eventId);
+  if (filters?.startDate) params.append("startDate", filters.startDate);
+  if (filters?.endDate) params.append("endDate", filters.endDate);
+
+  const queryString = params.toString();
+  return request(`/connections/${userId}${queryString ? `?${queryString}` : ""}`);
 }
 
 export default {

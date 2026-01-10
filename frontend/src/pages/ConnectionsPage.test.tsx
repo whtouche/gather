@@ -114,7 +114,7 @@ describe("ConnectionsPage", () => {
       });
     });
 
-    it("should link to user profile pages", async () => {
+    it("should link to connection detail pages", async () => {
       vi.mocked(api.getConnections).mockResolvedValue({
         connections: mockConnections,
       });
@@ -124,7 +124,7 @@ describe("ConnectionsPage", () => {
       await waitFor(() => {
         const links = screen.getAllByRole("link");
         const aliceLink = links.find((link) =>
-          link.getAttribute("href")?.includes("/users/user-1")
+          link.getAttribute("href")?.includes("/connections/user-1")
         );
         expect(aliceLink).toBeTruthy();
       });
