@@ -14,6 +14,7 @@ import messagesRoutes from "./routes/messages.js";
 import previousAttendeesRoutes from "./routes/previousAttendees.js";
 import questionnaireRoutes from "./routes/questionnaire.js";
 import connectionsRoutes from "./routes/connections.js";
+import privateNotesRoutes from "./routes/privateNotes.js";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/api/events", questionnaireRoutes);
 app.use("/api", invitationRoutes);
 app.use("/api", previousAttendeesRoutes);
 app.use("/api/connections", connectionsRoutes);
+app.use("/api/private-notes", privateNotesRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/profile", profileRoutes);

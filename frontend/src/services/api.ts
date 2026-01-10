@@ -2195,6 +2195,109 @@ export async function getConnectionDetail(
   return request(`/connections/${userId}${queryString ? `?${queryString}` : ""}`);
 }
 
+// =============================================================================
+// Private Notes Types & API
+// =============================================================================
+
+/**
+ * Private note data
+ */
+export interface PrivateNote {
+  id: string;
+  targetUserId: string;
+  targetUserDisplayName: string;
+  targetUserPhotoUrl: string | null;
+  content: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Private notes list response
+ */
+export interface PrivateNotesListResponse {
+  notes: PrivateNote[];
+}
+
+/**
+ * Create private note request
+ */
+export interface CreatePrivateNoteRequest {
+  targetUserId: string;
+  content: string;
+  tags?: string[];
+}
+
+/**
+ * Update private note request
+ */
+export interface UpdatePrivateNoteRequest {
+  content: string;
+  tags?: string[];
+}
+
+/**
+ * Filters for private notes list
+ */
+export interface PrivateNotesFilters {
+  targetUserId?: string;
+  search?: string;
+  sort?: "recent" | "oldest" | "alphabetical";
+}
+
+/**
+ * Get all private notes for the authenticated user
+ */
+export async function getPrivateNotes(filters?: PrivateNotesFilters): Promise<PrivateNotesListResponse> {
+  const params = new URLSearchParams();
+  if (filters?.targetUserId) params.append("targetUserId", filters.targetUserId);
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.sort) params.append("sort", filters.sort);
+
+  const queryString = params.toString();
+  return request(`/private-notes${queryString ? `?${queryString}` : ""}`);
+}
+
+/**
+ * Get private note for a specific user
+ */
+export async function getPrivateNote(targetUserId: string): Promise<PrivateNote> {
+  return request(`/private-notes/${targetUserId}`);
+}
+
+/**
+ * Create a new private note
+ */
+export async function createPrivateNote(data: CreatePrivateNoteRequest): Promise<PrivateNote> {
+  return request("/private-notes", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Update an existing private note
+ */
+export async function updatePrivateNote(
+  targetUserId: string,
+  data: UpdatePrivateNoteRequest
+): Promise<PrivateNote> {
+  return request(`/private-notes/${targetUserId}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Delete a private note
+ */
+export async function deletePrivateNote(targetUserId: string): Promise<void> {
+  await request(`/private-notes/${targetUserId}`, {
+    method: "DELETE",
+  });
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,

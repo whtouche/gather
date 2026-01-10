@@ -285,7 +285,7 @@ Build connections beyond single events.
 - Filter connections by event, date, name
 - Sort by recency, frequency, alphabetical
 
-### H3: Private Notes
+### H3: Private Notes [DONE]
 *Your secret CRM for people.*
 - Add private notes on any connection's profile
 - Notes visible only to creator

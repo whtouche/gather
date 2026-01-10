@@ -6,7 +6,13 @@ import {
   type ConnectionDetail,
   type SharedEvent,
   type ConnectionDetailFilters,
+  getPrivateNote,
+  createPrivateNote,
+  updatePrivateNote,
+  deletePrivateNote,
+  type PrivateNote,
 } from "../services/api";
+import { PrivateNoteCard } from "../components/PrivateNoteCard";
 
 type LoadingState = "loading" | "success" | "error";
 
@@ -311,6 +317,8 @@ export function ConnectionDetailPage() {
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [filters, setFilters] = useState<ConnectionDetailFilters>({});
+  const [privateNote, setPrivateNote] = useState<PrivateNote | null>(null);
+  const [noteLoadingState, setNoteLoadingState] = useState<LoadingState>("loading");
 
   const fetchConnectionDetail = async () => {
     if (!userId) {
@@ -342,8 +350,50 @@ export function ConnectionDetailPage() {
     }
   };
 
+  const fetchPrivateNote = async () => {
+    if (!userId) return;
+
+    setNoteLoadingState("loading");
+
+    try {
+      const note = await getPrivateNote(userId);
+      setPrivateNote(note);
+      setNoteLoadingState("success");
+    } catch (error) {
+      if (isApiError(error) && error.statusCode === 404) {
+        // No note exists yet - this is fine
+        setPrivateNote(null);
+        setNoteLoadingState("success");
+      } else {
+        setNoteLoadingState("error");
+      }
+    }
+  };
+
+  const handleSaveNote = async (content: string, tags: string[]) => {
+    if (!userId) return;
+
+    if (privateNote) {
+      // Update existing note
+      const updatedNote = await updatePrivateNote(userId, { content, tags });
+      setPrivateNote(updatedNote);
+    } else {
+      // Create new note
+      const newNote = await createPrivateNote({ targetUserId: userId, content, tags });
+      setPrivateNote(newNote);
+    }
+  };
+
+  const handleDeleteNote = async () => {
+    if (!userId) return;
+
+    await deletePrivateNote(userId);
+    setPrivateNote(null);
+  };
+
   useEffect(() => {
     void fetchConnectionDetail();
+    void fetchPrivateNote();
   }, [userId, filters]);
 
   if (!userId) {
@@ -460,6 +510,17 @@ export function ConnectionDetailPage() {
                 )}
               </div>
             </div>
+
+            {/* Private Note */}
+            {noteLoadingState === "success" && (
+              <PrivateNoteCard
+                note={privateNote}
+                targetUserId={userId}
+                targetUserDisplayName={connection.displayName}
+                onSave={handleSaveNote}
+                onDelete={privateNote ? handleDeleteNote : undefined}
+              />
+            )}
 
             {/* Filters */}
             <FilterBar

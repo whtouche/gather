@@ -44,6 +44,8 @@ model User {
   massCommunicationsSent     MassCommunication[]          @relation("MassCommunicationOrganizer")
   massCommunicationsReceived MassCommunicationRecipient[] @relation("MassCommunicationRecipient")
   eventNotificationSettings  EventNotificationSetting[]
+  privateNotesCreated        PrivateNote[]                @relation("PrivateNoteCreator")
+  privateNotesAbout          PrivateNote[]                @relation("PrivateNoteTarget")
 
   @@index([phone])
   @@index([email])
@@ -640,4 +642,24 @@ model EventNotificationSetting {
   @@unique([eventId, userId])
   @@index([eventId])
   @@index([userId])
+}
+
+// Private notes on user connections
+model PrivateNote {
+  id            String   @id @default(cuid())
+  creatorId     String
+  creator       User     @relation("PrivateNoteCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  targetUserId  String
+  targetUser    User     @relation("PrivateNoteTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  content       String   // Max 5000 characters, enforced in application
+  tags          String?  // JSON array of strings, max 5 tags, max 30 chars each
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([creatorId, targetUserId])
+  @@index([creatorId])
+  @@index([targetUserId])
+  @@index([creatorId, updatedAt])
 }
