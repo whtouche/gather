@@ -61,7 +61,11 @@ model Session {
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   token        String   @unique
-  deviceInfo   String?
+  deviceInfo   String?  // User agent string
+  deviceType   String?  // e.g., "mobile", "desktop", "tablet"
+  deviceName   String?  // e.g., "iPhone 15", "Chrome on Windows"
+  ipAddress    String?  // IP address for location approximation
+  location     String?  // Approximate location (city/region)
   createdAt    DateTime @default(now())
   expiresAt    DateTime
   lastActiveAt DateTime @default(now())
@@ -342,6 +346,7 @@ enum NotificationType {
   RSVP_RECONFIRM
   POST_DELETED_BY_MODERATOR
   WAITLIST_SPOT_AVAILABLE
+  NEW_DEVICE_LOGIN
 }
 
 // Wall posts on events

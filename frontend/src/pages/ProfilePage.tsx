@@ -460,6 +460,28 @@ export function ProfilePage() {
               </div>
             </div>
 
+            {/* Session Management */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Security</h2>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">Active Sessions</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Manage devices logged into your account
+                  </p>
+                </div>
+                <Link
+                  to="/profile/sessions"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Manage Sessions
+                  <svg className="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+
             {/* Privacy Settings Legend */}
             <div className="bg-blue-50 rounded-lg p-4">
               <h3 className="text-sm font-medium text-blue-900 mb-2">Privacy Settings</h3>

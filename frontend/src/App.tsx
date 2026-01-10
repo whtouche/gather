@@ -12,6 +12,7 @@ import { UserProfilePage } from "./pages/UserProfilePage";
 import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { ConnectionDetailPage } from "./pages/ConnectionDetailPage";
 import { EventSearchPage } from "./pages/EventSearchPage";
+import { SessionManagementPage } from "./pages/SessionManagementPage";
 import "./App.css";
 
 /**
@@ -128,6 +129,7 @@ function App() {
         <Route path="/connections" element={<ConnectionsPage />} />
         <Route path="/connections/:userId" element={<ConnectionDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/sessions" element={<SessionManagementPage />} />
         <Route path="/users/:id" element={<UserProfilePage />} />
         <Route path="/events/new" element={<CreateEventPage />} />
         <Route path="/events/:id" element={<EventPageWrapper />} />

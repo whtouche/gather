@@ -5,11 +5,12 @@ import {
   createVerificationCode,
   verifyCode,
   sendVerificationCode,
-  generateSessionToken,
-  getSessionExpiry,
+  createSessionData,
+  notifyNewDeviceLogin,
 } from "../utils/verification.js";
 import { requireAuth } from "../middleware/auth.js";
 import { createApiError, type AuthenticatedRequest } from "../types/index.js";
+import { parseDeviceInfo, isNewDevice } from "../utils/deviceInfo.js";
 
 const router = Router();
 
@@ -198,14 +199,9 @@ router.post(
           },
         });
 
-        // Create session
+        // Create session with device information
         const session = await tx.session.create({
-          data: {
-            userId: user.id,
-            token: generateSessionToken(),
-            deviceInfo: deviceInfo || null,
-            expiresAt: getSessionExpiry(),
-          },
+          data: createSessionData(user.id, req, deviceInfo),
         });
 
         return { user, session };
@@ -457,14 +453,9 @@ router.post(
           throw createApiError("User not found", 404, "USER_NOT_FOUND");
         }
 
-        // Create new session
+        // Create new session with device information
         const session = await prisma.session.create({
-          data: {
-            userId: user.id,
-            token: generateSessionToken(),
-            deviceInfo: deviceInfo || null,
-            expiresAt: getSessionExpiry(),
-          },
+          data: createSessionData(user.id, req, deviceInfo),
         });
 
         res.status(200).json({
@@ -525,14 +516,9 @@ router.post(
           },
         });
 
-        // Create session
+        // Create session with device information
         const session = await tx.session.create({
-          data: {
-            userId: user.id,
-            token: generateSessionToken(),
-            deviceInfo: deviceInfo || null,
-            expiresAt: getSessionExpiry(),
-          },
+          data: createSessionData(user.id, req, deviceInfo),
         });
 
         return { user, session };
@@ -679,15 +665,28 @@ router.post(
         throw createApiError("User not found", 404, "USER_NOT_FOUND");
       }
 
-      // Create new session
+      // Check if this is a new device (before creating session)
+      const deviceInfoParsed = parseDeviceInfo(req);
+      const newDevice = await isNewDevice(
+        user.id,
+        deviceInfoParsed.deviceType,
+        deviceInfoParsed.deviceName,
+        deviceInfoParsed.ipAddress
+      );
+
+      // Create new session with device information
+      const sessionData = createSessionData(user.id, req, deviceInfo);
       const session = await prisma.session.create({
-        data: {
-          userId: user.id,
-          token: generateSessionToken(),
-          deviceInfo: deviceInfo || null,
-          expiresAt: getSessionExpiry(),
-        },
+        data: sessionData,
       });
+
+      // Send notification if this is a new device and user has notifications enabled
+      if (newDevice && (user.emailNotifications || user.smsNotifications)) {
+        // Fire and forget - don't wait for notification to complete
+        notifyNewDeviceLogin(user.id, deviceInfoParsed.deviceName, sessionData.location).catch(
+          (err) => console.error("Failed to send new device notification:", err)
+        );
+      }
 
       res.status(200).json({
         user: {
@@ -771,6 +770,97 @@ router.get(
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/auth/sessions
+ * Get all active sessions for the current user
+ */
+router.get(
+  "/sessions",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      // Get all active (non-expired) sessions for the user
+      const sessions = await prisma.session.findMany({
+        where: {
+          userId: user.id,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: {
+          lastActiveAt: "desc",
+        },
+      });
+
+      // Mark which session is current
+      const currentSessionId = req.sessionId;
+
+      res.status(200).json({
+        sessions: sessions.map((session) => ({
+          id: session.id,
+          deviceType: session.deviceType,
+          deviceName: session.deviceName,
+          location: session.location,
+          ipAddress: session.ipAddress,
+          lastActiveAt: session.lastActiveAt,
+          createdAt: session.createdAt,
+          expiresAt: session.expiresAt,
+          isCurrent: session.id === currentSessionId,
+        })),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * DELETE /api/auth/sessions/:sessionId
+ * Revoke a specific session
+ */
+router.delete(
+  "/sessions/:sessionId",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user;
+      const { sessionId } = req.params;
+
+      if (!user) {
+        throw createApiError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      // Find the session and verify it belongs to the user
+      const session = await prisma.session.findUnique({
+        where: { id: sessionId },
+      });
+
+      if (!session) {
+        throw createApiError("Session not found", 404, "SESSION_NOT_FOUND");
+      }
+
+      if (session.userId !== user.id) {
+        throw createApiError("Not authorized to revoke this session", 403, "FORBIDDEN");
+      }
+
+      // Delete the session
+      await prisma.session.delete({
+        where: { id: sessionId },
+      });
+
+      res.status(200).json({
+        message: "Session revoked successfully",
       });
     } catch (error) {
       next(error);

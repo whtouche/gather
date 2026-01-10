@@ -1,6 +1,8 @@
 import crypto from "crypto";
+import type { Request } from "express";
 import { prisma } from "./db.js";
 import type { VerificationType } from "@prisma/client";
+import { parseDeviceInfo, getLocationFromIp } from "./deviceInfo.js";
 
 // Configuration
 const CODE_LENGTH = 6;
@@ -150,4 +152,45 @@ export function sendVerificationCode(
   console.log(`Code: ${code}`);
   console.log(`Expires in: ${CODE_EXPIRY_MINUTES} minutes`);
   console.log("========================================");
+}
+
+/**
+ * Create session data object with device information from request
+ */
+export function createSessionData(userId: string, req: Request, deviceInfo?: string) {
+  const parsedDeviceInfo = parseDeviceInfo(req);
+  const location = parsedDeviceInfo.ipAddress
+    ? getLocationFromIp(parsedDeviceInfo.ipAddress)
+    : null;
+
+  return {
+    userId,
+    token: generateSessionToken(),
+    deviceInfo: deviceInfo || req.headers["user-agent"] || null,
+    deviceType: parsedDeviceInfo.deviceType,
+    deviceName: parsedDeviceInfo.deviceName,
+    ipAddress: parsedDeviceInfo.ipAddress,
+    location,
+    expiresAt: getSessionExpiry(),
+  };
+}
+
+/**
+ * Send notification for new device login
+ */
+export async function notifyNewDeviceLogin(
+  userId: string,
+  deviceName: string,
+  location: string | null
+): Promise<void> {
+  const locationStr = location || "Unknown location";
+  const message = `New login detected on ${deviceName} from ${locationStr}`;
+
+  await prisma.notification.create({
+    data: {
+      userId,
+      type: "NEW_DEVICE_LOGIN",
+      message,
+    },
+  });
 }

@@ -472,6 +472,50 @@ export async function verifyRegistration(data: {
 }
 
 // =============================================================================
+// Session Management Types & API
+// =============================================================================
+
+/**
+ * Active session information
+ */
+export interface Session {
+  id: string;
+  deviceType: string | null;
+  deviceName: string | null;
+  location: string | null;
+  ipAddress: string | null;
+  lastActiveAt: string;
+  createdAt: string;
+  expiresAt: string;
+  isCurrent: boolean;
+}
+
+/**
+ * Response from GET /api/auth/sessions
+ */
+export interface SessionsResponse {
+  sessions: Session[];
+}
+
+/**
+ * Get all active sessions for the current user
+ */
+export async function getSessions(): Promise<SessionsResponse> {
+  return request("/auth/sessions", {
+    method: "GET",
+  });
+}
+
+/**
+ * Revoke a specific session
+ */
+export async function revokeSession(sessionId: string): Promise<{ message: string }> {
+  return request(`/auth/sessions/${sessionId}`, {
+    method: "DELETE",
+  });
+}
+
+// =============================================================================
 // Event Details Types & API
 // =============================================================================
 

@@ -322,7 +322,7 @@ The features that make people smile.
 - Filter by state (upcoming, past, cancelled)
 - Filter by role (organizer, attendee)
 
-### I3: Multi-Device Sessions
+### I3: Multi-Device Sessions [DONE]
 *Party planning from anywhere.*
 - View all active sessions
 - New device login notifications
