@@ -193,9 +193,13 @@ export function MassEmailModal({
               <>
                 {/* Quota info */}
                 {quota && (
-                  <div className={`mb-4 p-3 rounded-lg ${quota.canSendNow ? 'bg-blue-50' : 'bg-amber-50'}`}>
+                  <div className={`mb-4 p-3 rounded-lg ${
+                    quota.atLimit ? 'bg-red-50' : quota.approachingLimit ? 'bg-amber-50' : quota.canSendNow ? 'bg-blue-50' : 'bg-amber-50'
+                  }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${quota.canSendNow ? 'text-blue-700' : 'text-amber-700'}`}>
+                      <span className={`text-sm font-medium ${
+                        quota.atLimit ? 'text-red-700' : quota.approachingLimit ? 'text-amber-700' : quota.canSendNow ? 'text-blue-700' : 'text-amber-700'
+                      }`}>
                         {quota.used} of {quota.limit} mass emails sent this week
                       </span>
                       {!quota.canSendNow && quota.nextSendAllowed && (
@@ -206,10 +210,22 @@ export function MassEmailModal({
                     </div>
                     <div className="mt-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${quota.canSendNow ? 'bg-blue-500' : 'bg-amber-500'}`}
+                        className={`h-full ${
+                          quota.atLimit ? 'bg-red-500' : quota.approachingLimit ? 'bg-amber-500' : quota.canSendNow ? 'bg-blue-500' : 'bg-amber-500'
+                        }`}
                         style={{ width: `${(quota.used / quota.limit) * 100}%` }}
                       />
                     </div>
+                    {quota.approachingLimit && !quota.atLimit && (
+                      <p className="mt-2 text-xs text-amber-600">
+                        Warning: You're approaching your weekly limit. {quota.remaining} email(s) remaining.
+                      </p>
+                    )}
+                    {quota.atLimit && (
+                      <p className="mt-2 text-xs text-red-600">
+                        You've reached your weekly limit. Quota resets on Sunday.
+                      </p>
+                    )}
                   </div>
                 )}
 

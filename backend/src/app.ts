@@ -11,6 +11,7 @@ import profileRoutes from "./routes/profile.js";
 import wallRoutes from "./routes/wall.js";
 import waitlistRoutes from "./routes/waitlist.js";
 import messagesRoutes from "./routes/messages.js";
+import previousAttendeesRoutes from "./routes/previousAttendees.js";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/events", wallRoutes);
 app.use("/api/events", waitlistRoutes);
 app.use("/api/events", messagesRoutes);
 app.use("/api", invitationRoutes);
+app.use("/api", previousAttendeesRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/profile", profileRoutes);

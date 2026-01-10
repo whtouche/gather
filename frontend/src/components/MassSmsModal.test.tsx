@@ -24,6 +24,8 @@ describe("MassSmsModal", () => {
     limit: 3,
     remaining: 2,
     canSendNow: true,
+    approachingLimit: false,
+    atLimit: false,
   };
 
   const mockPreview: api.MassSmsPreviewResponse = {
@@ -240,7 +242,7 @@ describe("MassSmsModal", () => {
       sentCount: 4,
       failedCount: 0,
       optedOutCount: 1,
-      quota: { used: 2, limit: 3, remaining: 1, canSendNow: true },
+      quota: { used: 2, limit: 3, remaining: 1, canSendNow: true, approachingLimit: false, atLimit: false },
     };
 
     vi.mocked(api.sendMassSms).mockResolvedValue(mockSendResponse);
@@ -312,6 +314,8 @@ describe("MassSmsModal", () => {
         remaining: 0,
         canSendNow: false,
         nextSendAllowed: "2024-01-16T10:00:00Z",
+        approachingLimit: false,
+        atLimit: true,
       },
     });
 

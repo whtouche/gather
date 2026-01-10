@@ -191,7 +191,7 @@ The social heart of every event.
 
 ---
 
-## Group F: Organizer Superpowers
+## Group F: Organizer Superpowers [DONE]
 **Theme: "Level up your hosting game"**
 
 Advanced tools for the discerning party planner.
@@ -211,14 +211,14 @@ Advanced tools for the discerning party planner.
 - STOP opt-out handling
 - Delivery tracking
 
-### F3: Communication Rate Limits
+### F3: Communication Rate Limits [DONE]
 *Don't be that host who over-communicates.*
 - Configurable rate limits per event
 - Limit warnings when approaching quota
 - Communication history view
 - Delivery stats dashboard
 
-### F4: Invite from Previous Attendees
+### F4: Invite from Previous Attendees [DONE]
 *Your party people rolodex.*
 - View list of users from past events
 - Filter by events attended together

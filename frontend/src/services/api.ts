@@ -1063,6 +1063,8 @@ export interface MassEmailQuota {
   remaining: number;
   canSendNow: boolean;
   nextSendAllowed?: string;
+  approachingLimit: boolean;
+  atLimit: boolean;
 }
 
 /**
@@ -1217,6 +1219,8 @@ export interface MassSmsQuota {
   remaining: number;
   canSendNow: boolean;
   nextSendAllowed?: string;
+  approachingLimit: boolean;
+  atLimit: boolean;
 }
 
 /**
@@ -1735,6 +1739,85 @@ export async function confirmWaitlistSpot(eventId: string): Promise<{ message: s
   });
 }
 
+// =============================================================================
+// Previous Attendees Types & API
+// =============================================================================
+
+/**
+ * Previous attendee information
+ */
+export interface PreviousAttendee {
+  userId: string;
+  displayName: string;
+  photoUrl: string | null;
+  email: string | null;
+  phone: string | null;
+  hasEmail: boolean;
+  hasPhone: boolean;
+  lastEventId: string;
+  lastEventTitle: string;
+  lastEventDate: string;
+  sharedEventCount: number;
+}
+
+/**
+ * Response from GET /api/events/:id/previous-attendees
+ */
+export interface PreviousAttendeesResponse {
+  attendees: PreviousAttendee[];
+  total: number;
+}
+
+/**
+ * Response from POST /api/events/:id/previous-attendees/invite
+ */
+export interface InvitePreviousAttendeesResponse {
+  message: string;
+  sent: number;
+  failed: number;
+  alreadyInvited: number;
+  alreadyRsvpd: number;
+  results: Array<{
+    userId: string;
+    displayName: string;
+    contactMethod: "email" | "sms" | null;
+    contact: string | null;
+    success: boolean;
+    error?: string;
+    alreadyInvited?: boolean;
+    alreadyRsvpd?: boolean;
+  }>;
+}
+
+/**
+ * Get list of users from previous events (organizers only)
+ */
+export async function getPreviousAttendees(
+  eventId: string,
+  filterEventId?: string
+): Promise<PreviousAttendeesResponse> {
+  const params = new URLSearchParams();
+  if (filterEventId) {
+    params.append("filterEventId", filterEventId);
+  }
+  const query = params.toString();
+  const endpoint = `/events/${eventId}/previous-attendees${query ? `?${query}` : ""}`;
+  return request(endpoint);
+}
+
+/**
+ * Send invitations to selected previous attendees (organizers only)
+ */
+export async function invitePreviousAttendees(
+  eventId: string,
+  userIds: string[]
+): Promise<InvitePreviousAttendeesResponse> {
+  return request(`/events/${eventId}/previous-attendees/invite`, {
+    method: "POST",
+    body: JSON.stringify({ userIds }),
+  });
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -1797,4 +1880,6 @@ export default {
   joinWaitlist,
   leaveWaitlist,
   confirmWaitlistSpot,
+  getPreviousAttendees,
+  invitePreviousAttendees,
 };

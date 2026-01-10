@@ -23,6 +23,8 @@ describe("MassSmsHistoryPanel", () => {
     limit: 3,
     remaining: 2,
     canSendNow: true,
+    approachingLimit: false,
+    atLimit: false,
   };
 
   const mockMessages: api.MassSmsRecord[] = [

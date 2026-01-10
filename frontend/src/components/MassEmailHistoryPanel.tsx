@@ -186,7 +186,7 @@ export function MassEmailHistoryPanel({
                   </div>
 
                   {/* Stats grid */}
-                  <div className="grid grid-cols-3 gap-4 mt-4">
+                  <div className="grid grid-cols-4 gap-4 mt-4">
                     <div className="bg-blue-50 rounded-lg p-3 text-center">
                       <div className="text-2xl font-bold text-blue-600">{message.recipientCount}</div>
                       <div className="text-xs text-blue-600">Recipients</div>
@@ -194,6 +194,12 @@ export function MassEmailHistoryPanel({
                     <div className="bg-green-50 rounded-lg p-3 text-center">
                       <div className="text-2xl font-bold text-green-600">{message.sentCount}</div>
                       <div className="text-xs text-green-600">Sent</div>
+                    </div>
+                    <div className={`rounded-lg p-3 text-center ${message.openedCount > 0 ? 'bg-purple-50' : 'bg-gray-50'}`}>
+                      <div className={`text-2xl font-bold ${message.openedCount > 0 ? 'text-purple-600' : 'text-gray-400'}`}>
+                        {message.openedCount}
+                      </div>
+                      <div className={`text-xs ${message.openedCount > 0 ? 'text-purple-600' : 'text-gray-400'}`}>Opened</div>
                     </div>
                     <div className={`rounded-lg p-3 text-center ${message.failedCount > 0 ? 'bg-red-50' : 'bg-gray-50'}`}>
                       <div className={`text-2xl font-bold ${message.failedCount > 0 ? 'text-red-600' : 'text-gray-400'}`}>

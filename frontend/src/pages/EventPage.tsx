@@ -22,6 +22,7 @@ import { MassEmailModal } from "../components/MassEmailModal";
 import { MassEmailHistoryPanel } from "../components/MassEmailHistoryPanel";
 import { MassSmsModal } from "../components/MassSmsModal";
 import { MassSmsHistoryPanel } from "../components/MassSmsHistoryPanel";
+import { PreviousAttendeesModal } from "../components/PreviousAttendeesModal";
 
 interface EventPageProps {
   eventId: string;
@@ -128,6 +129,7 @@ export function EventPage({ eventId }: EventPageProps) {
   const [massEmailRefreshKey, setMassEmailRefreshKey] = useState(0);
   const [showMassSmsModal, setShowMassSmsModal] = useState(false);
   const [massSmsRefreshKey, setMassSmsRefreshKey] = useState(0);
+  const [showPreviousAttendeesModal, setShowPreviousAttendeesModal] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [wallRefreshKey, setWallRefreshKey] = useState(0);
 
@@ -431,6 +433,29 @@ export function EventPage({ eventId }: EventPageProps) {
                     />
                   </svg>
                   Send Mass SMS
+                </button>
+              )}
+
+              {/* Invite from Previous Attendees button */}
+              {(event.state === "PUBLISHED" || event.state === "ONGOING") && (
+                <button
+                  onClick={() => setShowPreviousAttendeesModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors font-medium"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                  Invite from Previous Events
                 </button>
               )}
 
@@ -897,6 +922,19 @@ export function EventPage({ eventId }: EventPageProps) {
           isOpen={showMassSmsModal}
           onClose={() => setShowMassSmsModal(false)}
           onMessageSent={() => setMassSmsRefreshKey((prev) => prev + 1)}
+        />
+      )}
+
+      {/* Previous Attendees Modal (for organizers) */}
+      {event && isOrganizer && (
+        <PreviousAttendeesModal
+          eventId={event.id}
+          isOpen={showPreviousAttendeesModal}
+          onClose={() => setShowPreviousAttendeesModal(false)}
+          onInvitesSent={() => {
+            setEmailInviteRefreshKey((prev) => prev + 1);
+            setSmsInviteRefreshKey((prev) => prev + 1);
+          }}
         />
       )}
     </div>

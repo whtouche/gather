@@ -5,6 +5,7 @@ import type { TargetAudience, DeliveryStatus } from "@prisma/client";
 // Rate limits per spec REQ-MSG-014
 const WEEKLY_EMAIL_LIMIT = 5;
 const MIN_HOURS_BETWEEN_EMAILS = 24;
+const WARNING_THRESHOLD = 0.8; // 80% threshold for limit warnings
 
 /**
  * Data for rendering a mass email
@@ -158,14 +159,19 @@ export async function getMassEmailQuotaInfo(eventId: string): Promise<{
   remaining: number;
   canSendNow: boolean;
   nextSendAllowed?: string;
+  approachingLimit: boolean;
+  atLimit: boolean;
 }> {
   const result = await checkMassEmailQuota(eventId);
+  const usagePercentage = result.used / result.limit;
   return {
     used: result.used,
     limit: result.limit,
     remaining: result.remaining,
     canSendNow: result.allowed,
     nextSendAllowed: result.nextSendAllowed?.toISOString(),
+    approachingLimit: usagePercentage >= WARNING_THRESHOLD && usagePercentage < 1,
+    atLimit: result.remaining === 0,
   };
 }
 

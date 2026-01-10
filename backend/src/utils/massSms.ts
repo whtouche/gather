@@ -5,6 +5,7 @@ import type { TargetAudience, DeliveryStatus } from "@prisma/client";
 // Rate limits per spec REQ-MSG-014
 const WEEKLY_SMS_LIMIT = 3;
 const MIN_HOURS_BETWEEN_SMS = 24;
+const WARNING_THRESHOLD = 0.8; // 80% threshold for limit warnings
 
 /**
  * Send a mass SMS (currently logs to console).
@@ -143,14 +144,19 @@ export async function getMassSmsQuotaInfo(eventId: string): Promise<{
   remaining: number;
   canSendNow: boolean;
   nextSendAllowed?: string;
+  approachingLimit: boolean;
+  atLimit: boolean;
 }> {
   const result = await checkMassSmsQuota(eventId);
+  const usagePercentage = result.used / result.limit;
   return {
     used: result.used,
     limit: result.limit,
     remaining: result.remaining,
     canSendNow: result.allowed,
     nextSendAllowed: result.nextSendAllowed?.toISOString(),
+    approachingLimit: usagePercentage >= WARNING_THRESHOLD && usagePercentage < 1,
+    atLimit: result.remaining === 0,
   };
 }
 
