@@ -352,7 +352,7 @@ Nice-to-haves for when the core is solid.
 - Image storage and CDN
 - Basic image moderation
 
-### J2: Smart Suggestions
+### J2: Smart Suggestions [DONE]
 *AI-powered party planning.*
 - Suggest connections based on event similarity
 - Recommend people from previous events

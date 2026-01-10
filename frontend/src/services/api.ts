@@ -2478,6 +2478,45 @@ export async function getDataExport(exportId: string): Promise<GetDataExportResp
   return request(`/profile/exports/${exportId}`);
 }
 
+// =============================================================================
+// Smart Suggestions
+// =============================================================================
+
+/**
+ * Smart suggestion for a user to invite
+ */
+export interface SmartSuggestion {
+  userId: string;
+  displayName: string;
+  photoUrl: string | null;
+  relevanceScore: number;
+  reason: string;
+  sharedEventCount: number;
+  lastSharedEventDate: string | null;
+}
+
+/**
+ * Response from GET /api/suggestions/event/:eventId
+ */
+export interface SmartSuggestionsResponse {
+  suggestions: SmartSuggestion[];
+}
+
+/**
+ * Get smart suggestions for people to invite to an event
+ */
+export async function getSmartSuggestions(
+  eventId: string,
+  options?: { limit?: number; minScore?: number }
+): Promise<SmartSuggestionsResponse> {
+  const params = new URLSearchParams();
+  if (options?.limit) params.set("limit", options.limit.toString());
+  if (options?.minScore) params.set("minScore", options.minScore.toString());
+
+  const queryString = params.toString() ? `?${params.toString()}` : "";
+  return request(`/suggestions/event/${eventId}${queryString}`);
+}
+
 export default {
   validateInviteToken,
   generateInviteLink,
@@ -2555,4 +2594,5 @@ export default {
   requestDataExport,
   getDataExports,
   getDataExport,
+  getSmartSuggestions,
 };
