@@ -204,7 +204,7 @@ Advanced tools for the discerning party planner.
 - Unsubscribe link included
 - Delivery statistics
 
-### F2: Mass SMS Communication
+### F2: Mass SMS Communication [DONE]
 *Quick hits for quick updates.*
 - Compose mass SMS (160 char limit)
 - Target specific audiences

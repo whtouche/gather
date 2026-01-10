@@ -1205,6 +1205,166 @@ export async function getMassEmailDetails(
 }
 
 // =============================================================================
+// Mass SMS Communication Types & API
+// =============================================================================
+
+/**
+ * Mass SMS quota information
+ */
+export interface MassSmsQuota {
+  used: number;
+  limit: number;
+  remaining: number;
+  canSendNow: boolean;
+  nextSendAllowed?: string;
+}
+
+/**
+ * Recipient preview for mass SMS
+ */
+export interface MassSmsRecipientPreview {
+  displayName: string;
+  phone: string;
+}
+
+/**
+ * Response from GET /api/events/:id/messages/sms/preview
+ */
+export interface MassSmsPreviewResponse {
+  count: number;
+  optedOutCount: number;
+  preview: MassSmsRecipientPreview[];
+  hasMore: boolean;
+}
+
+/**
+ * Response from POST /api/events/:id/messages/sms
+ */
+export interface SendMassSmsResponse {
+  message: string;
+  id: string;
+  recipientCount: number;
+  sentCount: number;
+  failedCount: number;
+  optedOutCount: number;
+  quota: MassSmsQuota;
+}
+
+/**
+ * Mass SMS history record
+ */
+export interface MassSmsRecord {
+  id: string;
+  body: string;
+  targetAudience: string;
+  recipientCount: number;
+  sentCount: number;
+  failedCount: number;
+  sentAt: string;
+  organizer: {
+    id: string;
+    displayName: string;
+  };
+}
+
+/**
+ * Response from GET /api/events/:id/messages/sms/history
+ */
+export interface MassSmsHistoryResponse {
+  messages: MassSmsRecord[];
+  total: number;
+}
+
+/**
+ * Mass SMS recipient details
+ */
+export interface MassSmsRecipientDetail {
+  userId: string;
+  displayName: string;
+  phone: string;
+  status: string;
+  sentAt: string | null;
+}
+
+/**
+ * Mass SMS details
+ */
+export interface MassSmsDetails {
+  id: string;
+  body: string;
+  targetAudience: string;
+  recipientCount: number;
+  sentCount: number;
+  failedCount: number;
+  sentAt: string;
+  recipients: MassSmsRecipientDetail[];
+}
+
+/**
+ * Get mass SMS quota for an event (organizers only)
+ */
+export async function getMassSmsQuota(eventId: string): Promise<{ quota: MassSmsQuota }> {
+  return request(`/events/${eventId}/messages/sms/quota`);
+}
+
+/**
+ * Preview recipients for a mass SMS (organizers only)
+ */
+export async function previewMassSmsRecipients(
+  eventId: string,
+  audience: TargetAudience
+): Promise<MassSmsPreviewResponse> {
+  return request(`/events/${eventId}/messages/sms/preview?audience=${audience}`);
+}
+
+/**
+ * Send a mass SMS to event attendees (organizers only)
+ */
+export async function sendMassSms(
+  eventId: string,
+  data: { message: string; targetAudience: TargetAudience }
+): Promise<SendMassSmsResponse> {
+  return request(`/events/${eventId}/messages/sms`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Get mass SMS history for an event (organizers only)
+ */
+export async function getMassSmsHistory(
+  eventId: string,
+  limit?: number,
+  offset?: number
+): Promise<MassSmsHistoryResponse> {
+  const params = new URLSearchParams();
+  if (limit) params.set("limit", String(limit));
+  if (offset) params.set("offset", String(offset));
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return request(`/events/${eventId}/messages/sms/history${query}`);
+}
+
+/**
+ * Get details of a specific mass SMS (organizers only)
+ */
+export async function getMassSmsDetails(
+  eventId: string,
+  messageId: string
+): Promise<MassSmsDetails> {
+  return request(`/events/${eventId}/messages/sms/${messageId}`);
+}
+
+/**
+ * Opt out of SMS for an event
+ */
+export async function optOutOfEventSms(eventId: string): Promise<{ message: string }> {
+  return request(`/events/${eventId}/messages/sms/opt-out`, {
+    method: "POST",
+  });
+}
+
+// =============================================================================
 // Profile Types & API
 // =============================================================================
 
@@ -1615,6 +1775,12 @@ export default {
   sendMassEmail,
   getMassEmailHistory,
   getMassEmailDetails,
+  getMassSmsQuota,
+  previewMassSmsRecipients,
+  sendMassSms,
+  getMassSmsHistory,
+  getMassSmsDetails,
+  optOutOfEventSms,
   getProfile,
   updateProfile,
   getPublicProfile,

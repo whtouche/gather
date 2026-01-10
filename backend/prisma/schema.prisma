@@ -536,3 +536,16 @@ enum DeliveryStatus {
   OPENED
   BOUNCED
 }
+
+// SMS opt-out tracking per event (for STOP handling)
+model SmsOptOut {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}

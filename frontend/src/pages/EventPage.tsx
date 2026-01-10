@@ -20,6 +20,8 @@ import { SmsInvitationsPanel } from "../components/SmsInvitationsPanel";
 import { EventWall } from "../components/EventWall";
 import { MassEmailModal } from "../components/MassEmailModal";
 import { MassEmailHistoryPanel } from "../components/MassEmailHistoryPanel";
+import { MassSmsModal } from "../components/MassSmsModal";
+import { MassSmsHistoryPanel } from "../components/MassSmsHistoryPanel";
 
 interface EventPageProps {
   eventId: string;
@@ -124,6 +126,8 @@ export function EventPage({ eventId }: EventPageProps) {
   const [smsInviteRefreshKey, setSmsInviteRefreshKey] = useState(0);
   const [showMassEmailModal, setShowMassEmailModal] = useState(false);
   const [massEmailRefreshKey, setMassEmailRefreshKey] = useState(0);
+  const [showMassSmsModal, setShowMassSmsModal] = useState(false);
+  const [massSmsRefreshKey, setMassSmsRefreshKey] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [wallRefreshKey, setWallRefreshKey] = useState(0);
 
@@ -404,6 +408,29 @@ export function EventPage({ eventId }: EventPageProps) {
                     />
                   </svg>
                   Send Mass Email
+                </button>
+              )}
+
+              {/* Send Mass SMS button */}
+              {(event.state === "PUBLISHED" || event.state === "ONGOING") && (
+                <button
+                  onClick={() => setShowMassSmsModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
+                  </svg>
+                  Send Mass SMS
                 </button>
               )}
 
@@ -788,6 +815,13 @@ export function EventPage({ eventId }: EventPageProps) {
           </div>
         )}
 
+        {/* Mass SMS History Panel (organizers only) */}
+        {isOrganizer && (event.state === "PUBLISHED" || event.state === "ONGOING") && (
+          <div className="mt-6">
+            <MassSmsHistoryPanel eventId={event.id} refreshKey={massSmsRefreshKey} />
+          </div>
+        )}
+
         {/* Attendee List Section */}
         <div className="mt-6">
           <AttendeeList eventId={event.id} refreshKey={attendeeRefreshKey} />
@@ -853,6 +887,16 @@ export function EventPage({ eventId }: EventPageProps) {
           isOpen={showMassEmailModal}
           onClose={() => setShowMassEmailModal(false)}
           onMessageSent={() => setMassEmailRefreshKey((prev) => prev + 1)}
+        />
+      )}
+
+      {/* Mass SMS Modal (for organizers) */}
+      {event && isOrganizer && (
+        <MassSmsModal
+          eventId={event.id}
+          isOpen={showMassSmsModal}
+          onClose={() => setShowMassSmsModal(false)}
+          onMessageSent={() => setMassSmsRefreshKey((prev) => prev + 1)}
         />
       )}
     </div>
