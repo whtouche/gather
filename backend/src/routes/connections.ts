@@ -1,8 +1,11 @@
 import { Router } from "express";
 import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "../types/index.js";
+import { createApiError } from "../types/index.js";
 import { prisma } from "../utils/db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { createAndSendEmailInvitation, maskEmail } from "../utils/email.js";
+import { createAndSendSmsInvitation, maskPhone } from "../utils/sms.js";
 
 const router = Router();
 
@@ -63,6 +66,7 @@ type SortOption = "recent" | "frequency" | "alphabetical";
  *
  * Query parameters:
  * - name: Filter by display name (case-insensitive partial match)
+ * - noteContent: Filter by private note content (case-insensitive partial match)
  * - eventId: Filter by specific shared event
  * - startDate: Filter connections with events after this date (ISO string)
  * - endDate: Filter connections with events before this date (ISO string)
@@ -82,7 +86,7 @@ router.get(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.id;
-      const { name, eventId, startDate, endDate, sort } = req.query;
+      const { name, noteContent, eventId, startDate, endDate, sort } = req.query;
       const sortOption = (sort as SortOption) || "recent";
 
       // Build where clause for user's completed events
@@ -254,14 +258,45 @@ router.get(
         };
       });
 
+      // Apply note content filtering if provided
+      let filteredConnections = connections;
+      if (noteContent && typeof noteContent === "string") {
+        // Validate note content search term (max 200 chars)
+        if (noteContent.length > 200) {
+          res.status(400).json({ message: "Note content search term too long (max 200 characters)" });
+          return;
+        }
+
+        // Get all notes for current user
+        const notes = await prisma.privateNote.findMany({
+          where: {
+            creatorId: userId,
+            content: {
+              contains: noteContent,
+              mode: "insensitive",
+            },
+          },
+          select: {
+            targetUserId: true,
+          },
+        });
+
+        const userIdsWithMatchingNotes = new Set(notes.map((n) => n.targetUserId));
+
+        // Filter connections to only include those with matching notes
+        filteredConnections = connections.filter((conn) =>
+          userIdsWithMatchingNotes.has(conn.userId)
+        );
+      }
+
       // Apply sorting based on sort parameter
       if (sortOption === "alphabetical") {
-        connections.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        filteredConnections.sort((a, b) => a.displayName.localeCompare(b.displayName));
       } else if (sortOption === "frequency") {
-        connections.sort((a, b) => b.sharedEventCount - a.sharedEventCount);
+        filteredConnections.sort((a, b) => b.sharedEventCount - a.sharedEventCount);
       } else {
         // Default: sort by most recent event date
-        connections.sort((a, b) => {
+        filteredConnections.sort((a, b) => {
           if (!a.mostRecentEvent) return 1;
           if (!b.mostRecentEvent) return -1;
           return new Date(b.mostRecentEvent.eventDate).getTime() -
@@ -270,7 +305,7 @@ router.get(
       }
 
       const response: ConnectionsResponse = {
-        connections,
+        connections: filteredConnections,
       };
 
       res.json(response);
@@ -471,6 +506,308 @@ router.get(
       };
 
       res.json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * Request body for inviting connections
+ */
+interface InviteConnectionsRequest {
+  eventId: string;
+  userIds: string[];
+}
+
+/**
+ * POST /api/connections/invite
+ * Send invitations to selected connections for a specific event
+ *
+ * Body:
+ * - eventId: Event to invite connections to
+ * - userIds: Array of connection user IDs to invite
+ *
+ * Returns:
+ * - Results for each invitation attempt
+ * - Count of sent, failed, already invited, and already RSVP'd invitations
+ */
+router.post(
+  "/invite",
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.id;
+      const { eventId, userIds } = req.body as InviteConnectionsRequest;
+
+      // Validate input
+      if (!eventId || typeof eventId !== "string") {
+        throw createApiError("Event ID is required", 400, "INVALID_INPUT");
+      }
+
+      if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+        throw createApiError("At least one connection must be selected", 400, "INVALID_INPUT");
+      }
+
+      if (userIds.length > 50) {
+        throw createApiError("Maximum 50 recipients per request", 400, "TOO_MANY_RECIPIENTS");
+      }
+
+      // Validate all userIds are strings
+      if (!userIds.every((id) => typeof id === "string" && id.length > 0)) {
+        throw createApiError("All user IDs must be non-empty strings", 400, "INVALID_INPUT");
+      }
+
+      // Check if event exists and user is an organizer
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: {
+          id: true,
+          state: true,
+          title: true,
+          creatorId: true,
+          eventRoles: {
+            where: {
+              userId,
+              role: "ORGANIZER",
+            },
+            select: { id: true },
+          },
+        },
+      });
+
+      if (!event) {
+        throw createApiError("Event not found", 404, "EVENT_NOT_FOUND");
+      }
+
+      // Check if user is an organizer (creator or has organizer role)
+      const isOrganizer = event.creatorId === userId || event.eventRoles.length > 0;
+      if (!isOrganizer) {
+        throw createApiError(
+          "Only event organizers can invite connections",
+          403,
+          "FORBIDDEN"
+        );
+      }
+
+      // Check event state
+      if (event.state !== "PUBLISHED" && event.state !== "ONGOING") {
+        throw createApiError(
+          "Invitations can only be sent for published or ongoing events",
+          400,
+          "INVALID_EVENT_STATE"
+        );
+      }
+
+      // Verify that all selected users are actually connections of the current user
+      const currentUserEvents = await prisma.rSVP.findMany({
+        where: {
+          userId,
+          response: "YES",
+          event: {
+            state: "COMPLETED",
+          },
+        },
+        select: {
+          eventId: true,
+        },
+      });
+
+      const currentUserEventIds = currentUserEvents.map((rsvp) => rsvp.eventId);
+
+      if (currentUserEventIds.length === 0) {
+        throw createApiError("No connections found", 400, "NO_CONNECTIONS");
+      }
+
+      // Get connections (users who RSVP'd YES to same completed events)
+      const connectionRsvps = await prisma.rSVP.findMany({
+        where: {
+          eventId: { in: currentUserEventIds },
+          response: "YES",
+          userId: { in: userIds },
+        },
+        select: {
+          userId: true,
+        },
+      });
+
+      const validConnectionIds = new Set(connectionRsvps.map((r) => r.userId));
+
+      // Filter to only valid connections
+      const invalidUserIds = userIds.filter((id) => !validConnectionIds.has(id));
+      if (invalidUserIds.length > 0) {
+        throw createApiError(
+          `Some selected users are not connections: ${invalidUserIds.join(", ")}`,
+          400,
+          "INVALID_CONNECTIONS"
+        );
+      }
+
+      // Get user contact information
+      const users = await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: {
+          id: true,
+          displayName: true,
+          email: true,
+          phone: true,
+        },
+      });
+
+      if (users.length === 0) {
+        throw createApiError("No valid users found", 400, "NO_USERS_FOUND");
+      }
+
+      // Check if any users are already invited or have RSVP'd
+      const existingEmailInvitations = await prisma.emailInvitation.findMany({
+        where: {
+          eventId,
+          email: { in: users.filter((u) => u.email).map((u) => u.email!.toLowerCase()) },
+        },
+        select: { email: true },
+      });
+
+      const existingSmsInvitations = await prisma.smsInvitation.findMany({
+        where: {
+          eventId,
+          phone: { in: users.filter((u) => u.phone).map((u) => u.phone!) },
+        },
+        select: { phone: true },
+      });
+
+      const existingRsvps = await prisma.rSVP.findMany({
+        where: {
+          eventId,
+          userId: { in: userIds },
+        },
+        select: { userId: true },
+      });
+
+      const alreadyInvitedEmails = new Set(existingEmailInvitations.map((inv) => inv.email.toLowerCase()));
+      const alreadyInvitedPhones = new Set(existingSmsInvitations.map((inv) => inv.phone));
+      const alreadyRsvpdUserIds = new Set(existingRsvps.map((rsvp) => rsvp.userId));
+
+      // Determine the base URL for invite links
+      const baseUrl = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+
+      // Send invitations
+      const results: Array<{
+        userId: string;
+        displayName: string;
+        contactMethod: "email" | "sms" | null;
+        contact: string | null;
+        success: boolean;
+        error?: string;
+        alreadyInvited?: boolean;
+        alreadyRsvpd?: boolean;
+      }> = [];
+
+      for (const user of users) {
+        // Skip if user already has an RSVP
+        if (alreadyRsvpdUserIds.has(user.id)) {
+          results.push({
+            userId: user.id,
+            displayName: user.displayName,
+            contactMethod: null,
+            contact: null,
+            success: false,
+            alreadyRsvpd: true,
+            error: "Already RSVP'd to this event",
+          });
+          continue;
+        }
+
+        // Prefer email, fall back to phone
+        if (user.email) {
+          const normalizedEmail = user.email.toLowerCase();
+
+          // Check if already invited
+          if (alreadyInvitedEmails.has(normalizedEmail)) {
+            results.push({
+              userId: user.id,
+              displayName: user.displayName,
+              contactMethod: "email",
+              contact: maskEmail(normalizedEmail),
+              success: false,
+              alreadyInvited: true,
+              error: "Already invited via email",
+            });
+            continue;
+          }
+
+          // Send email invitation
+          const result = await createAndSendEmailInvitation(
+            eventId,
+            normalizedEmail,
+            user.displayName,
+            baseUrl
+          );
+
+          results.push({
+            userId: user.id,
+            displayName: user.displayName,
+            contactMethod: "email",
+            contact: maskEmail(normalizedEmail),
+            success: result.success,
+            error: result.error,
+          });
+        } else if (user.phone) {
+          // Check if already invited
+          if (alreadyInvitedPhones.has(user.phone)) {
+            results.push({
+              userId: user.id,
+              displayName: user.displayName,
+              contactMethod: "sms",
+              contact: maskPhone(user.phone),
+              success: false,
+              alreadyInvited: true,
+              error: "Already invited via SMS",
+            });
+            continue;
+          }
+
+          // Send SMS invitation
+          const result = await createAndSendSmsInvitation(
+            eventId,
+            user.phone,
+            user.displayName,
+            baseUrl
+          );
+
+          results.push({
+            userId: user.id,
+            displayName: user.displayName,
+            contactMethod: "sms",
+            contact: maskPhone(user.phone),
+            success: result.success,
+            error: result.error,
+          });
+        } else {
+          // User has no contact method
+          results.push({
+            userId: user.id,
+            displayName: user.displayName,
+            contactMethod: null,
+            contact: null,
+            success: false,
+            error: "No contact method available (no email or phone)",
+          });
+        }
+      }
+
+      const sentCount = results.filter((r) => r.success).length;
+      const failedCount = results.filter((r) => !r.success && !r.alreadyInvited && !r.alreadyRsvpd).length;
+      const alreadyInvitedCount = results.filter((r) => r.alreadyInvited).length;
+      const alreadyRsvpdCount = results.filter((r) => r.alreadyRsvpd).length;
+
+      res.status(201).json({
+        message: `Sent ${sentCount} invitation(s)`,
+        sent: sentCount,
+        failed: failedCount,
+        alreadyInvited: alreadyInvitedCount,
+        alreadyRsvpd: alreadyRsvpdCount,
+        results,
+      });
     } catch (error) {
       next(error);
     }

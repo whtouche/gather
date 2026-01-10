@@ -51,6 +51,17 @@ const mockEvent2 = {
   dateTime: new Date("2024-12-20"),
 };
 
+// Mock email and SMS utilities
+vi.mock("../utils/email.js", () => ({
+  createAndSendEmailInvitation: vi.fn(),
+  maskEmail: vi.fn((email: string) => `***@${email.split("@")[1]}`),
+}));
+
+vi.mock("../utils/sms.js", () => ({
+  createAndSendSmsInvitation: vi.fn(),
+  maskPhone: vi.fn((phone: string) => `***${phone.slice(-4)}`),
+}));
+
 // Mock the database module before importing app
 vi.mock("../utils/db.js", () => ({
   prisma: {
@@ -60,6 +71,7 @@ vi.mock("../utils/db.js", () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     rSVP: {
       findMany: vi.fn(),
@@ -67,11 +79,25 @@ vi.mock("../utils/db.js", () => ({
     eventRole: {
       count: vi.fn(),
     },
+    event: {
+      findUnique: vi.fn(),
+    },
+    privateNote: {
+      findMany: vi.fn(),
+    },
+    emailInvitation: {
+      findMany: vi.fn(),
+    },
+    smsInvitation: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
 import app from "../app.js";
 import { prisma } from "../utils/db.js";
+import { createAndSendEmailInvitation } from "../utils/email.js";
+import { createAndSendSmsInvitation } from "../utils/sms.js";
 
 describe("Connections Routes", () => {
   beforeEach(() => {
@@ -714,6 +740,546 @@ describe("Connections Routes", () => {
       // Most recent event should be first
       expect(response.body.connection.sharedEvents[0].eventTitle).toBe("Recent Event");
       expect(response.body.connection.sharedEvents[1].eventTitle).toBe("Old Event");
+    });
+  });
+
+  describe("GET /api/connections - noteContent filter", () => {
+    it("should filter connections by note content", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const userCompletedEvents = [{ eventId: "event-1", event: mockEvent1 }];
+      const otherAttendees = [
+        {
+          userId: "user-456",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection1,
+          event: mockEvent1,
+        },
+        {
+          userId: "user-789",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection2,
+          event: mockEvent1,
+        },
+      ];
+
+      // Mock notes - only Alice has a note with "important"
+      const notes = [
+        { targetUserId: "user-456" },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(userCompletedEvents as any)
+        .mockResolvedValueOnce(otherAttendees as any);
+      vi.mocked(prisma.privateNote.findMany).mockResolvedValue(notes as any);
+
+      const response = await request(app)
+        .get("/api/connections?noteContent=important")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connections).toHaveLength(1);
+      expect(response.body.connections[0].userId).toBe("user-456");
+      expect(prisma.privateNote.findMany).toHaveBeenCalledWith({
+        where: {
+          creatorId: "user-123",
+          content: {
+            contains: "important",
+            mode: "insensitive",
+          },
+        },
+        select: {
+          targetUserId: true,
+        },
+      });
+    });
+
+    it("should reject note content search term that is too long", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const userCompletedEvents = [{ eventId: "event-1", event: mockEvent1 }];
+      const otherAttendees = [
+        {
+          userId: "user-456",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection1,
+          event: mockEvent1,
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(userCompletedEvents as any)
+        .mockResolvedValueOnce(otherAttendees as any);
+
+      const longString = "a".repeat(201);
+      const response = await request(app)
+        .get(`/api/connections?noteContent=${longString}`)
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain("Note content search term too long");
+    });
+
+    it("should return empty array when no notes match", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const userCompletedEvents = [{ eventId: "event-1", event: mockEvent1 }];
+      const otherAttendees = [
+        {
+          userId: "user-456",
+          eventId: "event-1",
+          response: "YES",
+          user: mockConnection1,
+          event: mockEvent1,
+        },
+      ];
+
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce(userCompletedEvents as any)
+        .mockResolvedValueOnce(otherAttendees as any);
+      vi.mocked(prisma.privateNote.findMany).mockResolvedValue([]);
+
+      const response = await request(app)
+        .get("/api/connections?noteContent=nonexistent")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(response.status).toBe(200);
+      expect(response.body.connections).toHaveLength(0);
+    });
+  });
+
+  describe("POST /api/connections/invite", () => {
+    const mockEvent = {
+      id: "event-123",
+      state: "PUBLISHED",
+      title: "Test Event",
+      creatorId: "user-123",
+      eventRoles: [],
+    };
+
+    it("should require authentication", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(401);
+    });
+
+    it("should validate eventId is provided", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ userIds: ["user-456"] });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("INVALID_INPUT");
+    });
+
+    it("should validate userIds is a non-empty array", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: [] });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("INVALID_INPUT");
+    });
+
+    it("should reject more than 50 recipients", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const userIds = Array.from({ length: 51 }, (_, i) => `user-${i}`);
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("TOO_MANY_RECIPIENTS");
+    });
+
+    it("should validate all userIds are non-empty strings", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456", "", "user-789"] });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("INVALID_INPUT");
+      expect(response.body.error.message).toContain("non-empty strings");
+    });
+
+    it("should return 404 if event does not exist", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-999", userIds: ["user-456"] });
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.code).toBe("EVENT_NOT_FOUND");
+    });
+
+    it("should return 403 if user is not an organizer", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        creatorId: "other-user",
+        eventRoles: [],
+      } as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.code).toBe("FORBIDDEN");
+    });
+
+    it("should reject invitations for draft events", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue({
+        ...mockEvent,
+        state: "DRAFT",
+      } as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("INVALID_EVENT_STATE");
+    });
+
+    it("should reject if selected users are not connections", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as any);
+
+      // User has completed events
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce([{ eventId: "event-1" }] as any)
+        // But target user didn't attend those events
+        .mockResolvedValueOnce([]);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.code).toBe("INVALID_CONNECTIONS");
+    });
+
+    it("should successfully send email invitations", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as any);
+
+      // Mock connections
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce([{ eventId: "event-1" }] as any)
+        .mockResolvedValueOnce([{ userId: "user-456" }] as any)
+        .mockResolvedValueOnce([]); // No existing RSVPs
+
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: "user-456",
+          displayName: "Alice Smith",
+          email: "alice@example.com",
+          phone: null,
+        },
+      ] as any);
+
+      vi.mocked(prisma.emailInvitation.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.smsInvitation.findMany).mockResolvedValue([]);
+
+      vi.mocked(createAndSendEmailInvitation).mockResolvedValue({
+        success: true,
+      } as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(201);
+      expect(response.body.sent).toBe(1);
+      expect(response.body.failed).toBe(0);
+      expect(response.body.results).toHaveLength(1);
+      expect(response.body.results[0].success).toBe(true);
+      expect(response.body.results[0].contactMethod).toBe("email");
+      expect(createAndSendEmailInvitation).toHaveBeenCalledWith(
+        "event-123",
+        "alice@example.com",
+        "Alice Smith",
+        expect.any(String)
+      );
+    });
+
+    it("should successfully send SMS invitations when no email", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as any);
+
+      // Mock connections
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce([{ eventId: "event-1" }] as any)
+        .mockResolvedValueOnce([{ userId: "user-456" }] as any)
+        .mockResolvedValueOnce([]); // No existing RSVPs
+
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: "user-456",
+          displayName: "Bob Johnson",
+          email: null,
+          phone: "+1234567890",
+        },
+      ] as any);
+
+      vi.mocked(prisma.emailInvitation.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.smsInvitation.findMany).mockResolvedValue([]);
+
+      vi.mocked(createAndSendSmsInvitation).mockResolvedValue({
+        success: true,
+      } as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(201);
+      expect(response.body.sent).toBe(1);
+      expect(response.body.results[0].contactMethod).toBe("sms");
+      expect(createAndSendSmsInvitation).toHaveBeenCalled();
+    });
+
+    it("should skip users who already have an RSVP", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as any);
+
+      // Mock connections
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce([{ eventId: "event-1" }] as any)
+        .mockResolvedValueOnce([{ userId: "user-456" }] as any)
+        .mockResolvedValueOnce([{ userId: "user-456" }] as any); // Already has RSVP
+
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: "user-456",
+          displayName: "Alice Smith",
+          email: "alice@example.com",
+          phone: null,
+        },
+      ] as any);
+
+      vi.mocked(prisma.emailInvitation.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.smsInvitation.findMany).mockResolvedValue([]);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(201);
+      expect(response.body.sent).toBe(0);
+      expect(response.body.alreadyRsvpd).toBe(1);
+      expect(response.body.results[0].alreadyRsvpd).toBe(true);
+    });
+
+    it("should skip users who are already invited", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as any);
+
+      // Mock connections
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce([{ eventId: "event-1" }] as any)
+        .mockResolvedValueOnce([{ userId: "user-456" }] as any)
+        .mockResolvedValueOnce([]); // No existing RSVPs
+
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: "user-456",
+          displayName: "Alice Smith",
+          email: "alice@example.com",
+          phone: null,
+        },
+      ] as any);
+
+      vi.mocked(prisma.emailInvitation.findMany).mockResolvedValue([
+        { email: "alice@example.com" },
+      ] as any);
+      vi.mocked(prisma.smsInvitation.findMany).mockResolvedValue([]);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(201);
+      expect(response.body.sent).toBe(0);
+      expect(response.body.alreadyInvited).toBe(1);
+      expect(response.body.results[0].alreadyInvited).toBe(true);
+    });
+
+    it("should handle users with no contact method", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as any);
+
+      // Mock connections
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce([{ eventId: "event-1" }] as any)
+        .mockResolvedValueOnce([{ userId: "user-456" }] as any)
+        .mockResolvedValueOnce([]);
+
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: "user-456",
+          displayName: "Charlie Brown",
+          email: null,
+          phone: null,
+        },
+      ] as any);
+
+      vi.mocked(prisma.emailInvitation.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.smsInvitation.findMany).mockResolvedValue([]);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456"] });
+
+      expect(response.status).toBe(201);
+      expect(response.body.sent).toBe(0);
+      expect(response.body.failed).toBe(1);
+      expect(response.body.results[0].error).toContain("No contact method");
+    });
+
+    it("should handle mixed success and failure results", async () => {
+      vi.mocked(prisma.session.findUnique).mockResolvedValue({
+        ...mockSession,
+        user: mockUser,
+      } as any);
+      vi.mocked(prisma.session.update).mockResolvedValue(mockSession as any);
+      vi.mocked(prisma.event.findUnique).mockResolvedValue(mockEvent as any);
+
+      // Mock connections
+      vi.mocked(prisma.rSVP.findMany)
+        .mockResolvedValueOnce([{ eventId: "event-1" }] as any)
+        .mockResolvedValueOnce([
+          { userId: "user-456" },
+          { userId: "user-789" },
+        ] as any)
+        .mockResolvedValueOnce([]);
+
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: "user-456",
+          displayName: "Alice Smith",
+          email: "alice@example.com",
+          phone: null,
+        },
+        {
+          id: "user-789",
+          displayName: "Bob Johnson",
+          email: "bob@example.com",
+          phone: null,
+        },
+      ] as any);
+
+      vi.mocked(prisma.emailInvitation.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.smsInvitation.findMany).mockResolvedValue([]);
+
+      vi.mocked(createAndSendEmailInvitation)
+        .mockResolvedValueOnce({ success: true } as any)
+        .mockResolvedValueOnce({ success: false, error: "Email service error" } as any);
+
+      const response = await request(app)
+        .post("/api/connections/invite")
+        .set("Authorization", "Bearer valid-token")
+        .send({ eventId: "event-123", userIds: ["user-456", "user-789"] });
+
+      expect(response.status).toBe(201);
+      expect(response.body.sent).toBe(1);
+      expect(response.body.failed).toBe(1);
+      expect(response.body.results).toHaveLength(2);
     });
   });
 });

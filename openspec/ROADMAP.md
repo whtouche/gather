@@ -266,7 +266,7 @@ Gather the info you need.
 
 ---
 
-## Group H: Social Layer
+## Group H: Social Layer [DONE]
 **Theme: "It's who you know"**
 
 Build connections beyond single events.
@@ -292,7 +292,7 @@ Build connections beyond single events.
 - Edit and delete notes
 - Search notes content
 
-### H4: Invite from Connections
+### H4: Invite from Connections [DONE]
 *Quick invite your regulars.*
 - Browse connections when creating event
 - Filter by shared events
