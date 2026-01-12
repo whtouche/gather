@@ -116,20 +116,20 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo/Brand */}
-        <h1 className="text-center text-3xl font-bold text-gray-900">Gather</h1>
-        <h2 className="mt-2 text-center text-xl text-gray-600">
+        <h1 className="text-center text-3xl font-bold text-gray-900 dark:text-white">Gather</h1>
+        <h2 className="mt-2 text-center text-xl text-gray-600 dark:text-gray-300">
           {step === "form" ? "Create your account" : "Verify your account"}
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-sm rounded-xl sm:px-10">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow-sm rounded-xl sm:px-10">
           {/* Error message */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="mb-6 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -139,17 +139,17 @@ export function RegisterPage() {
             <form onSubmit={handleRegisterSubmit}>
               {/* Contact Method Toggle */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Contact Method
                 </label>
-                <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setContactMethod("phone")}
                     className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                       contactMethod === "phone"
                         ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
+                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                     }`}
                   >
                     Phone
@@ -160,7 +160,7 @@ export function RegisterPage() {
                     className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                       contactMethod === "email"
                         ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
+                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                     }`}
                   >
                     Email
@@ -171,7 +171,7 @@ export function RegisterPage() {
               {/* Phone or Email Input */}
               {contactMethod === "phone" ? (
                 <div className="mb-6">
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Phone Number
                   </label>
                   <input
@@ -180,16 +180,16 @@ export function RegisterPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+1 (555) 123-4567"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     We&apos;ll send you a verification code via SMS
                   </p>
                 </div>
               ) : (
                 <div className="mb-6">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email Address
                   </label>
                   <input
@@ -198,10 +198,10 @@ export function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     We&apos;ll send you a verification code via email
                   </p>
                 </div>
@@ -209,7 +209,7 @@ export function RegisterPage() {
 
               {/* Display Name */}
               <div className="mb-6">
-                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Display Name
                 </label>
                 <input
@@ -218,10 +218,10 @@ export function RegisterPage() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="How should we call you?"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   This is how you&apos;ll appear to event organizers and other attendees
                 </p>
               </div>
@@ -247,11 +247,11 @@ export function RegisterPage() {
 
               {/* Link to login */}
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   Already have an account?{" "}
                   <a
                     href={`/login${redirectUrl !== "/dashboard" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
-                    className="font-medium text-blue-600 hover:text-blue-500"
+                    className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
                   >
                     Sign in
                   </a>
@@ -267,7 +267,7 @@ export function RegisterPage() {
               <button
                 type="button"
                 onClick={handleBackToForm}
-                className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-6"
               >
                 <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -275,14 +275,14 @@ export function RegisterPage() {
                 Back
               </button>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Enter the 6-digit code sent to{" "}
                 <span className="font-medium">{contactMethod === "phone" ? phone : email}</span>
               </p>
 
               <form onSubmit={handleVerifySubmit}>
                 <div className="mb-6">
-                  <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Verification Code
                   </label>
                   <input
@@ -291,7 +291,7 @@ export function RegisterPage() {
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     placeholder="000000"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     maxLength={6}
                     autoComplete="one-time-code"
                     required
@@ -323,7 +323,7 @@ export function RegisterPage() {
                   type="button"
                   onClick={handleResendCode}
                   disabled={isSubmitting}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed"
                 >
                   Resend code
                 </button>

@@ -74,11 +74,11 @@ function getRsvpBadge(status: string | null): { color: string; text: string } | 
 
   switch (status) {
     case "YES":
-      return { color: "bg-green-100 text-green-800", text: "Going" };
+      return { color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200", text: "Going" };
     case "MAYBE":
-      return { color: "bg-yellow-100 text-yellow-800", text: "Maybe" };
+      return { color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200", text: "Maybe" };
     case "NO":
-      return { color: "bg-red-100 text-red-800", text: "Not Going" };
+      return { color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200", text: "Not Going" };
     default:
       return null;
   }
@@ -90,11 +90,11 @@ function getRsvpBadge(status: string | null): { color: string; text: string } | 
 function getStateBadge(state: string): { color: string; text: string } | null {
   switch (state) {
     case "DRAFT":
-      return { color: "bg-gray-100 text-gray-800", text: "Draft" };
+      return { color: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200", text: "Draft" };
     case "ONGOING":
-      return { color: "bg-blue-100 text-blue-800", text: "Happening Now" };
+      return { color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200", text: "Happening Now" };
     case "CLOSED":
-      return { color: "bg-orange-100 text-orange-800", text: "RSVPs Closed" };
+      return { color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200", text: "RSVPs Closed" };
     default:
       return null;
   }
@@ -113,7 +113,7 @@ export function EventCard({ event, variant }: EventCardProps) {
       to={`/events/${event.id}`}
       className="block group"
     >
-      <article className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden">
+      <article className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 overflow-hidden">
         {/* Optional event image */}
         {event.imageUrl && (
           <div className="aspect-video w-full overflow-hidden">
@@ -129,7 +129,7 @@ export function EventCard({ event, variant }: EventCardProps) {
           {/* Header with badges */}
           <div className="flex flex-wrap items-center gap-2 mb-2">
             {variant === "organizing" && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                 Organizer
               </span>
             )}
@@ -147,19 +147,19 @@ export function EventCard({ event, variant }: EventCardProps) {
             )}
 
             {relativeDate && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                 {relativeDate}
               </span>
             )}
           </div>
 
           {/* Title */}
-          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
             {event.title}
           </h3>
 
           {/* Date and time */}
-          <div className="flex items-center text-sm text-gray-600 mb-2">
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
             <svg
               className="w-4 h-4 mr-2 flex-shrink-0"
               fill="none"
@@ -180,7 +180,7 @@ export function EventCard({ event, variant }: EventCardProps) {
           </div>
 
           {/* Location */}
-          <div className="flex items-start text-sm text-gray-600 mb-3">
+          <div className="flex items-start text-sm text-gray-600 dark:text-gray-300 mb-3">
             <svg
               className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5"
               fill="none"
@@ -206,32 +206,32 @@ export function EventCard({ event, variant }: EventCardProps) {
 
           {/* RSVP counts for organizing events */}
           {isOrganizingEvent(event) && (
-            <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+            <div className="flex items-center gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
               <div className="flex items-center text-sm">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-medium mr-1.5">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 text-xs font-medium mr-1.5">
                   {event.rsvpCounts.yes}
                 </span>
-                <span className="text-gray-500">Going</span>
+                <span className="text-gray-500 dark:text-gray-400">Going</span>
               </div>
               <div className="flex items-center text-sm">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium mr-1.5">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200 text-xs font-medium mr-1.5">
                   {event.rsvpCounts.maybe}
                 </span>
-                <span className="text-gray-500">Maybe</span>
+                <span className="text-gray-500 dark:text-gray-400">Maybe</span>
               </div>
               <div className="flex items-center text-sm">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-700 text-xs font-medium mr-1.5">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 text-xs font-medium mr-1.5">
                   {event.rsvpCounts.no}
                 </span>
-                <span className="text-gray-500">No</span>
+                <span className="text-gray-500 dark:text-gray-400">No</span>
               </div>
             </div>
           )}
 
           {/* Category tag if present */}
           {event.category && (
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                 {event.category}
               </span>
             </div>

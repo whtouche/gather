@@ -118,22 +118,22 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <a href="/" className="inline-block">
-            <h1 className="text-3xl font-bold text-gray-900">Gather</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gather</h1>
           </a>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
             {step === "contact" ? "Sign in to your account" : "Enter verification code"}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           {/* Error message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg mb-4">
               {error}
             </div>
           )}
@@ -143,17 +143,17 @@ export function LoginPage() {
             <form onSubmit={handleContactSubmit}>
               {/* Contact Method Toggle */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Sign in with
                 </label>
-                <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setContactMethod("phone")}
                     className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                       contactMethod === "phone"
                         ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
+                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                     }`}
                   >
                     Phone
@@ -164,7 +164,7 @@ export function LoginPage() {
                     className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                       contactMethod === "email"
                         ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
+                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                     }`}
                   >
                     Email
@@ -175,7 +175,7 @@ export function LoginPage() {
               {/* Phone or Email Input */}
               {contactMethod === "phone" ? (
                 <div className="mb-6">
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Phone Number
                   </label>
                   <input
@@ -184,14 +184,14 @@ export function LoginPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+1 (555) 123-4567"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                     autoFocus
                   />
                 </div>
               ) : (
                 <div className="mb-6">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email Address
                   </label>
                   <input
@@ -200,7 +200,7 @@ export function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                     autoFocus
                   />
@@ -236,7 +236,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={handleBackToContact}
-                  className="flex items-center text-gray-600 hover:text-gray-900"
+                  className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 >
                   <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -245,13 +245,13 @@ export function LoginPage() {
                 </button>
               </div>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Enter the 6-digit code sent to {contactMethod === "phone" ? phone : email}
               </p>
 
               <form onSubmit={handleVerifySubmit}>
                 <div className="mb-6">
-                  <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Verification Code
                   </label>
                   <input
@@ -260,7 +260,7 @@ export function LoginPage() {
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     placeholder="000000"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     maxLength={6}
                     autoComplete="one-time-code"
                     autoFocus
@@ -292,7 +292,7 @@ export function LoginPage() {
                   type="button"
                   onClick={handleResendCode}
                   disabled={isLoading}
-                  className="text-blue-600 hover:text-blue-800 text-sm disabled:text-gray-400"
+                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm disabled:text-gray-400 dark:disabled:text-gray-500"
                 >
                   Resend code
                 </button>
@@ -301,12 +301,12 @@ export function LoginPage() {
           )}
 
           {/* Link to registration */}
-          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-            <p className="text-gray-600">
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+            <p className="text-gray-600 dark:text-gray-300">
               Don&apos;t have an account?{" "}
               <a
                 href={`/register${redirectPath !== "/dashboard" ? `?redirect=${encodeURIComponent(redirectPath)}` : ""}`}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
               >
                 Sign up
               </a>

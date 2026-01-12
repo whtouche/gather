@@ -23,10 +23,10 @@ function InvitePageWrapper() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900">Invalid Invitation</h1>
-          <p className="mt-2 text-gray-600">No invitation token provided.</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Invalid Invitation</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">No invitation token provided.</p>
           <a
             href="/"
             className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -49,10 +49,10 @@ function EventPageWrapper() {
 
   if (!id) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900">Invalid Event</h1>
-          <p className="mt-2 text-gray-600">No event ID provided.</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Invalid Event</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">No event ID provided.</p>
           <a
             href="/"
             className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -72,10 +72,10 @@ function EventPageWrapper() {
  */
 function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Gather</h1>
-        <p className="text-lg text-gray-600 mb-8">Privacy-focused event planning</p>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Gather</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">Privacy-focused event planning</p>
         <div className="flex gap-4 justify-center">
           <a
             href="/login"
@@ -85,7 +85,7 @@ function HomePage() {
           </a>
           <a
             href="/register"
-            className="px-6 py-3 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+            className="px-6 py-3 bg-white dark:bg-gray-700 text-blue-600 dark:text-gray-200 border border-blue-600 dark:border-gray-600 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors font-medium"
           >
             Get Started
           </a>
@@ -100,11 +100,11 @@ function HomePage() {
  */
 function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-6xl font-bold text-gray-300">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-gray-900">Page Not Found</h2>
-        <p className="mt-2 text-gray-600">The page you are looking for does not exist.</p>
+        <h1 className="text-6xl font-bold text-gray-300 dark:text-gray-600">404</h1>
+        <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">Page Not Found</h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">The page you are looking for does not exist.</p>
         <a
           href="/"
           className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
