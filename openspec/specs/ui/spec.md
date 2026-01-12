@@ -120,23 +120,142 @@ Theme changes SHALL be announced to screen reader users with appropriate ARIA at
 ### REQ-UI-009: Color Contrast Compliance
 **Priority:** High | **Traces to:** REQ-ACC-001
 
-All text and interactive elements SHALL meet WCAG AA contrast requirements in both light and dark themes.
+All text and interactive elements SHALL meet WCAG AA contrast requirements in both light and dark themes. The system SHALL prevent common contrast errors and follow established accessibility best practices.
 
 #### Scenario: Text contrast in light mode
 - GIVEN text elements in light mode
 - WHEN contrast is measured
 - THEN normal text SHALL have minimum 4.5:1 contrast ratio
-- AND large text SHALL have minimum 3:1 contrast ratio
+- AND large text (≥18pt or ≥14pt bold) SHALL have minimum 3:1 contrast ratio
+- AND no gray text darker than gray-500 SHALL appear on white backgrounds
+- AND no gray text lighter than gray-700 SHALL be used for body text
 
 #### Scenario: Text contrast in dark mode
 - GIVEN text elements in dark mode
 - WHEN contrast is measured
 - THEN normal text SHALL have minimum 4.5:1 contrast ratio
-- AND large text SHALL have minimum 3:1 contrast ratio
+- AND large text (≥18pt or ≥14pt bold) SHALL have minimum 3:1 contrast ratio
+- AND no gray text darker than gray-500 SHALL appear on dark backgrounds
+- AND white or near-white text (gray-100, gray-200) SHALL be used for primary text
+
+#### Scenario: Interactive element contrast
+- GIVEN interactive elements (buttons, links, form inputs)
+- WHEN displayed in either theme
+- THEN interactive elements SHALL have minimum 3:1 contrast ratio against background
+- AND focus indicators SHALL have minimum 3:1 contrast ratio
+- AND disabled states SHALL maintain minimum 3:1 contrast ratio OR use opacity only
+
+#### Color Contrast Best Practices
+
+**CRITICAL REQUIREMENTS:**
+1. **No same-color-family conflicts**: NEVER use dark colors on dark backgrounds or light colors on light backgrounds
+   - ❌ PROHIBITED: gray-900 text on gray-800 background (dark mode)
+   - ❌ PROHIBITED: gray-300 text on gray-50 background (light mode)
+   - ✅ CORRECT: gray-100 text on gray-800 background (dark mode)
+   - ✅ CORRECT: gray-900 text on gray-50 background (light mode)
+
+2. **Text color hierarchy** (by importance):
+   - **Primary text** (headings, critical content):
+     - Light mode: `text-gray-900` or `text-black`
+     - Dark mode: `text-white` or `text-gray-100`
+   - **Secondary text** (body content):
+     - Light mode: `text-gray-700` or `text-gray-800`
+     - Dark mode: `text-gray-200` or `text-gray-300`
+   - **Tertiary text** (muted content, timestamps):
+     - Light mode: `text-gray-600` or `text-gray-500`
+     - Dark mode: `text-gray-400`
+
+3. **Background color hierarchy**:
+   - **Page background**:
+     - Light mode: `bg-gray-50` or `bg-white`
+     - Dark mode: `bg-gray-900`
+   - **Card/panel background**:
+     - Light mode: `bg-white`
+     - Dark mode: `bg-gray-800`
+   - **Elevated/hover background**:
+     - Light mode: `bg-gray-100` or `bg-gray-50`
+     - Dark mode: `bg-gray-700`
+
+4. **Border visibility**:
+   - Light mode borders SHALL use `border-gray-200` or darker
+   - Dark mode borders SHALL use `border-gray-700` or lighter
+   - Borders SHALL always be visible against their background
+
+5. **Form input accessibility**:
+   - Input backgrounds SHALL contrast with page background
+   - Input text SHALL meet 4.5:1 contrast ratio
+   - Placeholder text SHALL meet 4.5:1 contrast ratio
+   - Input borders SHALL meet 3:1 contrast ratio
+   - Light mode: `bg-white border-gray-300 text-gray-900 placeholder-gray-400`
+   - Dark mode: `bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500`
+
+6. **Status badge accessibility**:
+   - Badge backgrounds SHALL be sufficiently dark/light for text contrast
+   - Light mode success: `bg-green-100 text-green-800`
+   - Dark mode success: `bg-green-900 text-green-200`
+   - Similar patterns for warning (yellow), error (red), info (blue)
+
+**ANTI-PATTERNS TO AVOID:**
+- ❌ Using gray-900 text on dark backgrounds (invisible or very low contrast)
+- ❌ Using gray-100/200 text on light backgrounds (invisible or very low contrast)
+- ❌ Using only color to convey information (also provide icons/text)
+- ❌ Assuming color combinations that work in light mode work in dark mode
+- ❌ Relying on transparency without testing final rendered contrast
+- ❌ Using pure black (#000) text in dark mode (too harsh, use gray-100 instead)
+- ❌ Using pure white backgrounds in dark mode (use gray-900 or gray-800)
+
+**TESTING REQUIREMENTS:**
+- All color combinations SHALL be validated using WebAIM Contrast Checker or equivalent
+- Manual visual inspection SHALL be performed in both themes
+- Automated accessibility testing SHALL flag contrast violations
+- Screenshots SHALL be reviewed for readability and visual hierarchy
 
 ---
 
 ## Color System
+
+### Color Palette Reference
+
+The following color combinations are pre-approved for accessibility compliance. Developers SHALL use these combinations to ensure WCAG AA conformance.
+
+#### Approved Text/Background Combinations
+
+| Element | Light Mode | Dark Mode | Notes |
+|---------|-----------|-----------|-------|
+| **Page Background** | `bg-gray-50` | `bg-gray-900` | Primary container background |
+| **Card/Panel Background** | `bg-white` | `bg-gray-800` | Elevated content containers |
+| **Primary Text** (headings) | `text-gray-900` | `text-white` | Maximum contrast for importance |
+| **Secondary Text** (body) | `text-gray-600` | `text-gray-300` | Standard readability |
+| **Tertiary Text** (muted) | `text-gray-500` | `text-gray-400` | Timestamps, helper text |
+| **Input Background** | `bg-white` | `bg-gray-700` | Form fields, text areas |
+| **Input Text** | `text-gray-900` | `text-gray-100` | User-entered content |
+| **Input Border** | `border-gray-300` | `border-gray-600` | Field outlines |
+| **Input Placeholder** | `placeholder-gray-400` | `placeholder-gray-500` | Hint text |
+| **Primary Border** | `border-gray-200` | `border-gray-700` | Dividers, card borders |
+| **Secondary Border** | `border-gray-300` | `border-gray-600` | Emphasis borders |
+| **Hover Background (subtle)** | `hover:bg-gray-50` | `hover:bg-gray-700` | Minimal hover indication |
+| **Hover Background (card)** | `hover:bg-gray-100` | `hover:bg-gray-700` | Interactive card states |
+| **Link Text** | `text-blue-600` | `text-blue-400` | Hyperlinks, primary actions |
+| **Link Hover** | `hover:text-blue-800` | `hover:text-blue-300` | Link interaction |
+
+#### Approved Status Badge Combinations
+
+| Status | Light Mode Background | Light Mode Text | Dark Mode Background | Dark Mode Text |
+|--------|----------------------|-----------------|---------------------|----------------|
+| Success | `bg-green-100` | `text-green-800` | `bg-green-900` | `text-green-200` |
+| Warning | `bg-yellow-100` | `text-yellow-800` | `bg-yellow-900` | `text-yellow-200` |
+| Error | `bg-red-100` | `text-red-800` | `bg-red-900` | `text-red-200` |
+| Info | `bg-blue-100` | `text-blue-800` | `bg-blue-900` | `text-blue-200` |
+| Neutral | `bg-gray-100` | `text-gray-800` | `bg-gray-700` | `text-gray-200` |
+
+#### Approved Button Combinations
+
+| Button Type | Classes | Notes |
+|------------|---------|-------|
+| Primary | `bg-blue-600 hover:bg-blue-700 text-white` | Same in both themes |
+| Secondary | Light: `bg-white text-gray-700 border-gray-300 hover:bg-gray-50`<br>Dark: `bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600` | Theme-specific |
+| Danger | `bg-red-600 hover:bg-red-700 text-white` | Same in both themes |
+| Ghost | Light: `text-gray-700 hover:bg-gray-100`<br>Dark: `text-gray-200 hover:bg-gray-700` | Minimal styling |
 
 ### REQ-UI-010: Semantic Color Tokens
 **Priority:** Medium | **Traces to:** REQ-UI-001
