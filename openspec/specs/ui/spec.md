@@ -73,17 +73,6 @@ The system SHALL provide smooth visual transitions when switching themes, with p
 - THEN theme transitions SHALL be disabled or reduced to < 50ms
 - AND the theme SHALL change immediately without animation
 
-### REQ-UI-005: System Theme Synchronization
-**Priority:** Low | **Traces to:** REQ-UI-001
-
-The system SHOULD allow users to explicitly follow system theme preference with automatic synchronization.
-
-#### Scenario: System theme option
-- GIVEN a user selecting "System" theme option
-- WHEN their operating system theme changes
-- THEN the application theme SHALL update automatically
-- AND the preference SHALL be saved as 'system' in localStorage
-
 ---
 
 ## Accessibility
@@ -224,7 +213,7 @@ Theme system SHALL provide full TypeScript type safety with no runtime type erro
 - GIVEN ThemeContext implementation
 - WHEN compiled with TypeScript strict mode
 - THEN no type errors SHALL occur
-- AND theme values SHALL be strictly typed as 'light' | 'dark' | 'system'
+- AND theme values SHALL be strictly typed as 'light' | 'dark'
 
 #### Scenario: Component prop types
 - GIVEN ThemeToggle component
@@ -331,7 +320,7 @@ Visual regression tests SHOULD verify that dark mode does not introduce visual b
 
 | Category | High Priority | Medium Priority | Low Priority | Total |
 |----------|---------------|-----------------|--------------|-------|
-| Theme System | 3 | 2 | 1 | 6 |
+| Theme System | 3 | 2 | 0 | 5 |
 | Accessibility | 3 | 1 | 0 | 4 |
 | Color System | 0 | 2 | 0 | 2 |
 | Performance | 1 | 1 | 0 | 2 |
@@ -339,7 +328,7 @@ Visual regression tests SHOULD verify that dark mode does not introduce visual b
 | Monitoring | 0 | 0 | 1 | 1 |
 | Migration | 0 | 0 | 2 | 2 |
 | Testing | 0 | 1 | 1 | 2 |
-| **Total** | **7** | **8** | **5** | **20** |
+| **Total** | **7** | **8** | **4** | **19** |
 
 ---
 
@@ -363,7 +352,6 @@ Visual regression tests SHOULD verify that dark mode does not introduce visual b
 - REQ-UI-019: Add comprehensive theme tests
 
 ### Phase 4 (Low - Optional)
-- REQ-UI-005: Add explicit "System" theme option
 - REQ-UI-015: Implement keyboard shortcuts
 - REQ-UI-016: Add privacy-respecting analytics
 - REQ-UI-017: Document browser support matrix
