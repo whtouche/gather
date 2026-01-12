@@ -26,18 +26,18 @@ const VISIBILITY_OPTIONS: { value: ProfileVisibility; label: string; description
 function LoadingSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-20 h-20 bg-gray-200 rounded-full" />
+          <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
           <div className="flex-1">
-            <div className="h-6 w-32 bg-gray-200 rounded mb-2" />
-            <div className="h-4 w-48 bg-gray-200 rounded" />
+            <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+            <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
           </div>
         </div>
         <div className="space-y-4">
-          <div className="h-10 bg-gray-200 rounded" />
-          <div className="h-10 bg-gray-200 rounded" />
-          <div className="h-24 bg-gray-200 rounded" />
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
       </div>
     </div>
@@ -47,13 +47,13 @@ function LoadingSkeleton() {
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="text-center py-12">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 mb-4">
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
-      <p className="text-gray-500 mb-4">{message}</p>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Something went wrong</h3>
+      <p className="text-gray-500 dark:text-gray-400 mb-4">{message}</p>
       <button
         onClick={onRetry}
         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
@@ -76,7 +76,7 @@ function VisibilitySelect({ value, onChange, disabled }: VisibilitySelectProps) 
       value={value}
       onChange={(e) => onChange(e.target.value as ProfileVisibility)}
       disabled={disabled}
-      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm disabled:bg-gray-100"
+      className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm disabled:bg-gray-100 dark:disabled:bg-gray-800 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
     >
       {VISIBILITY_OPTIONS.map((opt) => (
         <option key={opt.value} value={opt.value}>
@@ -291,20 +291,20 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Manage your profile information and privacy settings
               </p>
             </div>
             <Link
               to="/dashboard"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               <svg className="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -326,8 +326,8 @@ export function ProfilePage() {
         {loadingState === "success" && profile && (
           <div className="space-y-6">
             {/* Profile Photo Section */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Profile Photo</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Profile Photo</h2>
               <div className="flex items-start gap-6">
                 <div className="flex-shrink-0">
                   {photoUrl ? (
@@ -337,8 +337,8 @@ export function ProfilePage() {
                       className="w-24 h-24 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-3xl font-medium text-gray-600">
+                    <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <span className="text-3xl font-medium text-gray-600 dark:text-gray-300">
                         {displayName.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -346,7 +346,7 @@ export function ProfilePage() {
                 </div>
                 <div className="flex-1 space-y-4">
                   <div>
-                    <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Photo URL
                     </label>
                     <input
@@ -355,12 +355,12 @@ export function ProfilePage() {
                       value={photoUrl}
                       onChange={(e) => setPhotoUrl(e.target.value)}
                       placeholder="https://example.com/photo.jpg"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                     />
-                    <p className="mt-1 text-xs text-gray-500">Enter a URL for your profile photo (JPEG or PNG, max 5MB)</p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter a URL for your profile photo (JPEG or PNG, max 5MB)</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Photo Visibility
                     </label>
                     <VisibilitySelect value={photoVisibility} onChange={setPhotoVisibility} />
@@ -370,12 +370,12 @@ export function ProfilePage() {
             </div>
 
             {/* Basic Info Section */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h2>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-                    Display Name <span className="text-red-500">*</span>
+                  <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Display Name <span className="text-red-500 dark:text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -383,34 +383,34 @@ export function ProfilePage() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     maxLength={100}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
-                  <p className="mt-1 text-xs text-gray-500">This is how you appear to others (1-100 characters)</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">This is how you appear to others (1-100 characters)</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Contact Information
                   </label>
-                  <div className="bg-gray-50 rounded-md p-4 text-sm text-gray-600">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-4 text-sm text-gray-600 dark:text-gray-300">
                     {profile.phone && (
                       <p>Phone: {profile.phone}</p>
                     )}
                     {profile.email && (
                       <p>Email: {profile.email}</p>
                     )}
-                    <p className="mt-2 text-xs text-gray-500">Contact information is never shared with other users</p>
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Contact information is never shared with other users</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bio Section */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">About You</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">About You</h2>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Bio
                   </label>
                   <textarea
@@ -420,12 +420,12 @@ export function ProfilePage() {
                     rows={4}
                     maxLength={500}
                     placeholder="Tell others a bit about yourself..."
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
-                  <p className="mt-1 text-xs text-gray-500">{bio.length}/500 characters</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{bio.length}/500 characters</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Bio Visibility
                   </label>
                   <VisibilitySelect value={bioVisibility} onChange={setBioVisibility} />
@@ -434,11 +434,11 @@ export function ProfilePage() {
             </div>
 
             {/* Location Section */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Location</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Location</h2>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     City / Region
                   </label>
                   <input
@@ -447,12 +447,12 @@ export function ProfilePage() {
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="e.g., San Francisco, CA"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
-                  <p className="mt-1 text-xs text-gray-500">General location (not precise coordinates)</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">General location (not precise coordinates)</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Location Visibility
                   </label>
                   <VisibilitySelect value={locationVisibility} onChange={setLocationVisibility} />
@@ -461,8 +461,8 @@ export function ProfilePage() {
             </div>
 
             {/* Advanced Privacy Section */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Advanced Privacy</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Advanced Privacy</h2>
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="flex items-center h-5">
@@ -471,28 +471,28 @@ export function ProfilePage() {
                       id="isProfileHidden"
                       checked={isProfileHidden}
                       onChange={(e) => setIsProfileHidden(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                     />
                   </div>
                   <div className="ml-3">
-                    <label htmlFor="isProfileHidden" className="font-medium text-gray-900 text-sm">
+                    <label htmlFor="isProfileHidden" className="font-medium text-gray-900 dark:text-white text-sm">
                       Hide My Profile
                     </label>
-                    <p className="text-gray-500 text-xs mt-1">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
                       When enabled, only your display name will be visible to others. Your profile photo, bio, and location will be hidden regardless of individual field visibility settings.
                     </p>
-                    <p className="text-gray-500 text-xs mt-1">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
                       Note: You will still appear in event attendee lists, and others can still add private notes about you.
                     </p>
                   </div>
                 </div>
                 {isProfileHidden && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
                     <div className="flex items-start">
-                      <svg className="w-5 h-5 text-yellow-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      <p className="text-xs text-yellow-800">
+                      <p className="text-xs text-yellow-800 dark:text-yellow-200">
                         Your profile is currently hidden. Only your display name is visible to other users.
                       </p>
                     </div>
@@ -502,9 +502,9 @@ export function ProfilePage() {
             </div>
 
             {/* Notification Preferences Section */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Notification Preferences</h2>
-              <p className="text-sm text-gray-600 mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Notification Preferences</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 Control how you receive notifications from Gather
               </p>
               <div className="space-y-4">
@@ -515,14 +515,14 @@ export function ProfilePage() {
                       id="emailNotifications"
                       checked={emailNotifications}
                       onChange={(e) => setEmailNotifications(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                     />
                   </div>
                   <div className="ml-3">
-                    <label htmlFor="emailNotifications" className="font-medium text-gray-900 text-sm">
+                    <label htmlFor="emailNotifications" className="font-medium text-gray-900 dark:text-white text-sm">
                       Email Notifications
                     </label>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">
                       Receive event updates, RSVP changes, and invitations via email
                     </p>
                   </div>
@@ -535,14 +535,14 @@ export function ProfilePage() {
                       id="smsNotifications"
                       checked={smsNotifications}
                       onChange={(e) => setSmsNotifications(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                     />
                   </div>
                   <div className="ml-3">
-                    <label htmlFor="smsNotifications" className="font-medium text-gray-900 text-sm">
+                    <label htmlFor="smsNotifications" className="font-medium text-gray-900 dark:text-white text-sm">
                       SMS Notifications
                     </label>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">
                       Receive important event updates via text message
                     </p>
                   </div>
@@ -555,14 +555,14 @@ export function ProfilePage() {
                       id="wallActivityNotifications"
                       checked={wallActivityNotifications}
                       onChange={(e) => setWallActivityNotifications(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                     />
                   </div>
                   <div className="ml-3">
-                    <label htmlFor="wallActivityNotifications" className="font-medium text-gray-900 text-sm">
+                    <label htmlFor="wallActivityNotifications" className="font-medium text-gray-900 dark:text-white text-sm">
                       Wall Activity Notifications
                     </label>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">
                       Get notified about new posts and replies on event walls
                     </p>
                   </div>
@@ -575,39 +575,39 @@ export function ProfilePage() {
                       id="connectionEventNotifications"
                       checked={connectionEventNotifications}
                       onChange={(e) => setConnectionEventNotifications(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                     />
                   </div>
                   <div className="ml-3">
-                    <label htmlFor="connectionEventNotifications" className="font-medium text-gray-900 text-sm">
+                    <label htmlFor="connectionEventNotifications" className="font-medium text-gray-900 dark:text-white text-sm">
                       New Event Notifications from Connections
                     </label>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">
                       Be notified when people you've attended events with create new events
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="mt-4 bg-gray-50 rounded-md p-3">
-                <p className="text-xs text-gray-600">
+              <div className="mt-4 bg-gray-50 dark:bg-gray-900 rounded-md p-3">
+                <p className="text-xs text-gray-600 dark:text-gray-300">
                   You can also mute notifications for individual events from the event page.
                 </p>
               </div>
             </div>
 
             {/* Session Management */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Security</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Security</h2>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">Active Sessions</h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Active Sessions</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Manage devices logged into your account
                   </p>
                 </div>
                 <Link
                   to="/profile/sessions"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
                   Manage Sessions
                   <svg className="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -618,19 +618,19 @@ export function ProfilePage() {
             </div>
 
             {/* Account Management */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Account Management</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Account Management</h2>
 
               {/* Pending Deletion Warning */}
               {profile.deletionScheduledAt && (
-                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                   <div className="flex items-start">
-                    <svg className="w-5 h-5 text-red-600 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
                     <div className="flex-1">
-                      <h3 className="text-sm font-medium text-red-800">Account Deletion Scheduled</h3>
-                      <p className="text-sm text-red-700 mt-1">
+                      <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Account Deletion Scheduled</h3>
+                      <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                         Your account is scheduled for deletion on {new Date(profile.deletionExecutionAt!).toLocaleDateString()}.
                         You can cancel this deletion at any time before that date.
                       </p>
@@ -648,25 +648,25 @@ export function ProfilePage() {
 
               <div className="space-y-4">
                 {/* Data Export */}
-                <div className="border-b border-gray-200 pb-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Export Your Data</h3>
-                  <p className="text-sm text-gray-500 mb-3">
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Export Your Data</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                     Download a copy of all your personal data including events, RSVPs, and profile information
                   </p>
                   <button
                     onClick={handleRequestExport}
                     disabled={loadingAction === "export" || dataExports.some(e => e.status === "PENDING" || e.status === "PROCESSING")}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loadingAction === "export" ? "Requesting..." : "Request Data Export"}
                   </button>
                   {dataExports.length > 0 && (
                     <div className="mt-3 space-y-2">
                       {dataExports.map((exp) => (
-                        <div key={exp.id} className="flex items-center justify-between text-sm bg-gray-50 rounded p-2">
+                        <div key={exp.id} className="flex items-center justify-between text-sm bg-gray-50 dark:bg-gray-900 rounded p-2">
                           <div>
-                            <span className="font-medium">{exp.status}</span>
-                            <span className="text-gray-500 ml-2">
+                            <span className="font-medium text-gray-900 dark:text-white">{exp.status}</span>
+                            <span className="text-gray-500 dark:text-gray-400 ml-2">
                               Requested {new Date(exp.requestedAt).toLocaleDateString()}
                             </span>
                           </div>
@@ -675,7 +675,7 @@ export function ProfilePage() {
                               href={exp.fileUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                             >
                               Download
                             </a>
@@ -687,21 +687,21 @@ export function ProfilePage() {
                 </div>
 
                 {/* Account Deactivation */}
-                <div className="border-b border-gray-200 pb-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Deactivate Account</h3>
-                  <p className="text-sm text-gray-500 mb-3">
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Deactivate Account</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                     Temporarily deactivate your account. You can reactivate by logging in again.
                   </p>
                   {!showDeactivateConfirm ? (
                     <button
                       onClick={() => setShowDeactivateConfirm(true)}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
                       Deactivate Account
                     </button>
                   ) : (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-sm text-yellow-800 mb-3">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
                         Are you sure you want to deactivate your account? You can reactivate it by logging in again.
                       </p>
                       <div className="flex gap-2">
@@ -714,7 +714,7 @@ export function ProfilePage() {
                         </button>
                         <button
                           onClick={() => setShowDeactivateConfirm(false)}
-                          className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                          className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                         >
                           Cancel
                         </button>
@@ -726,23 +726,23 @@ export function ProfilePage() {
                 {/* Account Deletion */}
                 {!profile.deletionScheduledAt && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-2">Delete Account</h3>
-                    <p className="text-sm text-gray-500 mb-3">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Delete Account</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                       Permanently delete your account and all associated data. This action has a 14-day grace period.
                     </p>
                     {!showDeleteConfirm ? (
                       <button
                         onClick={() => setShowDeleteConfirm(true)}
-                        className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+                        className="inline-flex items-center px-4 py-2 border border-red-300 dark:border-red-800 text-sm font-medium rounded-md text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
                         Delete Account
                       </button>
                     ) : (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <p className="text-sm text-red-800 mb-3 font-medium">
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <p className="text-sm text-red-800 dark:text-red-200 mb-3 font-medium">
                           Warning: This will permanently delete your account after a 14-day grace period.
                         </p>
-                        <p className="text-sm text-red-700 mb-3">
+                        <p className="text-sm text-red-700 dark:text-red-300 mb-3">
                           During this period, you can cancel the deletion by logging in. After 14 days, all your data will be permanently deleted and cannot be recovered.
                         </p>
                         <div className="flex gap-2">
@@ -755,7 +755,7 @@ export function ProfilePage() {
                           </button>
                           <button
                             onClick={() => setShowDeleteConfirm(false)}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                           >
                             Cancel
                           </button>
@@ -768,9 +768,9 @@ export function ProfilePage() {
             </div>
 
             {/* Privacy Settings Legend */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-blue-900 mb-2">Privacy Settings</h3>
-              <ul className="text-sm text-blue-800 space-y-1">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">Privacy Settings</h3>
+              <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
                 {VISIBILITY_OPTIONS.map((opt) => (
                   <li key={opt.value}>
                     <span className="font-medium">{opt.label}:</span> {opt.description}
@@ -780,13 +780,13 @@ export function ProfilePage() {
             </div>
 
             {/* Save Button */}
-            <div className="flex items-center justify-between bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div>
                 {errorMessage && (
-                  <p className="text-sm text-red-600">{errorMessage}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
                 )}
                 {saveSuccess && (
-                  <p className="text-sm text-green-600 flex items-center">
+                  <p className="text-sm text-green-600 dark:text-green-400 flex items-center">
                     <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>

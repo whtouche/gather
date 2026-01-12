@@ -182,10 +182,10 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-1/3 mb-4" />
-        <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
-        <div className="h-4 bg-gray-200 rounded w-1/2" />
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
+        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
       </div>
     );
   }
@@ -195,36 +195,36 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-1 flex items-center">
-        <svg className="w-6 h-6 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1 flex items-center">
+        <svg className="w-6 h-6 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         Data Retention Settings
       </h3>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
         Configure how long event data is retained after the event ends
       </p>
 
       <div className="space-y-6">
         {/* Current Status */}
         {settings.archivedAt && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
+          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
               <strong>Archived:</strong> This event was archived on {new Date(settings.archivedAt).toLocaleDateString()}
             </p>
           </div>
         )}
 
         {settings.scheduledForDeletionAt && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-sm text-red-800 mb-2">
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <p className="text-sm text-red-800 dark:text-red-200 mb-2">
               <strong>Scheduled for deletion:</strong> This event will be permanently deleted on {new Date(settings.scheduledForDeletionAt).toLocaleDateString()}
             </p>
             <button
               onClick={handleCancelDeletion}
               disabled={saving}
-              className="text-sm bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+              className="text-sm bg-red-600 dark:bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-500 disabled:opacity-50"
             >
               Cancel Deletion
             </button>
@@ -232,12 +232,12 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
         )}
 
         {settings.estimatedArchivalDate && !settings.archivedAt && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
               <strong>Estimated archival date:</strong> {new Date(settings.estimatedArchivalDate).toLocaleDateString()}
             </p>
             {settings.retentionNotificationSent && (
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Notification sent on {settings.retentionNotificationSentAt ? new Date(settings.retentionNotificationSentAt).toLocaleDateString() : 'N/A'}
               </p>
             )}
@@ -246,7 +246,7 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
 
         {/* Data Retention Period */}
         <div>
-          <label htmlFor="dataRetention" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="dataRetention" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Event Data Retention Period (months)
           </label>
           <input
@@ -257,16 +257,16 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
             min="1"
             max="120"
             disabled={saving}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent disabled:opacity-50"
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             How long to keep event data after completion (1-120 months, default: 24)
           </p>
         </div>
 
         {/* Wall Retention Period */}
         <div>
-          <label htmlFor="wallRetention" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="wallRetention" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Wall Message Retention Period (months, optional)
           </label>
           <input
@@ -278,9 +278,9 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
             max="120"
             placeholder="Leave empty for no automatic cleanup"
             disabled={saving}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent disabled:opacity-50"
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Automatically delete wall posts older than this period (optional)
           </p>
         </div>
@@ -289,26 +289,26 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
           <button
             onClick={handleUpdateRetention}
             disabled={saving}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+            className="bg-blue-600 dark:bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-50 font-medium"
           >
             {saving ? "Saving..." : "Update Retention Settings"}
           </button>
         </div>
 
         {/* Advanced Actions */}
-        <div className="border-t pt-6 space-y-4">
-          <h4 className="text-sm font-medium text-gray-900">Advanced Actions</h4>
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Advanced Actions</h4>
 
           {!settings.archivedAt && (
             <div>
               <button
                 onClick={handleArchive}
                 disabled={saving}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 text-sm"
+                className="bg-gray-600 dark:bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-500 disabled:opacity-50 text-sm"
               >
                 Archive Event Now
               </button>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Archive this event immediately (soft delete - data is preserved but marked as archived)
               </p>
             </div>
@@ -318,7 +318,7 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
             <div>
               <div className="flex gap-3 items-end">
                 <div className="flex-1">
-                  <label htmlFor="gracePeriod" className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="gracePeriod" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Grace Period (days)
                   </label>
                   <input
@@ -329,18 +329,18 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
                     min="1"
                     max="365"
                     disabled={saving}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:border-transparent disabled:opacity-50 text-sm"
                   />
                 </div>
                 <button
                   onClick={handleScheduleDeletion}
                   disabled={saving}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 text-sm"
+                  className="bg-red-600 dark:bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-500 disabled:opacity-50 text-sm"
                 >
                   Schedule Permanent Deletion
                 </button>
               </div>
-              <p className="mt-1 text-xs text-red-600">
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
                 ⚠️ This will permanently delete all event data after the grace period. This action cannot be undone.
               </p>
             </div>
@@ -348,14 +348,14 @@ export function RetentionSettings({ eventId, isOrganizer }: RetentionSettingsPro
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <p className="text-sm text-green-600 flex items-center">
+          <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <p className="text-sm text-green-600 dark:text-green-400 flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>

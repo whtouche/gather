@@ -189,27 +189,27 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
   }
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading questionnaire...</div>;
+    return <div className="text-center py-8 dark:text-gray-300">Loading questionnaire...</div>;
   }
 
   if (!isOrganizer) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-xl font-semibold mb-4">Event Questionnaire</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/30 p-6">
+        <h3 className="text-xl font-semibold mb-4 dark:text-white">Event Questionnaire</h3>
         {questions.length === 0 ? (
-          <p className="text-gray-500">No questionnaire has been created for this event.</p>
+          <p className="text-gray-500 dark:text-gray-400">No questionnaire has been created for this event.</p>
         ) : (
           <div className="space-y-4">
             {questions.map((q) => (
-              <div key={q.id} className="border-l-4 border-blue-500 pl-4">
-                <p className="font-medium">
+              <div key={q.id} className="border-l-4 border-blue-500 dark:border-blue-400 pl-4">
+                <p className="font-medium dark:text-white">
                   {q.questionText}
-                  {q.isRequired && <span className="text-red-500 ml-1">*</span>}
+                  {q.isRequired && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
                 </p>
-                <p className="text-sm text-gray-500">{QUESTION_TYPES.find(t => t.value === q.questionType)?.label}</p>
-                {q.helpText && <p className="text-sm text-gray-600 mt-1">{q.helpText}</p>}
+                <p className="text-sm text-gray-500 dark:text-gray-400">{QUESTION_TYPES.find(t => t.value === q.questionType)?.label}</p>
+                {q.helpText && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{q.helpText}</p>}
                 {q.choices && (
-                  <ul className="text-sm text-gray-600 mt-2 list-disc list-inside">
+                  <ul className="text-sm text-gray-600 dark:text-gray-300 mt-2 list-disc list-inside">
                     {q.choices.map((choice, idx) => (
                       <li key={idx}>{choice}</li>
                     ))}
@@ -224,13 +224,13 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/30 p-6">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-semibold">Event Questionnaire</h3>
+        <h3 className="text-xl font-semibold dark:text-white">Event Questionnaire</h3>
         {!isAdding && !editingId && (
           <button
             onClick={handleStartAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600"
           >
             Add Question
           </button>
@@ -238,23 +238,23 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
           {error}
         </div>
       )}
 
       {/* Question Form */}
       {(isAdding || editingId) && (
-        <form onSubmit={handleSubmit} className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-          <h4 className="font-semibold mb-4">{editingId ? "Edit Question" : "New Question"}</h4>
+        <form onSubmit={handleSubmit} className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+          <h4 className="font-semibold mb-4 dark:text-white">{editingId ? "Edit Question" : "New Question"}</h4>
 
           {/* G4: Warning when editing question with responses */}
           {editingId && (() => {
             const editingQuestion = questions.find(q => q.id === editingId);
             const hasResponses = editingQuestion && editingQuestion.responseCount && editingQuestion.responseCount > 0;
             return hasResponses ? (
-              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
+              <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-300">
                   <strong>Note:</strong> This question has {editingQuestion.responseCount} response{editingQuestion.responseCount !== 1 ? 's' : ''}.
                   You can only edit the question text and help text. Cannot change choices or make it required.
                 </p>
@@ -264,8 +264,8 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
 
           {/* G4: Warning when adding new question and responses exist */}
           {isAdding && hasAnyResponses && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 <strong>Note:</strong> Responses have already been submitted. New questions must be optional (not required).
               </p>
             </div>
@@ -273,30 +273,30 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
 
           {/* Question Text */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Question Text <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Question Text <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               type="text"
               value={formData.questionText}
               onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Enter your question..."
               maxLength={500}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">{formData.questionText.length}/500 characters</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formData.questionText.length}/500 characters</p>
           </div>
 
           {/* Question Type */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Question Type <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Question Type <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <select
               value={formData.questionType}
               onChange={(e) => setFormData({ ...formData, questionType: e.target.value as QuestionType })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               disabled={!!editingId} // Don't allow changing type when editing
             >
               {QUESTION_TYPES.map((type) => (
@@ -316,8 +316,8 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
 
             return (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Choices <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Choices <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 {formData.choices.map((choice, index) => (
                   <div key={index} className="flex gap-2 mb-2">
@@ -325,7 +325,7 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                       type="text"
                       value={choice}
                       onChange={(e) => handleChoiceChange(index, e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600"
                       placeholder={`Option ${index + 1}`}
                       maxLength={200}
                       disabled={choicesDisabled}
@@ -334,7 +334,7 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                       <button
                         type="button"
                         onClick={() => handleRemoveChoice(index)}
-                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        className="px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
                       >
                         Remove
                       </button>
@@ -345,7 +345,7 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                   <button
                     type="button"
                     onClick={handleAddChoice}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                   >
                     + Add Choice
                   </button>
@@ -361,7 +361,7 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                 type="checkbox"
                 checked={formData.isRequired}
                 onChange={(e) => setFormData({ ...formData, isRequired: e.target.checked })}
-                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 dark:bg-gray-800"
                 disabled={(() => {
                   // G4: Disable if adding new question and responses exist
                   if (isAdding && hasAnyResponses) return true;
@@ -375,48 +375,48 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                   return false;
                 })()}
               />
-              <span className="text-sm font-medium text-gray-700">Required question</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Required question</span>
             </label>
             {isAdding && hasAnyResponses && (
-              <p className="text-xs text-gray-500 mt-1">New questions must be optional when responses already exist</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">New questions must be optional when responses already exist</p>
             )}
             {editingId && (() => {
               const editingQuestion = questions.find(q => q.id === editingId);
               const hasResponses = editingQuestion && editingQuestion.responseCount ? editingQuestion.responseCount > 0 : false;
               return hasResponses && !editingQuestion?.isRequired ? (
-                <p className="text-xs text-gray-500 mt-1">Cannot make required when responses already exist</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cannot make required when responses already exist</p>
               ) : null;
             })()}
           </div>
 
           {/* Help Text */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Help Text (optional)
             </label>
             <input
               type="text"
               value={formData.helpText}
               onChange={(e) => setFormData({ ...formData, helpText: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Additional guidance for respondents..."
               maxLength={200}
             />
-            <p className="text-xs text-gray-500 mt-1">{formData.helpText.length}/200 characters</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formData.helpText.length}/200 characters</p>
           </div>
 
           {/* Form Actions */}
           <div className="flex gap-2">
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600"
             >
               {editingId ? "Update Question" : "Add Question"}
             </button>
             <button
               type="button"
               onClick={handleCancelEdit}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -426,7 +426,7 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
 
       {/* Questions List */}
       {questions.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">
+        <p className="text-gray-500 dark:text-gray-400 text-center py-8">
           No questions yet. Click "Add Question" to create your first question.
         </p>
       ) : (
@@ -434,30 +434,30 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
           {questions.map((question, index) => (
             <div
               key={question.id}
-              className="p-4 border border-gray-200 rounded-lg hover:border-gray-300"
+              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800/50"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 font-medium">#{index + 1}</span>
-                    <p className="font-medium">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">#{index + 1}</span>
+                    <p className="font-medium dark:text-white">
                       {question.questionText}
-                      {question.isRequired && <span className="text-red-500 ml-1">*</span>}
+                      {question.isRequired && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
                     </p>
                     {question.responseCount && question.responseCount > 0 && (
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
+                      <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
                         {question.responseCount} response{question.responseCount !== 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {QUESTION_TYPES.find(t => t.value === question.questionType)?.label}
                   </p>
                   {question.helpText && (
-                    <p className="text-sm text-gray-600 mt-1 italic">{question.helpText}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 italic">{question.helpText}</p>
                   )}
                   {question.choices && (
-                    <ul className="text-sm text-gray-600 mt-2 list-disc list-inside">
+                    <ul className="text-sm text-gray-600 dark:text-gray-300 mt-2 list-disc list-inside">
                       {question.choices.map((choice, idx) => (
                         <li key={idx}>{choice}</li>
                       ))}
@@ -467,13 +467,13 @@ export function QuestionnaireBuilder({ eventId, isOrganizer }: QuestionnaireBuil
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleStartEdit(question)}
-                    className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+                    className="px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(question.id)}
-                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={question.responseCount ? question.responseCount > 0 : false}
                     title={question.responseCount && question.responseCount > 0 ? `Cannot delete: ${question.responseCount} response${question.responseCount !== 1 ? 's' : ''} exist` : ''}
                   >

@@ -134,27 +134,27 @@ export function SmartSuggestionsModal({
    * Get relevance badge color based on score
    */
   const getRelevanceBadge = (score: number): { color: string; label: string } => {
-    if (score >= 20) return { color: "bg-green-100 text-green-800", label: "High Match" };
-    if (score >= 10) return { color: "bg-blue-100 text-blue-800", label: "Good Match" };
-    return { color: "bg-gray-100 text-gray-800", label: "Potential Match" };
+    if (score >= 20) return { color: "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300", label: "High Match" };
+    if (score >= 10) return { color: "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300", label: "Good Match" };
+    return { color: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300", label: "Potential Match" };
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-75 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-xl">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Smart Suggestions</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Smart Suggestions</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 AI-powered recommendations based on event similarity and connections
               </p>
             </div>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -172,8 +172,8 @@ export function SmartSuggestionsModal({
           {/* Loading state */}
           {state === "loading" && (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-              <p className="text-gray-600 mt-4">Analyzing connections and finding matches...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 dark:border-purple-400 mx-auto"></div>
+              <p className="text-gray-600 dark:text-gray-300 mt-4">Analyzing connections and finding matches...</p>
             </div>
           )}
 
@@ -181,7 +181,7 @@ export function SmartSuggestionsModal({
           {state === "browse" && (
             <>
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
                   {error}
                 </div>
               )}
@@ -189,7 +189,7 @@ export function SmartSuggestionsModal({
               {suggestions.length === 0 && !error && (
                 <div className="text-center py-8">
                   <svg
-                    className="h-12 w-12 text-gray-400 mx-auto mb-4"
+                    className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -201,8 +201,8 @@ export function SmartSuggestionsModal({
                       d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                     />
                   </svg>
-                  <p className="text-gray-600">No suggestions available</p>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-gray-600 dark:text-gray-300">No suggestions available</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Try organizing more events to build your network
                   </p>
                 </div>
@@ -212,30 +212,30 @@ export function SmartSuggestionsModal({
                 <>
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {suggestions.length} suggested {suggestions.length === 1 ? "person" : "people"}
                       </p>
                       <div className="flex gap-2">
                         <button
                           onClick={handleSelectAll}
-                          className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                          className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
                         >
                           Select All
                         </button>
-                        <span className="text-gray-400">|</span>
+                        <span className="text-gray-400 dark:text-gray-500">|</span>
                         <button
                           onClick={handleDeselectAll}
-                          className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                          className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
                         >
                           Clear
                         </button>
                       </div>
                     </div>
 
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
                       <div className="flex items-start gap-2">
                         <svg
-                          className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5"
+                          className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -247,7 +247,7 @@ export function SmartSuggestionsModal({
                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <p className="text-sm text-purple-800">
+                        <p className="text-sm text-purple-800 dark:text-purple-300">
                           These people are suggested based on similar events they've attended and your
                           connection history. Higher match scores indicate stronger relevance.
                         </p>
@@ -265,8 +265,8 @@ export function SmartSuggestionsModal({
                           key={suggestion.userId}
                           className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
                             isSelected
-                              ? "border-purple-300 bg-purple-50"
-                              : "border-gray-200 hover:bg-gray-50"
+                              ? "border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/20"
+                              : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                           }`}
                           onClick={() => handleToggleSelection(suggestion.userId)}
                         >
@@ -274,7 +274,7 @@ export function SmartSuggestionsModal({
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleToggleSelection(suggestion.userId)}
-                            className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 mt-1"
+                            className="h-4 w-4 text-purple-600 dark:text-purple-500 rounded border-gray-300 dark:border-gray-600 focus:ring-purple-500 mt-1"
                           />
 
                           {suggestion.photoUrl ? (
@@ -284,8 +284,8 @@ export function SmartSuggestionsModal({
                               className="h-10 w-10 rounded-full object-cover flex-shrink-0"
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                              <span className="text-gray-600 text-sm font-medium">
+                            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                              <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
                                 {suggestion.displayName.charAt(0).toUpperCase()}
                               </span>
                             </div>
@@ -293,7 +293,7 @@ export function SmartSuggestionsModal({
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2 mb-1">
-                              <p className="font-medium text-gray-900">
+                              <p className="font-medium text-gray-900 dark:text-white">
                                 {suggestion.displayName}
                               </p>
                               <span
@@ -303,9 +303,9 @@ export function SmartSuggestionsModal({
                               </span>
                             </div>
 
-                            <p className="text-sm text-gray-600 mb-1">{suggestion.reason}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{suggestion.reason}</p>
 
-                            <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
                               {suggestion.sharedEventCount > 0 && (
                                 <span className="flex items-center gap-1">
                                   <svg
@@ -373,17 +373,17 @@ export function SmartSuggestionsModal({
           {/* Sending state */}
           {state === "sending" && (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-              <p className="text-gray-600 mt-4">Sending invitations...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 dark:border-purple-400 mx-auto"></div>
+              <p className="text-gray-600 dark:text-gray-300 mt-4">Sending invitations...</p>
             </div>
           )}
 
           {/* Results state */}
           {state === "results" && results && (
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-900 mb-2">{results.message}</h3>
-                <div className="text-sm text-green-800 space-y-1">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <h3 className="font-semibold text-green-900 dark:text-green-300 mb-2">{results.message}</h3>
+                <div className="text-sm text-green-800 dark:text-green-400 space-y-1">
                   {results.sent > 0 && <p>Sent: {results.sent}</p>}
                   {results.failed > 0 && <p>Failed: {results.failed}</p>}
                   {results.alreadyInvited > 0 && <p>Already invited: {results.alreadyInvited}</p>}
@@ -393,7 +393,7 @@ export function SmartSuggestionsModal({
 
               <button
                 onClick={handleClose}
-                className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
               >
                 Close
               </button>
@@ -403,17 +403,17 @@ export function SmartSuggestionsModal({
 
         {/* Footer buttons */}
         {(state === "browse" || state === "loading") && (
-          <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl flex gap-3">
+          <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 rounded-b-xl flex gap-3">
             <button
               onClick={handleClose}
-              className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="flex-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-medium"
             >
               Cancel
             </button>
             <button
               onClick={handleSendInvites}
               disabled={selectedUserIds.size === 0 || state === "loading"}
-              className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-purple-600 dark:bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Send Invitations ({selectedUserIds.size})
             </button>

@@ -140,16 +140,16 @@ export function PrivateNoteCard({
   if (!isEditing && !note) {
     // Show "Add Note" button
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-500">Private Note</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Private Note</h3>
         </div>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Add a private note about {targetUserDisplayName}. Only you can see this note.
         </p>
         <button
           onClick={() => setIsEditing(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400"
         >
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -161,14 +161,14 @@ export function PrivateNoteCard({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-500">Private Note</h3>
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Private Note</h3>
         {note && !isEditing && (
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsEditing(true)}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
             >
               Edit
             </button>
@@ -176,7 +176,7 @@ export function PrivateNoteCard({
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
+                className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
@@ -186,8 +186,8 @@ export function PrivateNoteCard({
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </div>
       )}
 
@@ -195,7 +195,7 @@ export function PrivateNoteCard({
         <div className="space-y-4">
           {/* Content textarea */}
           <div>
-            <label htmlFor="noteContent" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="noteContent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Note Content
             </label>
             <textarea
@@ -204,17 +204,17 @@ export function PrivateNoteCard({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Add your private notes here..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 resize-none"
               maxLength={5000}
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {content.length} / 5000 characters
             </p>
           </div>
 
           {/* Tags input */}
           <div>
-            <label htmlFor="tagInput" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="tagInput" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tags (optional, max 5)
             </label>
             <div className="flex gap-2">
@@ -225,13 +225,13 @@ export function PrivateNoteCard({
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagInputKeyDown}
                 placeholder="Add a tag..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 maxLength={30}
               />
               <button
                 onClick={handleAddTag}
                 disabled={!tagInput.trim() || tags.length >= 5}
-                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add
               </button>
@@ -241,7 +241,7 @@ export function PrivateNoteCard({
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
                   >
                     {tag}
                     <button
@@ -267,14 +267,14 @@ export function PrivateNoteCard({
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? "Saving..." : "Save Note"}
             </button>
             <button
               onClick={handleCancel}
               disabled={isSaving}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Cancel
             </button>
@@ -284,7 +284,7 @@ export function PrivateNoteCard({
         <div>
           {/* Display note content */}
           <div className="mb-4">
-            <p className="text-gray-700 whitespace-pre-wrap">{note?.content}</p>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{note?.content}</p>
           </div>
 
           {/* Display tags */}
@@ -294,7 +294,7 @@ export function PrivateNoteCard({
                 {note.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
                   >
                     {tag}
                   </span>
@@ -305,7 +305,7 @@ export function PrivateNoteCard({
 
           {/* Metadata */}
           {note && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               Last updated: {new Date(note.updatedAt).toLocaleDateString(undefined, {
                 year: "numeric",
                 month: "short",

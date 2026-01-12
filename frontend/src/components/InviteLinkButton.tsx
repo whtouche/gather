@@ -70,21 +70,21 @@ export function InviteLinkButton({ eventId, disabled = false }: InviteLinkButton
 
   const getButtonClasses = () => {
     const baseClasses =
-      "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
+      "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
 
     if (disabled) {
-      return `${baseClasses} bg-gray-200 text-gray-400 cursor-not-allowed`;
+      return `${baseClasses} bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed`;
     }
 
     switch (status) {
       case "loading":
-        return `${baseClasses} bg-blue-400 text-white cursor-wait`;
+        return `${baseClasses} bg-blue-400 dark:bg-blue-500 text-white cursor-wait`;
       case "copied":
-        return `${baseClasses} bg-green-500 text-white focus:ring-green-500`;
+        return `${baseClasses} bg-green-500 dark:bg-green-600 text-white focus:ring-green-500 dark:focus:ring-green-400`;
       case "error":
-        return `${baseClasses} bg-red-500 text-white focus:ring-red-500`;
+        return `${baseClasses} bg-red-500 dark:bg-red-600 text-white focus:ring-red-500 dark:focus:ring-red-400`;
       default:
-        return `${baseClasses} bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500`;
+        return `${baseClasses} bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400`;
     }
   };
 
@@ -168,7 +168,7 @@ export function InviteLinkButton({ eventId, disabled = false }: InviteLinkButton
         {getButtonText()}
       </button>
       {status === "error" && errorMessage && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
           {errorMessage}
         </p>
       )}

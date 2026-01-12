@@ -308,20 +308,20 @@ export function CreateEventPage() {
   const descriptionLength = formData.description.length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Create Event</h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Event</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Fill in the details for your new event
               </p>
             </div>
             <button
               onClick={() => navigate(-1)}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               <svg
                 className="w-6 h-6"
@@ -347,10 +347,10 @@ export function CreateEventPage() {
         <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
           {/* Error message */}
           {submitError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
               <div className="flex">
                 <svg
-                  className="w-5 h-5 text-red-400 mr-3 flex-shrink-0"
+                  className="w-5 h-5 text-red-400 dark:text-red-500 mr-3 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -363,19 +363,19 @@ export function CreateEventPage() {
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="text-sm text-red-700">{submitError}</p>
+                <p className="text-sm text-red-700 dark:text-red-400">{submitError}</p>
               </div>
             </div>
           )}
 
           {/* Basic Info Section */}
-          <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Info</h2>
+          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Info</h2>
 
             {/* Title */}
             <div className="mb-4">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Event Title <span className="text-red-500">*</span>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Event Title <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
                 type="text"
@@ -385,19 +385,19 @@ export function CreateEventPage() {
                 onChange={handleChange}
                 maxLength={200}
                 placeholder="Give your event a name"
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.title ? "border-red-300" : "border-gray-300"
+                className={`w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                  errors.title ? "border-red-300 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                 }`}
               />
               <div className="flex justify-between mt-1">
                 {errors.title ? (
-                  <p className="text-sm text-red-600">{errors.title}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{errors.title}</p>
                 ) : (
                   <span />
                 )}
                 <span
                   className={`text-sm ${
-                    titleLength > 180 ? "text-orange-600" : "text-gray-500"
+                    titleLength > 180 ? "text-orange-600 dark:text-orange-400" : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {titleLength}/200
@@ -407,8 +407,8 @@ export function CreateEventPage() {
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description <span className="text-red-500">*</span>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <textarea
                 id="description"
@@ -418,19 +418,19 @@ export function CreateEventPage() {
                 maxLength={5000}
                 rows={5}
                 placeholder="Tell people what your event is about"
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-                  errors.description ? "border-red-300" : "border-gray-300"
+                className={`w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none ${
+                  errors.description ? "border-red-300 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                 }`}
               />
               <div className="flex justify-between mt-1">
                 {errors.description ? (
-                  <p className="text-sm text-red-600">{errors.description}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{errors.description}</p>
                 ) : (
                   <span />
                 )}
                 <span
                   className={`text-sm ${
-                    descriptionLength > 4500 ? "text-orange-600" : "text-gray-500"
+                    descriptionLength > 4500 ? "text-orange-600 dark:text-orange-400" : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {descriptionLength}/5000
@@ -440,14 +440,14 @@ export function CreateEventPage() {
           </section>
 
           {/* Date & Time Section */}
-          <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Date & Time</h2>
+          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Date & Time</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Start Date/Time */}
               <div>
-                <label htmlFor="dateTime" className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date & Time <span className="text-red-500">*</span>
+                <label htmlFor="dateTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Start Date & Time <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <input
                   type="datetime-local"
@@ -455,18 +455,18 @@ export function CreateEventPage() {
                   name="dateTime"
                   value={formData.dateTime}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.dateTime ? "border-red-300" : "border-gray-300"
+                  className={`w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white ${
+                    errors.dateTime ? "border-red-300 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {errors.dateTime && (
-                  <p className="text-sm text-red-600 mt-1">{errors.dateTime}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.dateTime}</p>
                 )}
               </div>
 
               {/* End Date/Time */}
               <div>
-                <label htmlFor="endDateTime" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="endDateTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   End Date & Time
                 </label>
                 <input
@@ -475,19 +475,19 @@ export function CreateEventPage() {
                   name="endDateTime"
                   value={formData.endDateTime}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.endDateTime ? "border-red-300" : "border-gray-300"
+                  className={`w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white ${
+                    errors.endDateTime ? "border-red-300 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {errors.endDateTime && (
-                  <p className="text-sm text-red-600 mt-1">{errors.endDateTime}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.endDateTime}</p>
                 )}
               </div>
             </div>
 
             {/* Timezone */}
             <div>
-              <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Timezone
               </label>
               <select
@@ -495,7 +495,7 @@ export function CreateEventPage() {
                 name="timezone"
                 value={formData.timezone}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white"
               >
                 {TIMEZONES.map((tz) => (
                   <option key={tz.value} value={tz.value}>
@@ -507,12 +507,12 @@ export function CreateEventPage() {
           </section>
 
           {/* Location Section */}
-          <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Location</h2>
+          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Location</h2>
 
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                Event Location <span className="text-red-500">*</span>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Event Location <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
                 type="text"
@@ -521,24 +521,24 @@ export function CreateEventPage() {
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="Enter address or location name"
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.location ? "border-red-300" : "border-gray-300"
+                className={`w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                  errors.location ? "border-red-300 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                 }`}
               />
               {errors.location && (
-                <p className="text-sm text-red-600 mt-1">{errors.location}</p>
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.location}</p>
               )}
             </div>
           </section>
 
           {/* Optional Details Section */}
-          <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Optional Details</h2>
+          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Optional Details</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Capacity */}
               <div>
-                <label htmlFor="capacity" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="capacity" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Capacity
                 </label>
                 <input
@@ -549,12 +549,12 @@ export function CreateEventPage() {
                   onChange={handleChange}
                   min="1"
                   placeholder="Max attendees"
-                  className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.capacity ? "border-red-300" : "border-gray-300"
+                  className={`w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                    errors.capacity ? "border-red-300 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {errors.capacity && (
-                  <p className="text-sm text-red-600 mt-1">{errors.capacity}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.capacity}</p>
                 )}
                 {/* Waitlist toggle - only shown when capacity is set */}
                 {formData.capacity && (
@@ -565,9 +565,9 @@ export function CreateEventPage() {
                       name="waitlistEnabled"
                       checked={formData.waitlistEnabled}
                       onChange={handleChange}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400"
                     />
-                    <label htmlFor="waitlistEnabled" className="ml-2 text-sm text-gray-600">
+                    <label htmlFor="waitlistEnabled" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                       Enable waitlist when full
                     </label>
                   </div>
@@ -576,7 +576,7 @@ export function CreateEventPage() {
 
               {/* RSVP Deadline */}
               <div>
-                <label htmlFor="rsvpDeadline" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsvpDeadline" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   RSVP Deadline
                 </label>
                 <input
@@ -585,12 +585,12 @@ export function CreateEventPage() {
                   name="rsvpDeadline"
                   value={formData.rsvpDeadline}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.rsvpDeadline ? "border-red-300" : "border-gray-300"
+                  className={`w-full px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white ${
+                    errors.rsvpDeadline ? "border-red-300 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {errors.rsvpDeadline && (
-                  <p className="text-sm text-red-600 mt-1">{errors.rsvpDeadline}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.rsvpDeadline}</p>
                 )}
               </div>
             </div>
@@ -598,7 +598,7 @@ export function CreateEventPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Category */}
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Category
                 </label>
                 <select
@@ -606,7 +606,7 @@ export function CreateEventPage() {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white"
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat.value} value={cat.value}>
@@ -618,7 +618,7 @@ export function CreateEventPage() {
 
               {/* Dress Code */}
               <div>
-                <label htmlFor="dressCode" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="dressCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Dress Code
                 </label>
                 <input
@@ -628,14 +628,14 @@ export function CreateEventPage() {
                   value={formData.dressCode}
                   onChange={handleChange}
                   placeholder="e.g., Casual, Formal, Costume"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
 
             {/* Image URL */}
             <div className="mb-4">
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Cover Image URL
               </label>
               <input
@@ -645,13 +645,13 @@ export function CreateEventPage() {
                 value={formData.imageUrl}
                 onChange={handleChange}
                 placeholder="https://example.com/image.jpg"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
 
             {/* Additional Notes */}
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Additional Notes
               </label>
               <textarea
@@ -661,20 +661,20 @@ export function CreateEventPage() {
                 onChange={handleChange}
                 rows={3}
                 placeholder="Any other information for attendees"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none"
               />
             </div>
           </section>
 
           {/* Privacy Settings Section */}
-          <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Privacy Settings</h2>
+          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Privacy Settings</h2>
 
             {/* Attendee List Visibility */}
             <div className="mb-4">
               <label
                 htmlFor="attendeeListVisibility"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 Attendee List Visibility
               </label>
@@ -683,12 +683,12 @@ export function CreateEventPage() {
                 name="attendeeListVisibility"
                 value={formData.attendeeListVisibility}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white"
               >
                 <option value="ATTENDEES_ONLY">Visible to all attendees</option>
                 <option value="ORGANIZERS_ONLY">Visible to organizers only</option>
               </select>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Choose who can see the list of people attending this event.
               </p>
             </div>
@@ -702,14 +702,14 @@ export function CreateEventPage() {
                   name="allowInviteSharing"
                   checked={formData.allowInviteSharing}
                   onChange={handleChange}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400"
                 />
               </div>
               <div className="ml-3">
-                <label htmlFor="allowInviteSharing" className="text-sm font-medium text-gray-700">
+                <label htmlFor="allowInviteSharing" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Allow invite sharing
                 </label>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Attendees can share the event invite link with others.
                 </p>
               </div>
@@ -722,12 +722,12 @@ export function CreateEventPage() {
               type="button"
               onClick={() => handleSubmit(false)}
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-6 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">
                   <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-500"
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-500 dark:text-gray-400"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -756,7 +756,7 @@ export function CreateEventPage() {
               type="button"
               onClick={() => handleSubmit(true)}
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white font-medium rounded-lg shadow-sm hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">

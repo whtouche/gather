@@ -138,15 +138,15 @@ export function EmailInviteModal({
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-xl shadow-xl max-w-lg w-full">
+        <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Send Email Invitations
             </h2>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-500 transition-colors"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 transition-colors"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -158,24 +158,24 @@ export function EmailInviteModal({
           <div className="p-4">
             {state === "input" && (
               <>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   Enter email addresses to send invitations. You can add one per line or separate with commas.
                 </p>
-                <p className="text-xs text-gray-500 mb-3">
-                  Formats: <code className="bg-gray-100 px-1 rounded">email@example.com</code>{" "}
-                  or <code className="bg-gray-100 px-1 rounded">Name &lt;email@example.com&gt;</code>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  Formats: <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">email@example.com</code>{" "}
+                  or <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">Name &lt;email@example.com&gt;</code>
                 </p>
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="john@example.com&#10;Jane Doe <jane@example.com>&#10;bob@example.com"
                   rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent resize-none font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 {error && (
-                  <p className="mt-2 text-sm text-red-600">{error}</p>
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
                 )}
-                <div className="mt-3 text-sm text-gray-500">
+                <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                   {parseRecipients(input).length} valid recipient(s) detected
                 </div>
               </>
@@ -183,8 +183,8 @@ export function EmailInviteModal({
 
             {state === "sending" && (
               <div className="py-8 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Sending invitations...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+                <p className="mt-4 text-gray-600 dark:text-gray-400">Sending invitations...</p>
               </div>
             )}
 
@@ -219,30 +219,30 @@ export function EmailInviteModal({
                 </div>
 
                 {/* Details */}
-                <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+                <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
                   <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50 sticky top-0">
+                    <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                       <tr>
-                        <th className="px-3 py-2 text-left font-medium text-gray-600">Email</th>
-                        <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Email</th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                       {results.details.map((result, index) => (
                         <tr key={index}>
-                          <td className="px-3 py-2 text-gray-900 font-mono text-xs">{result.email}</td>
+                          <td className="px-3 py-2 text-gray-900 dark:text-gray-100 font-mono text-xs">{result.email}</td>
                           <td className="px-3 py-2">
                             {result.success ? (
-                              <span className="inline-flex items-center gap-1 text-green-600">
+                              <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
                                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                                 Sent
                               </span>
                             ) : result.alreadyInvited ? (
-                              <span className="text-amber-600">Already invited</span>
+                              <span className="text-amber-600 dark:text-amber-400">Already invited</span>
                             ) : (
-                              <span className="text-red-600">{result.error || "Failed"}</span>
+                              <span className="text-red-600 dark:text-red-400">{result.error || "Failed"}</span>
                             )}
                           </td>
                         </tr>
@@ -255,19 +255,19 @@ export function EmailInviteModal({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 p-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 p-4 border-t border-gray-100 dark:border-gray-700">
             {state === "input" && (
               <>
                 <button
                   onClick={handleClose}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSend}
                   disabled={parseRecipients(input).length === 0}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-blue-300 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium disabled:bg-blue-300 dark:disabled:bg-blue-800 disabled:cursor-not-allowed"
                 >
                   Send Invitations
                 </button>
@@ -276,7 +276,7 @@ export function EmailInviteModal({
             {state === "results" && (
               <button
                 onClick={handleClose}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium"
               >
                 Done
               </button>

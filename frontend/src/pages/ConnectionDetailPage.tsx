@@ -25,16 +25,16 @@ function SharedEventCard({ event }: { event: SharedEvent }) {
   return (
     <Link
       to={`/events/${eventId}`}
-      className="block bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-4"
+      className="block bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-gray-900 truncate mb-1">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate mb-1">
             {eventTitle}
           </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
             <svg
-              className="w-4 h-4 text-gray-400 flex-shrink-0"
+              className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -54,9 +54,9 @@ function SharedEventCard({ event }: { event: SharedEvent }) {
               })}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 mt-1">
             <svg
-              className="w-4 h-4 text-gray-400 flex-shrink-0"
+              className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -78,7 +78,7 @@ function SharedEventCard({ event }: { event: SharedEvent }) {
           </div>
         </div>
         {userRole === "ORGANIZER" && (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 flex-shrink-0">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 flex-shrink-0">
             Organizer
           </span>
         )}
@@ -92,10 +92,10 @@ function SharedEventCard({ event }: { event: SharedEvent }) {
  */
 function EventCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 animate-pulse">
-      <div className="h-5 w-48 bg-gray-200 rounded mb-2" />
-      <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-      <div className="h-4 w-40 bg-gray-200 rounded" />
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4 animate-pulse">
+      <div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+      <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+      <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
     </div>
   );
 }
@@ -107,20 +107,20 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-6">
       {/* Profile skeleton */}
-      <div className="bg-white rounded-lg shadow p-6 animate-pulse">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
         <div className="flex items-start gap-6 mb-6">
-          <div className="w-24 h-24 bg-gray-200 rounded-full" />
+          <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full" />
           <div className="flex-1">
-            <div className="h-7 w-40 bg-gray-200 rounded mb-2" />
-            <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-            <div className="h-4 w-48 bg-gray-200 rounded" />
+            <div className="h-7 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+            <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
           </div>
         </div>
       </div>
 
       {/* Events skeleton */}
       <div>
-        <div className="h-6 w-48 bg-gray-200 rounded mb-4" />
+        <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <EventCardSkeleton key={i} />
@@ -137,7 +137,7 @@ function LoadingSkeleton() {
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="text-center py-12">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-200 mb-4">
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
@@ -147,8 +147,8 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
           />
         </svg>
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
-      <p className="text-gray-500 mb-4">{message}</p>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Something went wrong</h3>
+      <p className="text-gray-500 dark:text-gray-400 mb-4">{message}</p>
       <button
         onClick={onRetry}
         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
@@ -177,12 +177,12 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
   );
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-700">Filters</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">Filters</h3>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="text-sm text-blue-600 hover:text-blue-700"
+          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
         >
           {showFilters ? "Hide" : "Show"} Filters
         </button>
@@ -192,14 +192,14 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Event filter */}
           <div>
-            <label htmlFor="eventFilter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="eventFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Event
             </label>
             <select
               id="eventFilter"
               value={filters.eventId || ""}
               onChange={(e) => onFiltersChange({ ...filters, eventId: e.target.value || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All events</option>
               {uniqueEvents.map((event) => (
@@ -212,7 +212,7 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
 
           {/* Start date filter */}
           <div>
-            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               From Date
             </label>
             <input
@@ -220,13 +220,13 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
               id="startDate"
               value={filters.startDate || ""}
               onChange={(e) => onFiltersChange({ ...filters, startDate: e.target.value || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* End date filter */}
           <div>
-            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               To Date
             </label>
             <input
@@ -234,7 +234,7 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
               id="endDate"
               value={filters.endDate || ""}
               onChange={(e) => onFiltersChange({ ...filters, endDate: e.target.value || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -243,9 +243,9 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
       {/* Active filters display */}
       {(filters.eventId || filters.startDate || filters.endDate) && (
         <div className="mt-4 flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-gray-600">Active filters:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300">Active filters:</span>
           {filters.eventId && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
               Event
               <button
                 onClick={() => onFiltersChange({ ...filters, eventId: undefined })}
@@ -262,7 +262,7 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
             </span>
           )}
           {filters.startDate && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
               From: {new Date(filters.startDate).toLocaleDateString()}
               <button
                 onClick={() => onFiltersChange({ ...filters, startDate: undefined })}
@@ -279,7 +279,7 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
             </span>
           )}
           {filters.endDate && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
               To: {new Date(filters.endDate).toLocaleDateString()}
               <button
                 onClick={() => onFiltersChange({ ...filters, endDate: undefined })}
@@ -297,7 +297,7 @@ function FilterBar({ filters, onFiltersChange, sharedEvents }: FilterBarProps) {
           )}
           <button
             onClick={() => onFiltersChange({})}
-            className="text-xs text-gray-600 hover:text-gray-800 underline"
+            className="text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 underline"
           >
             Clear all
           </button>
@@ -398,10 +398,10 @@ export function ConnectionDetailPage() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900">Invalid Connection</h1>
-          <p className="mt-2 text-gray-600">No user ID provided.</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Invalid Connection</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">No user ID provided.</p>
           <Link
             to="/connections"
             className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -414,20 +414,20 @@ export function ConnectionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Connection Details</h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Connection Details</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Shared event history and profile information
               </p>
             </div>
             <Link
               to="/connections"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               <svg className="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -449,7 +449,7 @@ export function ConnectionDetailPage() {
         {loadingState === "success" && connection && (
           <div className="space-y-6">
             {/* Profile Card */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="p-6">
                 <div className="flex items-start gap-6">
                   {/* Photo */}
@@ -461,8 +461,8 @@ export function ConnectionDetailPage() {
                         className="w-24 h-24 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-3xl font-medium text-gray-600">
+                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                        <span className="text-3xl font-medium text-gray-600 dark:text-gray-300">
                           {connection.displayName.charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -471,14 +471,14 @@ export function ConnectionDetailPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                       {connection.displayName}
                     </h2>
 
                     {/* Stats */}
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mb-4">
                       <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span>
@@ -490,8 +490,8 @@ export function ConnectionDetailPage() {
 
                     {/* Location */}
                     {connection.location && (
-                      <p className="flex items-center text-gray-600 mb-2">
-                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <p className="flex items-center text-gray-600 dark:text-gray-300 mb-2">
+                        <svg className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -503,9 +503,9 @@ export function ConnectionDetailPage() {
 
                 {/* Bio */}
                 {connection.bio && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">About</h3>
-                    <p className="text-gray-700 whitespace-pre-wrap">{connection.bio}</p>
+                  <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">About</h3>
+                    <p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{connection.bio}</p>
                   </div>
                 )}
               </div>
@@ -531,16 +531,16 @@ export function ConnectionDetailPage() {
 
             {/* Shared Events */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Shared Events ({connection.sharedEvents.length})
               </h3>
 
               {connection.sharedEvents.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                  <p className="text-gray-500">No events match the current filters.</p>
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <p className="text-gray-500 dark:text-gray-400">No events match the current filters.</p>
                   <button
                     onClick={() => setFilters({})}
-                    className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium"
                   >
                     Clear filters
                   </button>

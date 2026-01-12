@@ -14,7 +14,7 @@ function ConnectionCard({ connection }: { connection: Connection }) {
   return (
     <Link
       to={`/connections/${userId}`}
-      className="block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5"
+      className="block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow p-5"
     >
       <div className="flex items-start gap-4">
         {/* Profile photo */}
@@ -26,9 +26,9 @@ function ConnectionCard({ connection }: { connection: Connection }) {
               className="w-14 h-14 rounded-full object-cover"
             />
           ) : (
-            <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
               <svg
-                className="w-7 h-7 text-gray-400"
+                className="w-7 h-7 text-gray-400 dark:text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -47,14 +47,14 @@ function ConnectionCard({ connection }: { connection: Connection }) {
 
         {/* Connection info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-gray-900 truncate">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
             {displayName}
           </h3>
 
-          <div className="mt-1 text-sm text-gray-600">
+          <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             <div className="flex items-center gap-1">
               <svg
-                className="w-4 h-4 text-gray-400"
+                className="w-4 h-4 text-gray-400 dark:text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -74,11 +74,11 @@ function ConnectionCard({ connection }: { connection: Connection }) {
           </div>
 
           {mostRecentEvent && (
-            <div className="mt-2 text-sm text-gray-500">
+            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               <div className="truncate">
                 Most recent: {mostRecentEvent.eventTitle}
               </div>
-              <div className="text-xs text-gray-400 mt-0.5">
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                 {new Date(mostRecentEvent.eventDate).toLocaleDateString(undefined, {
                   year: "numeric",
                   month: "short",
@@ -98,13 +98,13 @@ function ConnectionCard({ connection }: { connection: Connection }) {
  */
 function ConnectionCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 animate-pulse">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 animate-pulse">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-full bg-gray-200" />
+        <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700" />
         <div className="flex-1 min-w-0">
-          <div className="h-5 w-32 bg-gray-200 rounded mb-2" />
-          <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
-          <div className="h-4 w-40 bg-gray-200 rounded" />
+          <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+          <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
       </div>
     </div>
@@ -130,7 +130,7 @@ function LoadingSkeleton() {
 function EmptyState() {
   return (
     <div className="text-center py-16">
-      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 text-gray-400 mb-6">
+      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 mb-6">
         <svg
           className="w-10 h-10"
           fill="none"
@@ -146,15 +146,15 @@ function EmptyState() {
           />
         </svg>
       </div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
         No connections yet
       </h2>
-      <p className="text-gray-500 mb-6 max-w-md mx-auto">
+      <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
         Attend events to meet new people and build connections. Your connections will appear here after events are completed.
       </p>
       <Link
         to="/dashboard"
-        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500"
       >
         Browse Events
       </Link>
@@ -168,7 +168,7 @@ function EmptyState() {
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="text-center py-12">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 mb-4">
         <svg
           className="w-8 h-8"
           fill="none"
@@ -184,11 +184,11 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
           />
         </svg>
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
-      <p className="text-gray-500 mb-4">{message}</p>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Something went wrong</h3>
+      <p className="text-gray-500 dark:text-gray-400 mb-4">{message}</p>
       <button
         onClick={onRetry}
-        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500"
       >
         Try Again
       </button>
@@ -208,12 +208,12 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
   const [showFilters, setShowFilters] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
       <div className="flex items-center justify-between gap-4 mb-4">
-        <h3 className="text-sm font-medium text-gray-700">Filter & Sort</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter & Sort</h3>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="text-sm text-blue-600 hover:text-blue-700"
+          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
         >
           {showFilters ? "Hide" : "Show"} Options
         </button>
@@ -221,7 +221,7 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
 
       {/* Sort selector - always visible */}
       <div className="mb-4">
-        <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="sort" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Sort by
         </label>
         <select
@@ -233,7 +233,7 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
               sort: e.target.value as "recent" | "frequency" | "alphabetical",
             })
           }
-          className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full md:w-64 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="recent">Most Recent Event</option>
           <option value="frequency">Most Events Together</option>
@@ -242,10 +242,10 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
       </div>
 
       {showFilters && (
-        <div className="space-y-4 pt-4 border-t border-gray-200">
+        <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           {/* Name search */}
           <div>
-            <label htmlFor="nameSearch" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nameSearch" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Search by name
             </label>
             <input
@@ -254,14 +254,14 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
               placeholder="Search connections..."
               value={filters.name || ""}
               onChange={(e) => onFiltersChange({ ...filters, name: e.target.value || undefined })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Date range filters */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Events from
               </label>
               <input
@@ -271,11 +271,11 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
                 onChange={(e) =>
                   onFiltersChange({ ...filters, startDate: e.target.value || undefined })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Events to
               </label>
               <input
@@ -285,7 +285,7 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
                 onChange={(e) =>
                   onFiltersChange({ ...filters, endDate: e.target.value || undefined })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -294,10 +294,10 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
 
       {/* Active filters display */}
       {(filters.name || filters.startDate || filters.endDate) && (
-        <div className="mt-4 flex items-center gap-2 flex-wrap pt-4 border-t border-gray-200">
-          <span className="text-sm text-gray-600">Active filters:</span>
+        <div className="mt-4 flex items-center gap-2 flex-wrap pt-4 border-t border-gray-200 dark:border-gray-700">
+          <span className="text-sm text-gray-600 dark:text-gray-300">Active filters:</span>
           {filters.name && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
               Name: {filters.name}
               <button
                 onClick={() => onFiltersChange({ ...filters, name: undefined })}
@@ -314,7 +314,7 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
             </span>
           )}
           {filters.startDate && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
               From: {new Date(filters.startDate).toLocaleDateString()}
               <button
                 onClick={() => onFiltersChange({ ...filters, startDate: undefined })}
@@ -331,7 +331,7 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
             </span>
           )}
           {filters.endDate && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
               To: {new Date(filters.endDate).toLocaleDateString()}
               <button
                 onClick={() => onFiltersChange({ ...filters, endDate: undefined })}
@@ -349,7 +349,7 @@ function FilterSortBar({ filters, onFiltersChange }: FilterSortBarProps) {
           )}
           <button
             onClick={() => onFiltersChange({ sort: filters.sort })}
-            className="text-xs text-gray-600 hover:text-gray-800 underline"
+            className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 underline"
           >
             Clear filters
           </button>
@@ -396,20 +396,20 @@ export function ConnectionsPage() {
   }, [filters]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Connections</h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Connections</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 People you've attended events with
               </p>
             </div>
             <Link
               to="/dashboard"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500"
             >
               <svg
                 className="w-5 h-5 mr-2 -ml-1"
@@ -450,11 +450,11 @@ export function ConnectionsPage() {
 
                 {/* Results */}
                 {connections.length === 0 ? (
-                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                    <p className="text-gray-500 mb-4">No connections match the current filters.</p>
+                  <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">No connections match the current filters.</p>
                     <button
                       onClick={() => setFilters({ sort: "recent" })}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium"
                     >
                       Clear filters
                     </button>
@@ -462,10 +462,10 @@ export function ConnectionsPage() {
                 ) : (
                   <>
                     <div className="mb-6">
-                      <h2 className="text-lg font-medium text-gray-900">
+                      <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                         {connections.length} {connections.length === 1 ? "Connection" : "Connections"}
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {filters.sort === "alphabetical"
                           ? "Sorted by name (A-Z)"
                           : filters.sort === "frequency"

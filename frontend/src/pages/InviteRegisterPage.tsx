@@ -184,10 +184,10 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
   // Loading state
   if (step === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading invitation...</p>
+          <div className="animate-spin h-10 w-10 border-4 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading invitation...</p>
         </div>
       </div>
     );
@@ -196,15 +196,15 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
   // Error state
   if (step === "error") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid Invitation</h1>
-          <p className="text-gray-600">{errorMessage}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Invalid Invitation</h1>
+          <p className="text-gray-600 dark:text-gray-400">{errorMessage}</p>
         </div>
       </div>
     );
@@ -213,21 +213,21 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
   // Success state
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">You're In!</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">You're In!</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Your account has been created. You can now RSVP to the event.
           </p>
           {successEventId && (
             <a
               href={`/events/${successEventId}`}
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="inline-block bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
             >
               View Event & RSVP
             </a>
@@ -240,23 +240,23 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
   // Verification step
   if (step === "verify") {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
         <div className="max-w-md mx-auto">
           {/* Event Preview Card */}
           {eventPreview && (
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">{eventPreview.title}</h2>
-              <p className="text-gray-600 text-sm">{formatDate(eventPreview.dateTime)}</p>
-              <p className="text-gray-500 text-sm">{eventPreview.location}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{eventPreview.title}</h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">{formatDate(eventPreview.dateTime)}</p>
+              <p className="text-gray-500 dark:text-gray-500 text-sm">{eventPreview.location}</p>
             </div>
           )}
 
           {/* Verification Form */}
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
             <button
               type="button"
               onClick={handleBackToRegister}
-              className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+              className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
             >
               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -264,22 +264,22 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
               Back
             </button>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Enter Verification Code</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Enter Verification Code</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               {existingUser
                 ? `We found an existing account. Enter the code sent to ${contactMethod === "phone" ? phone : email} to log in.`
                 : `Enter the 6-digit code sent to ${contactMethod === "phone" ? phone : email}`}
             </p>
 
             {errorMessage && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
                 {errorMessage}
               </div>
             )}
 
             <form onSubmit={handleVerifySubmit}>
               <div className="mb-6">
-                <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Verification Code
                 </label>
                 <input
@@ -288,7 +288,7 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="000000"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 dark:placeholder-gray-500"
                   maxLength={6}
                   autoComplete="one-time-code"
                   required
@@ -298,7 +298,7 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
               <button
                 type="submit"
                 disabled={isSubmitting || verificationCode.length !== 6}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-blue-600 dark:bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? "Verifying..." : "Verify & Continue"}
               </button>
@@ -309,7 +309,7 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
                 type="button"
                 onClick={handleResendCode}
                 disabled={isSubmitting}
-                className="text-blue-600 hover:text-blue-800 text-sm disabled:text-gray-400"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm disabled:text-gray-400 dark:disabled:text-gray-600"
               >
                 Resend code
               </button>
@@ -322,11 +322,11 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
 
   // Registration form
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="max-w-md mx-auto">
         {/* Event Preview Card */}
         {eventPreview && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
             {eventPreview.imageUrl && (
               <img
                 src={eventPreview.imageUrl}
@@ -334,43 +334,43 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
             )}
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{eventPreview.title}</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{eventPreview.title}</h2>
             <div className="space-y-2 text-sm">
-              <p className="text-gray-600 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="text-gray-600 dark:text-gray-400 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 {formatDate(eventPreview.dateTime)}
               </p>
-              <p className="text-gray-600 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="text-gray-600 dark:text-gray-400 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 {eventPreview.location}
               </p>
-              <p className="text-gray-500 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="text-gray-500 dark:text-gray-500 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 Hosted by {eventPreview.creator.displayName}
               </p>
             </div>
             {eventPreview.description && (
-              <p className="mt-4 text-gray-600 text-sm line-clamp-3">{eventPreview.description}</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm line-clamp-3">{eventPreview.description}</p>
             )}
           </div>
         )}
 
         {/* Registration Form */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Join this Event</h1>
-          <p className="text-gray-600 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Join this Event</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Create an account to RSVP. It only takes a minute.
           </p>
 
           {errorMessage && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
               {errorMessage}
             </div>
           )}
@@ -378,17 +378,17 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
           <form onSubmit={handleRegisterSubmit}>
             {/* Contact Method Toggle */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Contact Method
               </label>
-              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+              <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setContactMethod("phone")}
                   className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                     contactMethod === "phone"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
+                      ? "bg-blue-600 dark:bg-blue-500 text-white"
+                      : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                   }`}
                 >
                   Phone
@@ -398,8 +398,8 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
                   onClick={() => setContactMethod("email")}
                   className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
                     contactMethod === "email"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
+                      ? "bg-blue-600 dark:bg-blue-500 text-white"
+                      : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                   }`}
                 >
                   Email
@@ -410,7 +410,7 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
             {/* Phone or Email Input */}
             {contactMethod === "phone" ? (
               <div className="mb-4">
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Phone Number
                 </label>
                 <input
@@ -419,13 +419,13 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+1 (555) 123-4567"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 dark:placeholder-gray-500"
                   required
                 />
               </div>
             ) : (
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email Address
                 </label>
                 <input
@@ -434,7 +434,7 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 dark:placeholder-gray-500"
                   required
                 />
               </div>
@@ -442,7 +442,7 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
 
             {/* Display Name */}
             <div className="mb-6">
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Your Name
               </label>
               <input
@@ -451,25 +451,25 @@ export function InviteRegisterPage({ inviteToken, onSuccess }: InviteRegisterPag
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="How should we call you?"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 dark:placeholder-gray-500"
                 required
               />
-              <p className="mt-1 text-sm text-gray-500">This is how you'll appear to other attendees</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">This is how you'll appear to other attendees</p>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-blue-600 dark:bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? "Sending Code..." : "Continue"}
             </button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-gray-500">
+          <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-500">
             Already have an account?{" "}
-            <a href="/login" className="text-blue-600 hover:text-blue-800">
+            <a href="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Log in
             </a>
           </p>

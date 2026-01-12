@@ -179,37 +179,37 @@ function ReplyForm({ eventId, parentId, onReplyCreated, onCancel }: ReplyFormPro
 
   return (
     <form onSubmit={handleSubmit} className="mt-3 ml-13">
-      <div className="border border-gray-200 rounded-lg focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-500 dark:focus-within:ring-blue-400">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Write a reply..."
-          className="w-full px-3 py-2 text-sm text-gray-900 placeholder-gray-500 border-0 rounded-t-lg focus:ring-0 resize-none"
+          className="w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-800 border-0 rounded-t-lg focus:ring-0 resize-none"
           rows={2}
           maxLength={1000}
           autoFocus
         />
-        <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-b-lg">
-          <span className="text-xs text-gray-500">{content.length}/1000</span>
+        <div className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
+          <span className="text-xs text-gray-500 dark:text-gray-400">{content.length}/1000</span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={onCancel}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!content.trim() || isSubmitting}
-              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:bg-blue-400 dark:disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Replying..." : "Reply"}
             </button>
           </div>
         </div>
       </div>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
     </form>
   );
 }
@@ -303,10 +303,10 @@ function PostItem({
 
   return (
     <div className={`${isReply ? "ml-10 mt-3" : ""}`}>
-      <div className={`${isReply ? "border-l-2 border-gray-100 pl-4" : isPinned ? "border-2 border-yellow-300 bg-yellow-50 rounded-lg p-4" : "border border-gray-100 rounded-lg p-4"}`}>
+      <div className={`${isReply ? "border-l-2 border-gray-100 dark:border-gray-700 pl-4" : isPinned ? "border-2 border-yellow-300 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4" : "border border-gray-100 dark:border-gray-800 rounded-lg p-4"}`}>
         {/* Pinned indicator */}
         {isPinned && !isReply && (
-          <div className="flex items-center gap-1.5 text-yellow-700 text-xs font-medium mb-2">
+          <div className="flex items-center gap-1.5 text-yellow-700 dark:text-yellow-400 text-xs font-medium mb-2">
             <PinIcon filled />
             <span>Pinned</span>
           </div>
@@ -322,25 +322,25 @@ function PostItem({
               />
             ) : (
               <div
-                className={`${isReply ? "w-8 h-8" : "w-10 h-10"} bg-gray-200 rounded-full flex items-center justify-center`}
+                className={`${isReply ? "w-8 h-8" : "w-10 h-10"} bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center`}
               >
-                <span className={`${isReply ? "text-xs" : "text-sm"} font-medium text-gray-600`}>
+                <span className={`${isReply ? "text-xs" : "text-sm"} font-medium text-gray-600 dark:text-gray-300`}>
                   {post.author.displayName.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
             <div>
               <div className="flex items-center gap-2">
-                <span className={`font-medium text-gray-900 ${isReply ? "text-sm" : ""}`}>
+                <span className={`font-medium text-gray-900 dark:text-gray-100 ${isReply ? "text-sm" : ""}`}>
                   {post.author.displayName}
                 </span>
                 {post.author.isOrganizer && (
-                  <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                  <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium rounded-full">
                     Organizer
                   </span>
                 )}
               </div>
-              <span className={`${isReply ? "text-xs" : "text-sm"} text-gray-500`}>
+              <span className={`${isReply ? "text-xs" : "text-sm"} text-gray-500 dark:text-gray-400`}>
                 {formatRelativeTime(post.createdAt)}
               </span>
             </div>
@@ -355,8 +355,8 @@ function PostItem({
                 disabled={pinningPostId === post.id}
                 className={`p-1 transition-colors ${
                   isPinned
-                    ? "text-yellow-500 hover:text-yellow-600"
-                    : "text-gray-400 hover:text-yellow-500"
+                    ? "text-yellow-500 dark:text-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-300"
+                    : "text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400"
                 }`}
                 title={isPinned ? "Unpin" : "Pin to top"}
               >
@@ -368,7 +368,7 @@ function PostItem({
               <button
                 onClick={() => onDelete(post.id)}
                 disabled={deletingPostId === post.id}
-                className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1"
                 title={isOrganizer && currentUserId !== post.author.id ? "Delete (moderator)" : "Delete"}
               >
                 {deletingPostId === post.id ? <SpinnerIcon /> : <TrashIcon />}
@@ -378,7 +378,7 @@ function PostItem({
         </div>
 
         {/* Post content */}
-        <p className={`text-gray-700 whitespace-pre-wrap ${isReply ? "text-sm" : ""}`}>{post.content}</p>
+        <p className={`text-gray-700 dark:text-gray-300 whitespace-pre-wrap ${isReply ? "text-sm" : ""}`}>{post.content}</p>
 
         {/* Image attachment (top-level posts only) */}
         {isTopLevelPost && wallPost?.imageUrl && (
@@ -403,7 +403,7 @@ function PostItem({
             href={wallPost.linkUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 block border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 transition-colors"
+            className="mt-3 block border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
           >
             {wallPost.linkImageUrl && (
               <img
@@ -412,14 +412,14 @@ function PostItem({
                 className="w-full h-48 object-cover"
               />
             )}
-            <div className="p-3 bg-gray-50">
+            <div className="p-3 bg-gray-50 dark:bg-gray-900">
               {wallPost.linkTitle && (
-                <p className="font-medium text-gray-900 text-sm line-clamp-1">{wallPost.linkTitle}</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100 text-sm line-clamp-1">{wallPost.linkTitle}</p>
               )}
               {wallPost.linkDescription && (
-                <p className="text-xs text-gray-600 mt-1 line-clamp-2">{wallPost.linkDescription}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{wallPost.linkDescription}</p>
               )}
-              <p className="text-xs text-gray-400 mt-1 truncate">{wallPost.linkUrl}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 truncate">{wallPost.linkUrl}</p>
             </div>
           </a>
         )}
@@ -432,8 +432,8 @@ function PostItem({
             disabled={isReacting}
             className={`flex items-center gap-1.5 text-sm transition-colors ${
               post.userHasReacted
-                ? "text-red-500"
-                : "text-gray-500 hover:text-red-500"
+                ? "text-red-500 dark:text-red-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
             } disabled:opacity-50`}
           >
             <HeartIcon filled={post.userHasReacted} />
@@ -444,7 +444,7 @@ function PostItem({
           {canReply && (
             <button
               onClick={() => setShowReplyForm(!showReplyForm)}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-500 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
             >
               <ReplyIcon />
               <span>
@@ -782,10 +782,10 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
   // Loading state
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Event Wall</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Event Wall</h2>
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
         </div>
       </div>
     );
@@ -794,10 +794,10 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
   // Error state
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Event Wall</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Event Wall</h2>
         <div className="text-center py-4">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600 dark:text-red-400">{error}</p>
         </div>
       </div>
     );
@@ -806,12 +806,12 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
   // No access state
   if (!canAccess) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Event Wall</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Event Wall</h2>
         <div className="text-center py-8">
-          <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
             <svg
-              className="h-6 w-6 text-gray-400"
+              className="h-6 w-6 text-gray-400 dark:text-gray-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -824,7 +824,7 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
               />
             </svg>
           </div>
-          <p className="text-gray-600">{accessMessage}</p>
+          <p className="text-gray-600 dark:text-gray-400">{accessMessage}</p>
         </div>
       </div>
     );
@@ -832,14 +832,14 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
 
   // Full wall view
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
       {/* Header with moderation log button */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Event Wall</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Event Wall</h2>
         {isOrganizer && (
           <button
             onClick={handleOpenModerationLog}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             title="View moderation log"
           >
             <ShieldIcon />
@@ -850,12 +850,12 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
 
       {/* New post form */}
       <form onSubmit={handleSubmitPost} className="mb-6">
-        <div className="border border-gray-200 rounded-lg focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-500 dark:focus-within:ring-blue-400">
           <textarea
             value={newPostContent}
             onChange={(e) => setNewPostContent(e.target.value)}
             placeholder="Share something with other attendees..."
-            className="w-full px-4 py-3 text-gray-900 placeholder-gray-500 border-0 rounded-t-lg focus:ring-0 resize-none"
+            className="w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-800 border-0 rounded-t-lg focus:ring-0 resize-none"
             rows={3}
             maxLength={2000}
           />
@@ -865,7 +865,7 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
               <button
                 type="button"
                 onClick={handleRemoveImage}
-                className="absolute top-4 left-6 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                className="absolute top-4 left-6 bg-red-500 dark:bg-red-600 text-white rounded-full p-1 hover:bg-red-600 dark:hover:bg-red-700"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -873,9 +873,9 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
               </button>
             </div>
           )}
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-b-lg">
+          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
             <div className="flex items-center gap-2">
-              <label className="cursor-pointer text-gray-500 hover:text-gray-700 transition-colors">
+              <label className="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
                 <input
                   type="file"
                   accept="image/jpeg,image/png"
@@ -887,26 +887,26 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </label>
-              <span className="text-sm text-gray-500">{newPostContent.length}/2000</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{newPostContent.length}/2000</span>
             </div>
             <button
               type="submit"
               disabled={!newPostContent.trim() || isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:bg-blue-400 dark:disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Posting..." : "Post"}
             </button>
           </div>
         </div>
-        {submitError && <p className="mt-2 text-sm text-red-600">{submitError}</p>}
+        {submitError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{submitError}</p>}
       </form>
 
       {/* Posts list */}
       {posts.length === 0 ? (
         <div className="text-center py-8">
-          <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
             <svg
-              className="h-6 w-6 text-gray-400"
+              className="h-6 w-6 text-gray-400 dark:text-gray-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -919,7 +919,7 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
               />
             </svg>
           </div>
-          <p className="text-gray-600">No posts yet. Be the first to share something!</p>
+          <p className="text-gray-600 dark:text-gray-400">No posts yet. Be the first to share something!</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -943,13 +943,13 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
 
       {/* Moderation Log Modal */}
       {showModerationLog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Moderation Log</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Moderation Log</h3>
               <button
                 onClick={() => setShowModerationLog(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -959,34 +959,34 @@ export function EventWall({ eventId, currentUserId, isOrganizer = false }: Event
             <div className="p-4 overflow-y-auto max-h-[60vh]">
               {loadingLogs ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
                 </div>
               ) : moderationLogs.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">No moderation actions yet</p>
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">No moderation actions yet</p>
               ) : (
                 <div className="space-y-3">
                   {moderationLogs.map((log) => (
-                    <div key={log.id} className="border border-gray-100 rounded-lg p-3">
+                    <div key={log.id} className="border border-gray-100 dark:border-gray-700 rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div>
-                          <span className="font-medium text-gray-900">{log.moderator.displayName}</span>
-                          <span className="text-gray-500 mx-1">
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{log.moderator.displayName}</span>
+                          <span className="text-gray-500 dark:text-gray-400 mx-1">
                             {log.action === "DELETE" && "deleted a post"}
                             {log.action === "PIN" && "pinned a post"}
                             {log.action === "UNPIN" && "unpinned a post"}
                           </span>
                           {log.postAuthor && (
-                            <span className="text-gray-500">
-                              by <span className="font-medium text-gray-700">{log.postAuthor.displayName}</span>
+                            <span className="text-gray-500 dark:text-gray-400">
+                              by <span className="font-medium text-gray-700 dark:text-gray-300">{log.postAuthor.displayName}</span>
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                           {formatRelativeTime(log.createdAt)}
                         </span>
                       </div>
                       {log.postContent && (
-                        <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600 truncate">
+                        <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-600 dark:text-gray-400 truncate">
                           {log.postContent.length > 100 ? `${log.postContent.slice(0, 100)}...` : log.postContent}
                         </div>
                       )}

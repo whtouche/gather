@@ -69,10 +69,10 @@ export function MassEmailHistoryPanel({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-20 bg-gray-100 rounded"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+          <div className="h-20 bg-gray-100 dark:bg-gray-900/50 rounded"></div>
         </div>
       </div>
     );
@@ -80,20 +80,20 @@ export function MassEmailHistoryPanel({
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <p className="text-red-600 text-sm">{error}</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
       {/* Header */}
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-4 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Mass Email History</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Mass Email History</h3>
           {quota && (
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               {quota.remaining} of {quota.limit} remaining this week
             </div>
           )}
@@ -102,9 +102,9 @@ export function MassEmailHistoryPanel({
 
       {/* Content */}
       {messages.length === 0 ? (
-        <div className="p-8 text-center text-gray-500">
+        <div className="p-8 text-center text-gray-500 dark:text-gray-400">
           <svg
-            className="mx-auto h-12 w-12 text-gray-300 mb-3"
+            className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-3"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -120,7 +120,7 @@ export function MassEmailHistoryPanel({
           <p className="text-sm mt-1">Send your first mass email to see history here</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {messages.map((message) => (
             <div key={message.id} className="p-4">
               {/* Message Summary Row */}
@@ -130,14 +130,14 @@ export function MassEmailHistoryPanel({
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900 truncate">
+                    <span className="font-medium text-gray-900 dark:text-gray-100 truncate">
                       {message.subject || "(No subject)"}
                     </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                       {AUDIENCE_LABELS[message.targetAudience] || message.targetAudience}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
                     <span>{formatDate(message.sentAt)}</span>
                     <span>by {message.organizer.displayName}</span>
                   </div>
@@ -146,17 +146,17 @@ export function MassEmailHistoryPanel({
                 {/* Stats */}
                 <div className="flex items-center gap-4 ml-4">
                   <div className="text-right">
-                    <div className="text-sm font-medium text-gray-900">{message.sentCount}</div>
-                    <div className="text-xs text-gray-500">sent</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{message.sentCount}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">sent</div>
                   </div>
                   {message.failedCount > 0 && (
                     <div className="text-right">
-                      <div className="text-sm font-medium text-red-600">{message.failedCount}</div>
-                      <div className="text-xs text-gray-500">failed</div>
+                      <div className="text-sm font-medium text-red-600 dark:text-red-400">{message.failedCount}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">failed</div>
                     </div>
                   )}
                   <svg
-                    className={`h-5 w-5 text-gray-400 transition-transform ${
+                    className={`h-5 w-5 text-gray-400 dark:text-gray-500 transition-transform ${
                       expandedId === message.id ? "rotate-180" : ""
                     }`}
                     fill="none"
@@ -175,10 +175,10 @@ export function MassEmailHistoryPanel({
 
               {/* Expanded Content */}
               {expandedId === message.id && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-sm text-gray-500 mb-1">Message:</div>
-                    <div className="text-sm text-gray-900 whitespace-pre-wrap">
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Message:</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
                       {message.body.length > 500
                         ? message.body.substring(0, 500) + "..."
                         : message.body}
@@ -187,25 +187,25 @@ export function MassEmailHistoryPanel({
 
                   {/* Stats grid */}
                   <div className="grid grid-cols-4 gap-4 mt-4">
-                    <div className="bg-blue-50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-bold text-blue-600">{message.recipientCount}</div>
-                      <div className="text-xs text-blue-600">Recipients</div>
+                    <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{message.recipientCount}</div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400">Recipients</div>
                     </div>
-                    <div className="bg-green-50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-bold text-green-600">{message.sentCount}</div>
-                      <div className="text-xs text-green-600">Sent</div>
+                    <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">{message.sentCount}</div>
+                      <div className="text-xs text-green-600 dark:text-green-400">Sent</div>
                     </div>
-                    <div className={`rounded-lg p-3 text-center ${message.openedCount > 0 ? 'bg-purple-50' : 'bg-gray-50'}`}>
-                      <div className={`text-2xl font-bold ${message.openedCount > 0 ? 'text-purple-600' : 'text-gray-400'}`}>
+                    <div className={`rounded-lg p-3 text-center ${message.openedCount > 0 ? 'bg-purple-50 dark:bg-purple-900/30' : 'bg-gray-50 dark:bg-gray-900/50'}`}>
+                      <div className={`text-2xl font-bold ${message.openedCount > 0 ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-500'}`}>
                         {message.openedCount}
                       </div>
-                      <div className={`text-xs ${message.openedCount > 0 ? 'text-purple-600' : 'text-gray-400'}`}>Opened</div>
+                      <div className={`text-xs ${message.openedCount > 0 ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-500'}`}>Opened</div>
                     </div>
-                    <div className={`rounded-lg p-3 text-center ${message.failedCount > 0 ? 'bg-red-50' : 'bg-gray-50'}`}>
-                      <div className={`text-2xl font-bold ${message.failedCount > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                    <div className={`rounded-lg p-3 text-center ${message.failedCount > 0 ? 'bg-red-50 dark:bg-red-900/30' : 'bg-gray-50 dark:bg-gray-900/50'}`}>
+                      <div className={`text-2xl font-bold ${message.failedCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>
                         {message.failedCount}
                       </div>
-                      <div className={`text-xs ${message.failedCount > 0 ? 'text-red-600' : 'text-gray-400'}`}>Failed</div>
+                      <div className={`text-xs ${message.failedCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>Failed</div>
                     </div>
                   </div>
                 </div>

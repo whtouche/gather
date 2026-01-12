@@ -152,9 +152,9 @@ export function QuestionnaireForm({
     const inputId = `question-${question.id}`;
 
     const baseInputClasses =
-      "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500";
+      "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500";
     const errorClasses = error
-      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+      ? "border-red-300 dark:border-red-700 focus:border-red-500 dark:focus:border-red-400 focus:ring-red-500 dark:focus:ring-red-400"
       : "";
 
     switch (question.questionType) {
@@ -195,9 +195,9 @@ export function QuestionnaireForm({
                   value={choice}
                   checked={response === choice}
                   onChange={(e) => handleResponseChange(question.id, e.target.value)}
-                  className="text-blue-600 focus:ring-blue-500"
+                  className="text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600"
                 />
-                <span className="text-gray-700">{choice}</span>
+                <span className="text-gray-700 dark:text-gray-300">{choice}</span>
               </label>
             ))}
           </div>
@@ -220,9 +220,9 @@ export function QuestionnaireForm({
                         : selectedChoices.filter((c) => c !== choice);
                       handleResponseChange(question.id, newChoices);
                     }}
-                    className="text-blue-600 focus:ring-blue-500"
+                    className="text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 rounded dark:bg-gray-800 dark:border-gray-600"
                   />
-                  <span className="text-gray-700">{choice}</span>
+                  <span className="text-gray-700 dark:text-gray-300">{choice}</span>
                 </label>
               );
             })}
@@ -239,9 +239,9 @@ export function QuestionnaireForm({
                 value="true"
                 checked={response === true}
                 onChange={() => handleResponseChange(question.id, true)}
-                className="text-blue-600 focus:ring-blue-500"
+                className="text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600"
               />
-              <span className="text-gray-700">Yes</span>
+              <span className="text-gray-700 dark:text-gray-300">Yes</span>
             </label>
             <label className="flex items-center space-x-2">
               <input
@@ -250,9 +250,9 @@ export function QuestionnaireForm({
                 value="false"
                 checked={response === false}
                 onChange={() => handleResponseChange(question.id, false)}
-                className="text-blue-600 focus:ring-blue-500"
+                className="text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600"
               />
-              <span className="text-gray-700">No</span>
+              <span className="text-gray-700 dark:text-gray-300">No</span>
             </label>
           </div>
         );
@@ -297,11 +297,11 @@ export function QuestionnaireForm({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm dark:shadow-gray-900/30">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
         Event Questionnaire
       </h3>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
         {rsvpResponse === "YES"
           ? "Please answer the following questions to complete your RSVP."
           : "You may optionally answer the following questions."}
@@ -312,19 +312,19 @@ export function QuestionnaireForm({
           <div key={question.id}>
             <label
               htmlFor={`question-${question.id}`}
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               {question.questionText}
               {question.isRequired && rsvpResponse === "YES" && (
-                <span className="text-red-500 ml-1">*</span>
+                <span className="text-red-500 dark:text-red-400 ml-1">*</span>
               )}
             </label>
             {question.helpText && (
-              <p className="text-xs text-gray-500 mt-1">{question.helpText}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{question.helpText}</p>
             )}
             {renderQuestionInput(question)}
             {errors[question.id] && (
-              <p className="text-sm text-red-600 mt-1">{errors[question.id]}</p>
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors[question.id]}</p>
             )}
           </div>
         ))}
@@ -333,7 +333,7 @@ export function QuestionnaireForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-blue-600 dark:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Submitting..." : "Submit Responses"}
           </button>
@@ -342,7 +342,7 @@ export function QuestionnaireForm({
               type="button"
               onClick={handleSkip}
               disabled={isSubmitting}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50"
             >
               Skip
             </button>

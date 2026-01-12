@@ -164,15 +164,15 @@ export function SmsInviteModal({
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-xl shadow-xl max-w-lg w-full">
+        <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Send SMS Invitations
             </h2>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-500 transition-colors"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 transition-colors"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -186,8 +186,8 @@ export function SmsInviteModal({
               <>
                 {/* Quota warning */}
                 {quota && (quota.atDailyLimit || quota.atTotalLimit) && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-amber-800">
+                  <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg">
+                    <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
@@ -202,37 +202,37 @@ export function SmsInviteModal({
 
                 {/* Quota info */}
                 {quota && !quota.atTotalLimit && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                    <div className="flex justify-between text-gray-600">
+                  <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
                       <span>Today:</span>
                       <span>{quota.dailyCount}/{quota.dailyLimit} sent</span>
                     </div>
-                    <div className="flex justify-between text-gray-600 mt-1">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400 mt-1">
                       <span>Total for event:</span>
                       <span>{quota.totalCount}/{quota.totalLimit} sent</span>
                     </div>
                   </div>
                 )}
 
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   Enter phone numbers to send SMS invitations. One number per line.
                 </p>
-                <p className="text-xs text-gray-500 mb-3">
-                  Formats: <code className="bg-gray-100 px-1 rounded">+15551234567</code>{" "}
-                  or <code className="bg-gray-100 px-1 rounded">Name +15551234567</code>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  Formats: <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">+15551234567</code>{" "}
+                  or <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">Name +15551234567</code>
                 </p>
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="+15551234567&#10;Jane Doe +15559876543&#10;+15550001111"
                   rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent resize-none font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   disabled={quota?.atDailyLimit || quota?.atTotalLimit}
                 />
                 {error && (
-                  <p className="mt-2 text-sm text-red-600">{error}</p>
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
                 )}
-                <div className="mt-3 text-sm text-gray-500">
+                <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                   {recipientCount} valid recipient(s) detected
                   {quota && recipientCount > 0 && (
                     <span className="ml-2">
@@ -245,8 +245,8 @@ export function SmsInviteModal({
 
             {state === "sending" && (
               <div className="py-8 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Sending SMS invitations...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+                <p className="mt-4 text-gray-600 dark:text-gray-400">Sending SMS invitations...</p>
               </div>
             )}
 
@@ -281,42 +281,42 @@ export function SmsInviteModal({
                 </div>
 
                 {/* Updated quota */}
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                  <div className="flex justify-between text-gray-600">
+                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>Remaining today:</span>
                     <span>{results.quota.dailyRemaining} SMS</span>
                   </div>
-                  <div className="flex justify-between text-gray-600 mt-1">
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400 mt-1">
                     <span>Remaining total:</span>
                     <span>{results.quota.totalRemaining} SMS</span>
                   </div>
                 </div>
 
                 {/* Details */}
-                <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+                <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
                   <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50 sticky top-0">
+                    <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                       <tr>
-                        <th className="px-3 py-2 text-left font-medium text-gray-600">Phone</th>
-                        <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Phone</th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                       {results.details.map((result, index) => (
                         <tr key={index}>
-                          <td className="px-3 py-2 text-gray-900 font-mono text-xs">{result.phone}</td>
+                          <td className="px-3 py-2 text-gray-900 dark:text-gray-100 font-mono text-xs">{result.phone}</td>
                           <td className="px-3 py-2">
                             {result.success ? (
-                              <span className="inline-flex items-center gap-1 text-green-600">
+                              <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
                                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                                 Sent
                               </span>
                             ) : result.alreadyInvited ? (
-                              <span className="text-amber-600">Already invited</span>
+                              <span className="text-amber-600 dark:text-amber-400">Already invited</span>
                             ) : (
-                              <span className="text-red-600">{result.error || "Failed"}</span>
+                              <span className="text-red-600 dark:text-red-400">{result.error || "Failed"}</span>
                             )}
                           </td>
                         </tr>
@@ -329,19 +329,19 @@ export function SmsInviteModal({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 p-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 p-4 border-t border-gray-100 dark:border-gray-700">
             {state === "input" && (
               <>
                 <button
                   onClick={handleClose}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSend}
                   disabled={recipientCount === 0 || quota?.atDailyLimit || quota?.atTotalLimit}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-blue-300 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium disabled:bg-blue-300 dark:disabled:bg-blue-800 disabled:cursor-not-allowed"
                 >
                   Send SMS Invitations
                 </button>
@@ -350,7 +350,7 @@ export function SmsInviteModal({
             {state === "results" && (
               <button
                 onClick={handleClose}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium"
               >
                 Done
               </button>

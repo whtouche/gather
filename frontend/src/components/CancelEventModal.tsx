@@ -60,18 +60,18 @@ export function CancelEventModal({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-75 transition-opacity"
         onClick={handleClose}
       />
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full p-6 transform transition-all">
+        <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 transform transition-all">
           {/* Close button */}
           <button
             onClick={handleClose}
             disabled={isSubmitting}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
           >
             <svg
               className="h-6 w-6"
@@ -89,9 +89,9 @@ export function CancelEventModal({
           </button>
 
           {/* Warning icon */}
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/40 mb-4">
             <svg
-              className="h-6 w-6 text-red-600"
+              className="h-6 w-6 text-red-600 dark:text-red-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -106,12 +106,12 @@ export function CancelEventModal({
           </div>
 
           {/* Title */}
-          <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
             Cancel Event
           </h3>
 
           {/* Description */}
-          <p className="text-sm text-gray-600 text-center mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300 text-center mb-4">
             Are you sure you want to cancel{" "}
             <span className="font-medium">"{eventTitle}"</span>? This action
             cannot be undone. All attendees who have RSVPd will be notified.
@@ -121,7 +121,7 @@ export function CancelEventModal({
           <div className="mb-4">
             <label
               htmlFor="cancellation-message"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               Cancellation Message (optional)
             </label>
@@ -132,14 +132,14 @@ export function CancelEventModal({
               disabled={isSubmitting}
               placeholder="Let your attendees know why the event is being cancelled..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed text-sm"
             />
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
@@ -148,14 +148,14 @@ export function CancelEventModal({
             <button
               onClick={handleClose}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Keep Event
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 dark:bg-red-700 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">

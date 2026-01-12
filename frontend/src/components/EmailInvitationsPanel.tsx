@@ -19,16 +19,16 @@ type LoadState = "loading" | "success" | "error";
 function getStatusBadgeClasses(status: string): string {
   switch (status) {
     case "SENT":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
     case "OPENED":
-      return "bg-purple-100 text-purple-800";
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
     case "RSVPD":
-      return "bg-green-100 text-green-800";
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
     case "FAILED":
-      return "bg-red-100 text-red-800";
+      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
     case "PENDING":
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
   }
 }
 
@@ -101,12 +101,12 @@ export function EmailInvitationsPanel({
 
   if (state === "loading") {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Invitations</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Email Invitations</h3>
         <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
         </div>
       </div>
     );
@@ -114,18 +114,18 @@ export function EmailInvitationsPanel({
 
   if (state === "error") {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Invitations</h3>
-        <p className="text-red-600">{error}</p>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Email Invitations</h3>
+        <p className="text-red-600 dark:text-red-400">{error}</p>
       </div>
     );
   }
 
   if (invitations.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Invitations</h3>
-        <p className="text-gray-500 text-center py-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Email Invitations</h3>
+        <p className="text-gray-500 dark:text-gray-400 text-center py-4">
           No email invitations sent yet. Use the "Send Email Invites" button above to invite guests.
         </p>
       </div>
@@ -133,33 +133,33 @@ export function EmailInvitationsPanel({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900">Email Invitations</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Email Invitations</h3>
       </div>
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-5 gap-4 p-4 bg-gray-50 border-b border-gray-100">
+        <div className="grid grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
           <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-xs text-gray-500">Total</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.sent}</div>
-            <div className="text-xs text-gray-500">Sent</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.sent}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Sent</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">{stats.opened}</div>
-            <div className="text-xs text-gray-500">Opened</div>
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.opened}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Opened</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.rsvpd}</div>
-            <div className="text-xs text-gray-500">RSVP'd</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.rsvpd}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">RSVP'd</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
-            <div className="text-xs text-gray-500">Failed</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.failed}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Failed</div>
           </div>
         </div>
       )}
@@ -167,22 +167,22 @@ export function EmailInvitationsPanel({
       {/* Invitation list */}
       <div className="max-h-64 overflow-y-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 sticky top-0">
+          <thead className="bg-gray-50 dark:bg-gray-900/50 sticky top-0">
             <tr>
-              <th className="px-4 py-2 text-left font-medium text-gray-600">Recipient</th>
-              <th className="px-4 py-2 text-left font-medium text-gray-600">Status</th>
-              <th className="px-4 py-2 text-left font-medium text-gray-600">Sent</th>
-              <th className="px-4 py-2 text-left font-medium text-gray-600">Opened</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Recipient</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Sent</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Opened</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {invitations.map((inv) => (
-              <tr key={inv.id} className="hover:bg-gray-50">
+              <tr key={inv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td className="px-4 py-3">
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-gray-900 dark:text-gray-100">
                     {inv.recipientName || "Unknown"}
                   </div>
-                  <div className="text-xs text-gray-500 font-mono">{inv.email}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">{inv.email}</div>
                 </td>
                 <td className="px-4 py-3">
                   <span
@@ -193,10 +193,10 @@ export function EmailInvitationsPanel({
                     {getStatusLabel(inv.status)}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-gray-600 text-xs">
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs">
                   {formatDate(inv.sentAt)}
                 </td>
-                <td className="px-4 py-3 text-gray-600 text-xs">
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs">
                   {formatDate(inv.openedAt)}
                 </td>
               </tr>

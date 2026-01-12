@@ -66,19 +66,19 @@ function formatTime(dateString: string, timezone: string): string {
 function getStateBadgeClasses(state: string): string {
   switch (state) {
     case "DRAFT":
-      return "bg-yellow-100 text-yellow-800";
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
     case "PUBLISHED":
-      return "bg-green-100 text-green-800";
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
     case "CLOSED":
-      return "bg-orange-100 text-orange-800";
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
     case "ONGOING":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
     case "CANCELLED":
-      return "bg-red-100 text-red-800";
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
     case "COMPLETED":
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
   }
 }
 
@@ -221,10 +221,10 @@ export function EventPage({ eventId }: EventPageProps) {
   // Loading state
   if (state === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading event details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading event details...</p>
         </div>
       </div>
     );
@@ -236,7 +236,7 @@ export function EventPage({ eventId }: EventPageProps) {
       if (errorCode === "EVENT_NOT_FOUND") {
         return (
           <svg
-            className="h-16 w-16 text-gray-400 mx-auto"
+            className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -252,7 +252,7 @@ export function EventPage({ eventId }: EventPageProps) {
       }
       return (
         <svg
-          className="h-16 w-16 text-gray-400 mx-auto"
+          className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -268,13 +268,13 @@ export function EventPage({ eventId }: EventPageProps) {
     };
 
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8 text-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center">
           {getErrorIcon()}
-          <h1 className="mt-4 text-xl font-semibold text-gray-900">
+          <h1 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
             {errorCode === "EVENT_NOT_FOUND" ? "Event Not Found" : "Something Went Wrong"}
           </h1>
-          <p className="mt-2 text-gray-600">{errorMessage}</p>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">{errorMessage}</p>
           <a
             href="/"
             className="mt-6 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -292,7 +292,7 @@ export function EventPage({ eventId }: EventPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero section with event image or gradient */}
       <div
         className={`relative h-64 md:h-80 ${
@@ -322,13 +322,13 @@ export function EventPage({ eventId }: EventPageProps) {
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Organizer Actions */}
         {isOrganizer && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Organizer Actions</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Organizer Actions</h2>
             <div className="flex flex-wrap gap-3">
               {/* Edit Event button */}
               <a
                 href={`/events/${event.id}/edit`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
               >
                 <svg
                   className="h-5 w-5"
@@ -353,7 +353,7 @@ export function EventPage({ eventId }: EventPageProps) {
               {(event.state === "PUBLISHED" || event.state === "ONGOING") && (
                 <button
                   onClick={() => setShowEmailInviteModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                   <svg
                     className="h-5 w-5"
@@ -376,7 +376,7 @@ export function EventPage({ eventId }: EventPageProps) {
               {(event.state === "PUBLISHED" || event.state === "ONGOING") && (
                 <button
                   onClick={() => setShowSmsInviteModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                   <svg
                     className="h-5 w-5"
@@ -490,7 +490,7 @@ export function EventPage({ eventId }: EventPageProps) {
               {/* Manage Attendees button */}
               <button
                 onClick={() => setShowAttendeeModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
               >
                 <svg
                   className="h-5 w-5"
@@ -584,14 +584,14 @@ export function EventPage({ eventId }: EventPageProps) {
               )}
             </div>
             {publishError && (
-              <p className="mt-3 text-sm text-red-600">{publishError}</p>
+              <p className="mt-3 text-sm text-red-600 dark:text-red-400">{publishError}</p>
             )}
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
           {/* Date and Time */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <svg
@@ -609,20 +609,20 @@ export function EventPage({ eventId }: EventPageProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-gray-900 dark:text-white">
                   {formatDate(event.dateTime, event.timezone)}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   {formatTime(event.dateTime, event.timezone)}
                   {event.endDateTime && ` - ${formatTime(event.endDateTime, event.timezone)}`}
                 </p>
-                <p className="text-sm text-gray-500">{event.timezone}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{event.timezone}</p>
               </div>
             </div>
           </div>
 
           {/* Location */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <svg
@@ -646,14 +646,14 @@ export function EventPage({ eventId }: EventPageProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Location</h3>
-                <p className="text-gray-600">{event.location}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Location</h3>
+                <p className="text-gray-600 dark:text-gray-300">{event.location}</p>
               </div>
             </div>
           </div>
 
           {/* Hosted by */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
                 {event.creator.photoUrl ? (
@@ -671,37 +671,37 @@ export function EventPage({ eventId }: EventPageProps) {
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-500">Hosted by</p>
-                <p className="font-semibold text-gray-900">{event.creator.displayName}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Hosted by</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{event.creator.displayName}</p>
               </div>
             </div>
           </div>
 
           {/* Description */}
           <div className="p-6">
-            <h3 className="font-semibold text-gray-900 mb-3">About this event</h3>
-            <p className="text-gray-600 whitespace-pre-wrap">{event.description}</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">About this event</h3>
+            <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{event.description}</p>
           </div>
 
           {/* Additional details (if available) */}
           {(event.dressCode || event.notes || event.category) && (
-            <div className="p-6 border-t border-gray-100 space-y-4">
+            <div className="p-6 border-t border-gray-100 dark:border-gray-700 space-y-4">
               {event.category && (
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Category:</span>
-                  <span className="ml-2 text-gray-900">{event.category}</span>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Category:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white">{event.category}</span>
                 </div>
               )}
               {event.dressCode && (
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Dress Code:</span>
-                  <span className="ml-2 text-gray-900">{event.dressCode}</span>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Dress Code:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white">{event.dressCode}</span>
                 </div>
               )}
               {event.notes && (
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Additional Notes:</span>
-                  <p className="mt-1 text-gray-900 whitespace-pre-wrap">{event.notes}</p>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Additional Notes:</span>
+                  <p className="mt-1 text-gray-900 dark:text-white whitespace-pre-wrap">{event.notes}</p>
                 </div>
               )}
             </div>
@@ -713,9 +713,9 @@ export function EventPage({ eventId }: EventPageProps) {
           event.userRsvp === "YES" &&
           event.allowInviteSharing &&
           (event.state === "PUBLISHED" || event.state === "ONGOING") && (
-            <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Share This Event</h2>
-              <p className="text-gray-600 mb-4">
+            <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Share This Event</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Invite others to this event by sharing the invitation link.
               </p>
               <InviteLinkButton eventId={event.id} />
@@ -723,27 +723,27 @@ export function EventPage({ eventId }: EventPageProps) {
           )}
 
         {/* RSVP Section */}
-        <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">RSVP</h2>
+        <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">RSVP</h2>
 
           {/* Event is cancelled */}
           {event.state === "CANCELLED" && (
             <div className="text-center py-4">
-              <p className="text-gray-600">This event has been cancelled.</p>
+              <p className="text-gray-600 dark:text-gray-300">This event has been cancelled.</p>
             </div>
           )}
 
           {/* Event is completed */}
           {event.state === "COMPLETED" && (
             <div className="text-center py-4">
-              <p className="text-gray-600">This event has ended.</p>
+              <p className="text-gray-600 dark:text-gray-300">This event has ended.</p>
             </div>
           )}
 
           {/* Event is ongoing */}
           {event.state === "ONGOING" && (
             <div className="text-center py-4">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 This event is currently in progress. RSVPs are no longer accepted.
               </p>
             </div>
@@ -752,11 +752,11 @@ export function EventPage({ eventId }: EventPageProps) {
           {/* Event is closed (RSVP deadline passed) */}
           {event.state === "CLOSED" && (
             <div className="text-center py-4">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 The RSVP deadline has passed. Contact the organizer if you need to make changes.
               </p>
               {event.userRsvp && (
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   Your RSVP: <span className="font-medium">{event.userRsvp}</span>
                 </p>
               )}
@@ -766,7 +766,7 @@ export function EventPage({ eventId }: EventPageProps) {
           {/* Event is draft - only organizers can see */}
           {event.state === "DRAFT" && (
             <div className="text-center py-4">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 This event is still in draft mode. RSVPs will be available once the event is
                 published.
               </p>
@@ -819,7 +819,7 @@ export function EventPage({ eventId }: EventPageProps) {
                 </>
               ) : (
                 <div className="text-center">
-                  <p className="text-gray-600 mb-4">Sign in to RSVP to this event.</p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">Sign in to RSVP to this event.</p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <a
                       href={`/login?redirect=/events/${event.id}`}
@@ -829,7 +829,7 @@ export function EventPage({ eventId }: EventPageProps) {
                     </a>
                     <a
                       href={`/register?redirect=/events/${event.id}`}
-                      className="px-6 py-3 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                      className="px-6 py-3 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors font-medium"
                     >
                       Create Account
                     </a>
@@ -906,7 +906,7 @@ export function EventPage({ eventId }: EventPageProps) {
           <div className="mt-6 text-center">
             <a
               href="/dashboard"
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
             >
               Back to Dashboard
             </a>
