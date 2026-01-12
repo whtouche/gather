@@ -1,0 +1,67 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+
+# Logs
+*.log
+logs/
+.orchestrator-logs/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Testing
+test-results/
+playwright-report/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Prisma
+prisma/migrations/
+
+# Generated files
+generated/
+
+# Development scripts
+test-db.ts
+watch-logs.sh
+
+# Documentation (generated/temporary)
+*_BUG_REPORT.md
+*_IMPLEMENTATION*.md
+*_COMPLETE.md
+*_GUIDE.md
+*_TESTING.md
+TEST_ACCOUNTS.md
+TEST_GUIDE.md
+test-theme-toggle.html
