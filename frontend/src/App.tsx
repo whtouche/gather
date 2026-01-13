@@ -13,6 +13,7 @@ import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { ConnectionDetailPage } from "./pages/ConnectionDetailPage";
 import { EventSearchPage } from "./pages/EventSearchPage";
 import { SessionManagementPage } from "./pages/SessionManagementPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
 import "./App.css";
 
 /**
@@ -124,6 +125,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/events/search" element={<EventSearchPage />} />
         <Route path="/past-events" element={<PastEventsPage />} />
         <Route path="/connections" element={<ConnectionsPage />} />
